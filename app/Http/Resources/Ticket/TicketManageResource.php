@@ -6,6 +6,7 @@ use App\Http\Resources\Department\DepartmentSelectResource;
 use App\Http\Resources\Label\LabelSelectResource;
 use App\Http\Resources\Priority\PriorityResource;
 use App\Http\Resources\Status\StatusResource;
+use App\Http\Resources\TicketConcern\TicketConcernSelectResource;
 use App\Http\Resources\TicketReply\TicketReplyDetailsResource;
 use App\Http\Resources\User\UserDetailsResource;
 use App\Models\Ticket;
@@ -28,6 +29,11 @@ class TicketManageResource extends JsonResource
             'id' => $ticket->id,
             'uuid' => $ticket->uuid,
             'subject' => $ticket->subject,
+            'concern' => new TicketConcernSelectResource($ticket->concern),
+            'concern_id' => $ticket->concern_id,
+            'condo_location' => $ticket->condoLocation ? ['id' => $ticket->condoLocation->id, 'name' => $ticket->condoLocation->name] : null,
+            'condo_location_id' => $ticket->condo_location_id,
+            'voucher_code' => $ticket->voucher_code,
             'status' => new StatusResource($ticket->status),
             'status_id' => $ticket->status_id,
             'priority' => new PriorityResource($ticket->priority),

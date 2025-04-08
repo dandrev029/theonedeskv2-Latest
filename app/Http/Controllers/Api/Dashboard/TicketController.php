@@ -14,14 +14,17 @@ use App\Http\Resources\Priority\PriorityResource;
 use App\Http\Resources\Status\StatusResource;
 use App\Http\Resources\Ticket\TicketListResource;
 use App\Http\Resources\Ticket\TicketManageResource;
+use App\Http\Resources\TicketConcern\TicketConcernSelectResource;
 use App\Http\Resources\User\UserDetailsResource;
 use App\Models\CannedReply;
+use App\Models\CondoLocation;
 use App\Models\Department;
 use App\Models\Label;
 use App\Models\Priority;
 use App\Models\Setting;
 use App\Models\Status;
 use App\Models\Ticket;
+use App\Models\TicketConcern;
 use App\Models\TicketReply;
 use App\Models\User;
 use App\Models\UserRole;
@@ -98,11 +101,31 @@ class TicketController extends Controller
         $ticket = new Ticket();
         $ticket->uuid = Str::uuid();
         $ticket->subject = $request->get('subject');
+        $ticket->concern_id = $request->get('concern_id');
+        $ticket->voucher_code = $request->get('voucher_code');
         $ticket->status_id = $request->get('status_id');
         $ticket->priority_id = $request->get('priority_id');
         $ticket->department_id = $request->get('department_id');
         $ticket->user_id = $request->get('user_id');
-        $ticket->agent_id = Auth::id();
+
+        // Get the user's condo location
+        $user = User::find($request->get('user_id'));
+        if ($user && $user->condo_location_id) {
+            $ticket->condo_location_id = $user->condo_location_id;
+        }
+
+        // If the concern has an assigned user, use that user as the agent
+        // Otherwise, use the current user
+        if ($ticket->concern_id) {
+            $concern = TicketConcern::find($ticket->concern_id);
+            if ($concern && $concern->assigned_to) {
+                $ticket->agent_id = $concern->assigned_to;
+            } else {
+                $ticket->agent_id = Auth::id();
+            }
+        } else {
+            $ticket->agent_id = Auth::id();
+        }
         $ticket->saveOrFail();
         $ticketReply = new TicketReply();
         $ticketReply->user_id = Auth::id();
@@ -205,6 +228,8 @@ class TicketController extends Controller
             'labels' => LabelSelectResource::collection(Label::all()),
             'statuses' => StatusResource::collection(Status::all()),
             'priorities' => PriorityResource::collection(Priority::orderBy('value')->get()),
+            'concerns' => TicketConcernSelectResource::collection(TicketConcern::where('status', true)->get()),
+            'condo_locations' => CondoLocation::where('status', true)->select('id', 'name')->get(),
         ]);
     }
 

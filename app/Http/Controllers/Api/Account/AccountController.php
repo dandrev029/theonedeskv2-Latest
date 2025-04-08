@@ -27,7 +27,14 @@ class AccountController extends Controller
         $user->name = $request->get('name');
         if ($user->email !== $request->get('email')) {
             $user->email = $request->get('email');
-            $user->email_verified_at = null;
+
+            // Check if the user has dashboard access (admin or privileged user)
+            // If they do, automatically verify their email
+            if ($user->userRole && $user->userRole->dashboard_access) {
+                $user->email_verified_at = now();
+            } else {
+                $user->email_verified_at = null;
+            }
         }
         if ($request->file('avatar')) {
             $user->avatar = $request->file('avatar')->store('avatar', 'public');

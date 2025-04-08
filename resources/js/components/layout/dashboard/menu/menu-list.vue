@@ -29,7 +29,8 @@
                 $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.UserRoleController'] ||
                 $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.SettingController'] ||
                 $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.LanguageController'] ||
-                $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.CondoLocationController']
+                $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.CondoLocationController'] ||
+                $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController']
             )"
             class="my-3 mx-4 uppercase text-gray-300 text-xs"
         >
@@ -97,6 +98,20 @@
             :mobile="mobile"
             icon="font-awesome.language-regular"
             to="/dashboard/admin/languages"
+        ></menu-item>
+        <menu-item
+            v-if="$store.state.permissions && $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.CondoLocationController']"
+            :label="$t('Condo Locations')"
+            :mobile="mobile"
+            icon="font-awesome.building-regular"
+            to="/dashboard/admin/condo-locations"
+        ></menu-item>
+        <menu-item
+            v-if="$store.state.permissions && $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController']"
+            :label="$t('Ticket Concerns')"
+            :mobile="mobile"
+            icon="font-awesome.tag-solid"
+            to="/dashboard/admin/ticket-concerns"
         ></menu-item>
     </div>
 </template>
