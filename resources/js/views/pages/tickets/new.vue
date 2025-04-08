@@ -52,6 +52,41 @@
                                         </div>
                                     </div>
                                     <div class="col-span-3">
+                                        <label class="block text-sm font-medium leading-5 text-gray-700" for="concern">{{ $t('Concern') }}</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <input-select
+                                                id="concern"
+                                                v-model="ticket.concern_id"
+                                                :options="filteredConcerns"
+                                                option-label="name"
+                                                :disabled="!ticket.department_id"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="col-span-3">
+                                        <label class="block text-sm font-medium leading-5 text-gray-700" for="voucher_code">{{ $t('Voucher Code') }}</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <input
+                                                id="voucher_code"
+                                                v-model="ticket.voucher_code"
+                                                :placeholder="$t('Voucher Code')"
+                                                class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                            >
+                                        </div>
+                                    </div>
+                                    <div class="col-span-3">
+                                        <label class="block text-sm font-medium leading-5 text-gray-700" for="priority">{{ $t('Priority') }}</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <input-select
+                                                id="priority"
+                                                v-model="ticket.priority_id"
+                                                :options="priorityList"
+                                                option-label="name"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="col-span-3">
                                         <label class="block text-sm font-medium leading-5 text-gray-700" for="ticket_body">{{ $t('Ticket body') }}</label>
                                         <div class="mt-1 relative rounded-md shadow-sm">
                                             <input-wysiwyg
@@ -113,15 +148,40 @@ export default {
             uploadingFileProgress: 0,
             ticket: {
                 subject: null,
+                concern_id: null,
+                voucher_code: null,
                 department_id: null,
+                priority_id: null,
                 body: '',
                 attachments: [],
             },
             departmentList: [],
+            concernList: [],
+            departmentConcerns: {},
+            priorityList: [],
         }
     },
     mounted() {
         this.getDepartments();
+        this.getPriorities();
+    },
+    computed: {
+        filteredConcerns() {
+            if (!this.ticket.department_id) {
+                return [];
+            }
+            return this.departmentConcerns[this.ticket.department_id] || [];
+        }
+    },
+    watch: {
+        'ticket.department_id': function(newVal, oldVal) {
+            if (newVal !== oldVal) {
+                this.ticket.concern_id = null;
+                if (newVal) {
+                    this.getConcernsByDepartment(newVal);
+                }
+            }
+        }
     },
     methods: {
         getDepartments() {
@@ -129,6 +189,27 @@ export default {
             self.loading.form = true;
             axios.get('api/tickets/departments').then(function (response) {
                 self.departmentList = response.data;
+                self.loading.form = false;
+            }).catch(function () {
+                self.loading.form = false;
+            });
+        },
+        getConcernsByDepartment(departmentId) {
+            const self = this;
+            self.loading.form = true;
+            axios.get('api/tickets/departments/' + departmentId + '/concerns').then(function (response) {
+                self.$set(self.departmentConcerns, departmentId, response.data);
+                self.loading.form = false;
+            }).catch(function () {
+                self.loading.form = false;
+            });
+        },
+
+        getPriorities() {
+            const self = this;
+            self.loading.form = true;
+            axios.get('api/tickets/priorities').then(function (response) {
+                self.priorityList = response.data;
                 self.loading.form = false;
             }).catch(function () {
                 self.loading.form = false;

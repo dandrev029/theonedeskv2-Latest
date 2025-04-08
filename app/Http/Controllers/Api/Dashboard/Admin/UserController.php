@@ -61,6 +61,10 @@ class UserController extends Controller
         $user->status = $request->get('status');
         $user->role_id = $request->get('role_id');
         $user->password = bcrypt($request->get('password'));
+
+        // Automatically verify email for users created by admins
+        $user->email_verified_at = now();
+
         if ($user->save()) {
             return response()->json(['message' => __('Data saved correctly'), 'user' => new UserResource($user)]);
         }
@@ -93,10 +97,20 @@ class UserController extends Controller
     public function update(UpdateRequest $request, User $user): JsonResponse
     {
         $request->validated();
+
+        // Check if email is being changed
+        $emailChanged = $user->email !== $request->get('email');
+
         $user->name = $request->get('name');
         $user->email = $request->get('email');
         $user->status = $request->get('status');
         $user->role_id = $request->get('role_id');
+
+        // If email is changed, automatically verify the new email
+        if ($emailChanged) {
+            $user->email_verified_at = now();
+        }
+
         if ($user->save()) {
             return response()->json(['message' => 'Data updated correctly', 'user' => new UserResource($user)]);
         }

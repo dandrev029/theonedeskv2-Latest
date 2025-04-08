@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use App\Models\CondoLocation;
 
 /**
  * App\Models\Ticket
@@ -19,6 +20,9 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $uuid
  * @property string $subject
+ * @property int|null $concern_id
+ * @property int|null $condo_location_id
+ * @property string|null $voucher_code
  * @property int|null $status_id
  * @property int|null $priority_id
  * @property int|null $department_id
@@ -31,6 +35,8 @@ use Illuminate\Support\Carbon;
  * @property-read User|null $agent
  * @property-read User $closedBy
  * @property-read Department|null $department
+ * @property-read TicketConcern|null $concern
+ * @property-read \App\Models\CondoLocation|null $condoLocation
  * @property-read Collection|Label[] $labels
  * @property-read int|null $labels_count
  * @property-read Priority|null $priority
@@ -66,6 +72,8 @@ class Ticket extends Model
     use Filterable, HasFactory;
 
     protected $casts = [
+        'concern_id' => 'integer',
+        'condo_location_id' => 'integer',
         'status_id' => 'integer',
         'priority_id' => 'integer',
         'department_id' => 'integer',
@@ -92,6 +100,16 @@ class Ticket extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function concern(): BelongsTo
+    {
+        return $this->belongsTo(TicketConcern::class);
+    }
+
+    public function condoLocation(): BelongsTo
+    {
+        return $this->belongsTo(CondoLocation::class);
     }
 
     public function user(): BelongsTo

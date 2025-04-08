@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use App\Models\TicketConcern;
 
 /**
  * App\Models\Department
@@ -21,6 +23,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Collection|User[] $agent
  * @property-read int|null $agent_count
+ * @property-read Collection|\App\Models\TicketConcern[] $concerns
+ * @property-read int|null $concerns_count
  * @method static Builder|Department newModelQuery()
  * @method static Builder|Department newQuery()
  * @method static Builder|Department query()
@@ -49,5 +53,13 @@ class Department extends Model
         return User::whereIn('role_id', UserRole::where('dashboard_access', true)->pluck('id'))
             ->where('status', true)
             ->get();
+    }
+
+    /**
+     * Get the concerns for the department.
+     */
+    public function concerns(): HasMany
+    {
+        return $this->hasMany(TicketConcern::class);
     }
 }

@@ -78,8 +78,10 @@ class VerificationController extends Controller
         }
 
         // Check if user was created before email verification was implemented
-        if ($user->created_at < '2023-07-01 00:00:00') {
-            // Mark email as verified for older accounts
+        // or if user has dashboard access (admin or privileged user)
+        if ($user->created_at < '2023-07-01 00:00:00' ||
+            ($user->userRole && $user->userRole->dashboard_access)) {
+            // Mark email as verified for older accounts and admin users
             $user->markEmailAsVerified();
             return response()->json(['message' => __('Your account has been automatically verified')]);
         }

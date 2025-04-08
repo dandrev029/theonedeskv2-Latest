@@ -6,6 +6,7 @@ use App\Http\Resources\Department\DepartmentSelectResource;
 use App\Http\Resources\Label\LabelSelectResource;
 use App\Http\Resources\Priority\PriorityResource;
 use App\Http\Resources\Status\StatusResource;
+use App\Http\Resources\TicketConcern\TicketConcernSelectResource;
 use App\Http\Resources\TicketReply\TicketReplyQuickDetailsResource;
 use App\Http\Resources\User\UserDetailsResource;
 use App\Models\Ticket;
@@ -28,6 +29,9 @@ class TicketListResource extends JsonResource
             'id' => $ticket->id,
             'uuid' => $ticket->uuid,
             'subject' => $ticket->subject,
+            'concern' => new TicketConcernSelectResource($ticket->concern),
+            'condo_location' => $ticket->condoLocation ? ['id' => $ticket->condoLocation->id, 'name' => $ticket->condoLocation->name] : null,
+            'voucher_code' => $ticket->voucher_code,
             'lastReply' => new TicketReplyQuickDetailsResource($ticket->ticketReplies->last()),
             'status' => new StatusResource($ticket->status),
             'priority' => new PriorityResource($ticket->priority),

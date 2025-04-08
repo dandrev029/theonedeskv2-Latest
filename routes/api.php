@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Account\AccountController as AccountAccountControll
 use App\Http\Controllers\Api\Auth\AuthController as AuthAuthController;
 use App\Http\Controllers\Api\Auth\VerificationController as AuthVerificationController;
 use App\Http\Controllers\Api\Dashboard\Admin\CondoLocationController as DashboardAdminCondoLocationController;
+use App\Http\Controllers\Api\Dashboard\Admin\TicketConcernController as DashboardAdminTicketConcernController;
 use App\Http\Controllers\Api\Dashboard\Admin\DepartmentController as DashboardAdminDepartmentController;
 use App\Http\Controllers\Api\Dashboard\Admin\LabelController as DashboardAdminLabelController;
 use App\Http\Controllers\Api\Dashboard\Admin\LanguageController as DashboardAdminLanguageController;
@@ -51,6 +52,10 @@ Route::apiResource('files', FileFileController::class)->only(['store', 'show']);
 
 Route::get('tickets/statuses', [UserTicketController::class, 'statuses'])->name('tickets.statuses');
 Route::get('tickets/departments', [UserTicketController::class, 'departments'])->name('tickets.departments');
+Route::get('tickets/concerns', [UserTicketController::class, 'concerns'])->name('tickets.concerns');
+Route::get('tickets/departments/{department}/concerns', [UserTicketController::class, 'concernsByDepartment'])->name('tickets.departments.concerns');
+Route::get('tickets/priorities', [UserTicketController::class, 'priorities'])->name('tickets.priorities');
+Route::get('condo-locations/select', [UserTicketController::class, 'condoLocations'])->name('condo-locations.select');
 Route::post('tickets/attachments', [FileFileController::class, 'uploadAttachment'])->name('tickets.upload-attachment');
 Route::post('tickets/{ticket}/reply', [UserTicketController::class, 'reply'])->name('tickets.reply');
 Route::apiResource('tickets', UserTicketController::class)->except(['update', 'destroy']);
@@ -92,6 +97,10 @@ Route::group(['prefix' => 'dashboard'], static function () {
         Route::apiResource('user-roles', DashboardAdminUserRoleController::class);
 
         Route::apiResource('condo-locations', DashboardAdminCondoLocationController::class);
+        Route::apiResource('ticket-concerns', DashboardAdminTicketConcernController::class);
+        Route::get('ticket-concerns/users/dashboard', [DashboardAdminTicketConcernController::class, 'dashboardUsers'])->name('ticket-concerns.dashboard-users');
+        Route::get('ticket-concerns/departments', [DashboardAdminTicketConcernController::class, 'departments'])->name('ticket-concerns.departments');
+        Route::get('ticket-concerns/departments/{department}/concerns', [DashboardAdminTicketConcernController::class, 'concernsByDepartment'])->name('ticket-concerns.departments.concerns');
 
         Route::get('settings/user-roles', [DashboardAdminSettingController::class, 'userRoles'])->name('settings.user-roles');
         Route::get('settings/languages', [DashboardAdminSettingController::class, 'languages'])->name('settings.languages');

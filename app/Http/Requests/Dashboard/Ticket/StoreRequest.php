@@ -26,6 +26,8 @@ class StoreRequest extends FormRequest
         return [
             'user_id' => ['required', 'exists:users,id'],
             'subject' => ['required', 'max:255'],
+            'concern_id' => ['nullable', 'exists:ticket_concerns,id'],
+            'voucher_code' => ['nullable', 'string', 'max:50'],
             'department_id' => ['required', 'exists:departments,id'],
             'status_id' => ['required', 'exists:statuses,id'],
             'priority_id' => ['required', 'exists:priorities,id'],
@@ -46,6 +48,10 @@ class StoreRequest extends FormRequest
 
             'subject.required' => __('The :attribute field is required', ['attribute' => __('subject')]),
             'subject.max' => __('The :attribute may not be greater than :max characters', ['attribute' => __('subject'), 'max' => 255]),
+
+            'concern_id.exists' => __('The selected :attribute is invalid', ['attribute' => __('concern')]),
+
+            'voucher_code.max' => __('The :attribute may not be greater than :max characters', ['attribute' => __('voucher code'), 'max' => 50]),
 
             'department_id.required' => __('The :attribute field is required', ['attribute' => __('department')]),
             'department_id.exists' => __('The selected :attribute is invalid', ['attribute' => __('department')]),

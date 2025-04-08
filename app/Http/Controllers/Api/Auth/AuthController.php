@@ -51,8 +51,11 @@ class AuthController extends Controller
             }
 
             // Only check email verification for users registered after the feature was implemented
-            // This ensures existing users (especially admins) aren't suddenly required to verify
-            if (is_null($user->email_verified_at) && $user->created_at > '2023-07-01 00:00:00') {
+            // This ensures existing users aren't suddenly required to verify
+            // Also skip verification for users with dashboard access (admins and privileged users)
+            if (is_null($user->email_verified_at) &&
+                $user->created_at > '2023-07-01 00:00:00' &&
+                (!$user->userRole || !$user->userRole->dashboard_access)) {
                 return response()->json(['message' => __('Email not verified. Please check your email for verification link.'), 'email_verified' => false], 403);
             }
 

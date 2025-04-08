@@ -80,6 +80,29 @@
                                     </div>
                                 </div>
                                 <div class="col-span-3">
+                                    <label class="block text-sm font-medium leading-5 text-gray-700" for="concern">{{ $t('Concern') }}</label>
+                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                        <input-select
+                                            id="concern"
+                                            v-model="ticket.concern_id"
+                                            :options="filteredConcerns"
+                                            option-label="name"
+                                            :disabled="!ticket.department_id"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="col-span-3">
+                                    <label class="block text-sm font-medium leading-5 text-gray-700" for="voucher_code">{{ $t('Voucher Code') }}</label>
+                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                        <input
+                                            id="voucher_code"
+                                            v-model="ticket.voucher_code"
+                                            :placeholder="$t('Voucher Code')"
+                                            class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                        >
+                                    </div>
+                                </div>
+                                <div class="col-span-3">
                                     <label class="block text-sm font-medium leading-5 text-gray-700" for="status">{{ $t('Status') }}</label>
                                     <div class="mt-1 relative rounded-md shadow-sm">
                                         <input-select
@@ -172,6 +195,8 @@ export default {
             ticket: {
                 user_id: null,
                 subject: null,
+                concern_id: null,
+                voucher_code: null,
                 department_id: null,
                 status_id: 1,
                 priority_id: 1,
@@ -182,12 +207,32 @@ export default {
             userList: [],
             statusList: [],
             priorityList: [],
+            concernList: [],
+            departmentConcerns: {},
             cannedReplyList: [],
         }
     },
     mounted() {
         this.getFilters();
         this.getCannedReplies();
+    },
+    computed: {
+        filteredConcerns() {
+            if (!this.ticket.department_id) {
+                return [];
+            }
+            return this.departmentConcerns[this.ticket.department_id] || [];
+        }
+    },
+    watch: {
+        'ticket.department_id': function(newVal, oldVal) {
+            if (newVal !== oldVal) {
+                this.ticket.concern_id = null;
+                if (newVal) {
+                    this.getConcernsByDepartment(newVal);
+                }
+            }
+        }
     },
     methods: {
         getFilters() {
@@ -201,6 +246,12 @@ export default {
                 self.loading.form = false;
             }).catch(function () {
                 self.loading.form = false;
+            })
+        },
+        getConcernsByDepartment(departmentId) {
+            const self = this;
+            axios.get('api/tickets/departments/' + departmentId + '/concerns').then(function (response) {
+                self.$set(self.departmentConcerns, departmentId, response.data);
             })
         },
         getCannedReplies() {
