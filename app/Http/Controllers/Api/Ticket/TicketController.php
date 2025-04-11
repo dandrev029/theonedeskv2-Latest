@@ -176,6 +176,74 @@ class TicketController extends Controller
         return response()->json(DepartmentSelectResource::collection(Department::where('public', '=', true)->get()));
     }
 
+    /**
+     * Get departments filtered by the authenticated user's condo location
+     * 
+     * @return JsonResponse
+     */
+    public function userDepartmentsByCondoLocation(): JsonResponse
+    {
+        $user = Auth::user();
+        $condoLocationId = $user->condo_location_id;
+        
+        // If user has a condo location, filter departments that are specific to that location
+        if ($condoLocationId) {
+            $condoLocation = CondoLocation::find($condoLocationId);
+            
+            if ($condoLocation) {
+                // Get the condo location name
+                $locationName = strtolower($condoLocation->name);
+                
+                // Get all departments that belong to this condo location
+                // Using a more precise filtering approach:
+                // 1. Use exact word boundaries when possible
+                // 2. Match department names that explicitly mention the condo location
+                $departmentsQuery = Department::where('public', true);
+                
+                // If location name contains multiple words, we handle it differently
+                $locationWords = explode(' ', $locationName);
+                
+                if (count($locationWords) > 1) {
+                    // For multi-word locations, match departments containing the full location name
+                    // or at least the distinctive parts of it
+                    $departmentsQuery->where(function($query) use ($locationName, $locationWords) {
+                        // Try to match the full location name
+                        $query->where('name', 'like', '%' . $locationName . '%');
+                        
+                        // Also match if it contains distinctive parts (locations often have "One", "The", etc.)
+                        // which are less useful for filtering
+                        foreach ($locationWords as $word) {
+                            // Skip very short words or common words like "the", "one", "a", etc.
+                            if (strlen($word) > 3 && !in_array($word, ['the', 'one', 'two', 'and', 'for'])) {
+                                $query->orWhere('name', 'like', '%' . $word . '%');
+                            }
+                        }
+                    });
+                } else {
+                    // For single-word locations, we can be more precise
+                    $departmentsQuery->where('name', 'like', '%' . $locationName . '%');
+                }
+                
+                $departments = $departmentsQuery->orderBy('name')->get();
+                
+                // If no departments found specifically for this location, don't fall back
+                // to showing all departments - this prevents location-specific departments
+                // from being shown to users from other locations
+                if ($departments->isEmpty()) {
+                    // Return an empty collection instead of all departments
+                    return response()->json(DepartmentSelectResource::collection(collect([])));
+                }
+                
+                return response()->json(DepartmentSelectResource::collection($departments));
+            }
+        }
+        
+        // Default: return all public departments
+        return response()->json(DepartmentSelectResource::collection(
+            Department::where('public', true)->orderBy('name')->get()
+        ));
+    }
+
     public function statuses(): JsonResponse
     {
         return response()->json(StatusResource::collection(Status::all()));
@@ -209,6 +277,10 @@ class TicketController extends Controller
 
     public function condoLocations(): JsonResponse
     {
-        return response()->json(CondoLocation::where('status', true)->select('id', 'name')->get());
+        return response()->json([
+            'data' => CondoLocation::where('status', true)
+                ->select('id', 'name')
+                ->get()
+        ]);
     }
 }

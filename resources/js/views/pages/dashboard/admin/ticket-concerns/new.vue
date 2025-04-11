@@ -76,6 +76,7 @@
                                 v-model="ticketConcern.department_id"
                                 :options="departments"
                                 option-label="name"
+                                :searchable="true"
                                 :placeholder="$t('Select a department for this concern')"
                             />
                         </div>
@@ -93,6 +94,7 @@
                                 v-model="ticketConcern.assigned_to"
                                 :options="dashboardUsers"
                                 option-label="name"
+                                :searchable="true"
                                 :placeholder="$t('Select a user to handle this concern')"
                             >
                                 <template v-slot:option="{ option }">
@@ -184,7 +186,7 @@ export default {
             const self = this;
             self.loading = true;
             console.log('Fetching departments...');
-            axios.get('api/dashboard/admin/ticket-concerns/departments')
+            axios.get('/api/ticket-concerns/departments')
                 .then(function (response) {
                     console.log('Departments response:', response.data);
                     if (response.data && response.data.data) {
@@ -195,10 +197,16 @@ export default {
                         console.error('Unexpected response format for departments');
                         self.departments = [];
                     }
+                    console.log('Departments loaded:', self.departments);
                     self.loading = false;
                 })
                 .catch(function (error) {
                     console.error('Error fetching departments:', error);
+                    self.$notify({
+                        title: self.$i18n.t('Error').toString(),
+                        text: error.response ? error.response.data.error || error.response.data.message : error.message,
+                        type: 'error'
+                    });
                     self.loading = false;
                 });
         },

@@ -45,6 +45,9 @@ Route::get('condo-locations/select', [DashboardAdminCondoLocationController::cla
 // Public departments endpoint for dropdowns
 Route::get('departments', [\App\Http\Controllers\Api\DepartmentController::class, 'index'])->name('departments.index');
 
+// Public endpoint for ticket concern departments
+Route::get('ticket-concerns/departments', [\App\Http\Controllers\Api\Dashboard\Admin\TicketConcernController::class, 'publicDepartments'])->name('ticket-concerns.public-departments');
+
 Route::group(['prefix' => 'account'], static function () {
     Route::post('update', [AccountAccountController::class, 'update'])->name('account.update');
     Route::post('password', [AccountAccountController::class, 'password'])->name('account.password');
@@ -55,10 +58,10 @@ Route::apiResource('files', FileFileController::class)->only(['store', 'show']);
 
 Route::get('tickets/statuses', [UserTicketController::class, 'statuses'])->name('tickets.statuses');
 Route::get('tickets/departments', [UserTicketController::class, 'departments'])->name('tickets.departments');
+Route::get('tickets/user-departments-by-location', [UserTicketController::class, 'userDepartmentsByCondoLocation'])->name('tickets.user-departments-by-location');
 Route::get('tickets/concerns', [UserTicketController::class, 'concerns'])->name('tickets.concerns');
 Route::get('tickets/departments/{department}/concerns', [UserTicketController::class, 'concernsByDepartment'])->name('tickets.departments.concerns');
 Route::get('tickets/priorities', [UserTicketController::class, 'priorities'])->name('tickets.priorities');
-Route::get('condo-locations/select', [UserTicketController::class, 'condoLocations'])->name('condo-locations.select');
 Route::post('tickets/attachments', [FileFileController::class, 'uploadAttachment'])->name('tickets.upload-attachment');
 Route::post('tickets/{ticket}/reply', [UserTicketController::class, 'reply'])->name('tickets.reply');
 Route::apiResource('tickets', UserTicketController::class)->except(['update', 'destroy']);
@@ -72,6 +75,7 @@ Route::group(['prefix' => 'dashboard'], static function () {
     });
 
     Route::get('tickets/filters', [DashboardTicketController::class, 'filters'])->name('dashboard.tickets.filters');
+    Route::get('tickets/departments-by-condo-location', [DashboardTicketController::class, 'departmentsByUserCondoLocation'])->name('dashboard.tickets.departments-by-condo-location');
     Route::get('tickets/canned-replies', [DashboardTicketController::class, 'cannedReplies'])->name('dashboard.tickets.canned-replies');
     Route::post('tickets/quick-actions', [DashboardTicketController::class, 'quickActions'])->name('dashboard.tickets.quick-actions');
     Route::post('tickets/attachments', [DashboardTicketController::class, 'uploadAttachment'])->name('dashboard.tickets.upload-attachment');

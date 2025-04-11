@@ -134,18 +134,25 @@ class TicketConcernController extends Controller
     /**
      * Get departments for the dropdown.
      *
-     * @return AnonymousResourceCollection
+     * @return JsonResponse
      */
-    public function departments(): AnonymousResourceCollection
+    public function departments(): JsonResponse
     {
-        // Get all departments ordered by name
-        $departments = Department::orderBy('name')->get();
+        try {
+            // Get all departments ordered by name
+            $departments = Department::orderBy('name')->get();
 
-        // Debug: Log the number of departments found
-        \Log::info('Departments found: ' . $departments->count());
+            // Debug: Log the number of departments found
+            \Log::info('Departments found: ' . $departments->count());
 
-        // Return the departments as a resource collection
-        return DepartmentSelectResource::collection($departments);
+            // Return the departments as a resource collection with data wrapper
+            return response()->json([
+                'data' => DepartmentSelectResource::collection($departments)
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching departments: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -161,5 +168,29 @@ class TicketConcernController extends Controller
             ->orderBy('name')
             ->get();
         return TicketConcernSelectResource::collection($concerns);
+    }
+
+    /**
+     * Public endpoint to get departments for the dropdown without authentication.
+     *
+     * @return JsonResponse
+     */
+    public function publicDepartments(): JsonResponse
+    {
+        try {
+            // Get all departments ordered by name
+            $departments = Department::orderBy('name')->get();
+
+            // Debug: Log the number of departments found
+            \Log::info('Public departments found: ' . $departments->count());
+
+            // Return the departments as a resource collection with data wrapper
+            return response()->json([
+                'data' => DepartmentSelectResource::collection($departments)
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching public departments: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

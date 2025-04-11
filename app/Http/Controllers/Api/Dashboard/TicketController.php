@@ -218,19 +218,120 @@ class TicketController extends Controller
 
     public function filters(): JsonResponse
     {
-        $roles = UserRole::where('dashboard_access', true)->pluck('id');
-        $agents = User::whereIn('role_id', $roles)->where('status', true)->get();
+        /** @var User $user */
+        $user = Auth::user();
+
+        if ($user->role_id === 1) {
+            $agentList = User::whereIn('role_id', UserRole::whereIn('name', ['admin', 'agent'])->pluck('id'))
+                ->orderBy('name')
+                ->get();
+            $customerList = User::whereIn('role_id', UserRole::whereIn('name', ['user'])->pluck('id'))
+                ->orderBy('name')
+                ->get();
+            $departmentList = Department::orderBy('name')->get();
+        } else {
+            $agentList = User::whereIn('role_id', UserRole::whereIn('name', ['admin', 'agent'])->pluck('id'))
+                ->orderBy('name')
+                ->get();
+            $customerList = User::whereIn('role_id', UserRole::whereIn('name', ['user'])->pluck('id'))
+                ->orderBy('name')
+                ->get();
+            $departmentList = Department::where(function (Builder $query) use ($user) {
+                $query->where('all_agents', 1);
+                $query->orWhere(function (Builder $q) use ($user) {
+                    $q->whereIn('id', $user->departments()->pluck('id')->toArray());
+                });
+            })->orderBy('name')->get();
+        }
 
         return response()->json([
-            'agents' => UserDetailsResource::collection($agents),
-            'customers' => UserDetailsResource::collection(User::where('status', true)->get()),
-            'departments' => DepartmentSelectResource::collection(Department::all()),
+            'agents' => UserDetailsResource::collection($agentList),
+            'customers' => UserDetailsResource::collection($customerList),
+            'departments' => DepartmentSelectResource::collection($departmentList),
             'labels' => LabelSelectResource::collection(Label::all()),
             'statuses' => StatusResource::collection(Status::all()),
             'priorities' => PriorityResource::collection(Priority::orderBy('value')->get()),
-            'concerns' => TicketConcernSelectResource::collection(TicketConcern::where('status', true)->get()),
-            'condo_locations' => CondoLocation::where('status', true)->select('id', 'name')->get(),
         ]);
+    }
+
+    /**
+     * Get departments filtered by a user's condo location
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function departmentsByUserCondoLocation(Request $request): JsonResponse
+    {
+        $userId = $request->get('user_id');
+        
+        if (!$userId) {
+            return response()->json(['message' => 'User ID is required'], 400);
+        }
+        
+        $user = User::find($userId);
+        
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+        
+        $condoLocationId = $user->condo_location_id;
+        
+        // If user has a condo location, filter departments that are specific to that location
+        if ($condoLocationId) {
+            $condoLocation = CondoLocation::find($condoLocationId);
+            
+            if ($condoLocation) {
+                // Get the condo location name
+                $locationName = strtolower($condoLocation->name);
+                
+                // Get all departments that belong to this condo location
+                // Using a more precise filtering approach:
+                // 1. Use exact word boundaries when possible
+                // 2. Match department names that explicitly mention the condo location
+                $departmentsQuery = Department::where('public', true);
+                
+                // If location name contains multiple words, we handle it differently
+                $locationWords = explode(' ', $locationName);
+                
+                if (count($locationWords) > 1) {
+                    // For multi-word locations, match departments containing the full location name
+                    // or at least the distinctive parts of it
+                    $departmentsQuery->where(function($query) use ($locationName, $locationWords) {
+                        // Try to match the full location name
+                        $query->where('name', 'like', '%' . $locationName . '%');
+                        
+                        // Also match if it contains distinctive parts (locations often have "One", "The", etc.)
+                        // which are less useful for filtering
+                        foreach ($locationWords as $word) {
+                            // Skip very short words or common words like "the", "one", "two", "a", etc.
+                            if (strlen($word) > 3 && !in_array($word, ['the', 'one', 'two', 'and', 'for'])) {
+                                $query->orWhere('name', 'like', '%' . $word . '%');
+                            }
+                        }
+                    });
+                } else {
+                    // For single-word locations, we can be more precise
+                    $departmentsQuery->where('name', 'like', '%' . $locationName . '%');
+                }
+                
+                $departments = $departmentsQuery->orderBy('name')->get();
+                
+                // If no departments found specifically for this location, don't fall back
+                // to showing all departments - this prevents location-specific departments
+                // from being shown to users from other locations
+                if ($departments->isEmpty()) {
+                    // Return an empty collection instead of all departments
+                    return response()->json(DepartmentSelectResource::collection(collect([])));
+                }
+                
+                return response()->json(DepartmentSelectResource::collection($departments));
+            }
+        }
+        
+        // Default: return all public departments
+        return response()->json(DepartmentSelectResource::collection(
+            Department::where('public', true)->orderBy('name')->get()
+        ));
     }
 
     public function cannedReplies(): JsonResponse

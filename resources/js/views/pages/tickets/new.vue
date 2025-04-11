@@ -64,7 +64,7 @@
                                             />
                                         </div>
                                     </div>
-                                    <div class="col-span-3">
+                                    <div v-if="isWifiDepartment" class="col-span-3">
                                         <label class="block text-sm font-medium leading-5 text-gray-700" for="voucher_code">{{ $t('Voucher Code') }}</label>
                                         <div class="mt-1 relative rounded-md shadow-sm">
                                             <input
@@ -162,7 +162,7 @@ export default {
         }
     },
     mounted() {
-        this.getDepartments();
+        this.getDepartmentsByCondoLocation();
         this.getPriorities();
     },
     computed: {
@@ -171,6 +171,14 @@ export default {
                 return [];
             }
             return this.departmentConcerns[this.ticket.department_id] || [];
+        },
+        isWifiDepartment() {
+            const wifiKeywords = ['wifi', 'wireless', 'internet', 'network', 'connection'];
+            const selectedDepartment = this.departmentList.find(dept => dept.id === this.ticket.department_id);
+            if (!selectedDepartment) return false;
+            
+            const departmentName = selectedDepartment.name.toLowerCase();
+            return wifiKeywords.some(keyword => departmentName.includes(keyword));
         }
     },
     watch: {
@@ -192,6 +200,23 @@ export default {
                 self.loading.form = false;
             }).catch(function () {
                 self.loading.form = false;
+            });
+        },
+        getDepartmentsByCondoLocation() {
+            const self = this;
+            self.loading.form = true;
+            axios.get('api/tickets/user-departments-by-location').then(function (response) {
+                self.departmentList = response.data;
+                self.loading.form = false;
+            }).catch(function (error) {
+                self.loading.form = false;
+                // Fall back to regular departments endpoint if the filtered one fails
+                self.getDepartments();
+                self.$notify({
+                    title: self.$i18n.t('Warning').toString(),
+                    text: self.$i18n.t('Could not load department filters. Showing all available departments.').toString(),
+                    type: 'warning'
+                });
             });
         },
         getConcernsByDepartment(departmentId) {

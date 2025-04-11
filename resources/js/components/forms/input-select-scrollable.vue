@@ -50,7 +50,7 @@
         <div v-show="open" class="absolute z-20 mt-1 mb-2 w-full rounded-md bg-white shadow-lg">
             <ul
                 class="max-h-60 rounded-md py-1 text-base leading-6 shadow-xs overflow-auto focus:outline-none sm:text-sm sm:leading-5"
-                style="max-height: 200px; overflow-y: auto;"
+                style="max-height: 300px; overflow-y: auto;"
                 role="listbox"
                 tabindex="-1"
             >

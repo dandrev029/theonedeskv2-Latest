@@ -239,6 +239,7 @@ export default {
                 self.user.phone_number = response.data.phone_number;
                 self.user.unit_number = response.data.unit_number;
                 self.user.condo_location_id = response.data.condo_location_id;
+                self.user.condo_location = response.data.condo_location;
                 self.user.email_verified_at = response.data.email_verified_at;
                 self.user.avatar = response.data.avatar;
                 self.user.gravatar = response.data.gravatar;

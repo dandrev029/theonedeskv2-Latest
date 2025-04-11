@@ -232,6 +232,16 @@ export default {
                     this.getConcernsByDepartment(newVal);
                 }
             }
+        },
+        'ticket.user_id': function(newVal, oldVal) {
+            if (newVal !== oldVal && newVal) {
+                // When user is selected, get departments for that user's condo location
+                this.getDepartmentsByUserCondoLocation(newVal);
+                
+                // Reset department and concern selections
+                this.ticket.department_id = null;
+                this.ticket.concern_id = null;
+            }
         }
     },
     methods: {
@@ -240,13 +250,34 @@ export default {
             self.loading.form = true;
             axios.get('api/dashboard/tickets/filters').then(function (response) {
                 self.userList = response.data.customers;
-                self.departmentList = response.data.departments;
+                // We'll load departments based on the selected user's condo location
                 self.statusList = response.data.statuses;
                 self.priorityList = response.data.priorities;
                 self.loading.form = false;
             }).catch(function () {
                 self.loading.form = false;
             })
+        },
+        getDepartmentsByUserCondoLocation(userId) {
+            const self = this;
+            if (!userId) return;
+            
+            self.loading.form = true;
+            axios.get('api/dashboard/tickets/departments-by-condo-location', {
+                params: {
+                    user_id: userId
+                }
+            }).then(function (response) {
+                self.departmentList = response.data;
+                self.loading.form = false;
+            }).catch(function (error) {
+                self.loading.form = false;
+                self.$notify({
+                    title: self.$i18n.t('Error').toString(),
+                    text: error.response ? (error.response.data.message || self.$i18n.t('Failed to load departments')) : self.$i18n.t('Failed to load departments'),
+                    type: 'error'
+                });
+            });
         },
         getConcernsByDepartment(departmentId) {
             const self = this;
