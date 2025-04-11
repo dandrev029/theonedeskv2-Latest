@@ -25,6 +25,11 @@ class AccountController extends Controller
         /** @var User $user */
         $user = Auth::user();
         $user->name = $request->get('name');
+        $user->phone_number = $request->get('phone_number');
+        $user->unit_number = $request->get('unit_number');
+        // Condo location is fixed and cannot be changed
+
+        // Check if email is being changed
         if ($user->email !== $request->get('email')) {
             $user->email = $request->get('email');
 

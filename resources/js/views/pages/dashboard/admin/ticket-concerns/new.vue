@@ -71,7 +71,7 @@
                             {{ $t('Department') }}
                         </label>
                         <div class="mt-1 rounded-md shadow-sm">
-                            <input-select
+                            <input-select-scrollable
                                 id="department_id"
                                 v-model="ticketConcern.department_id"
                                 :options="departments"
@@ -88,7 +88,7 @@
                             {{ $t('Assigned To') }}
                         </label>
                         <div class="mt-1 rounded-md shadow-sm">
-                            <input-select
+                            <input-select-scrollable
                                 id="assigned_to"
                                 v-model="ticketConcern.assigned_to"
                                 :options="dashboardUsers"
@@ -108,7 +108,7 @@
                                         </div>
                                     </div>
                                 </template>
-                            </input-select>
+                            </input-select-scrollable>
                         </div>
                         <p class="mt-2 text-sm text-gray-500">
                             {{ $t('Select a user with dashboard access who will handle tickets with this concern category.') }}
@@ -183,12 +183,22 @@ export default {
         getDepartments() {
             const self = this;
             self.loading = true;
+            console.log('Fetching departments...');
             axios.get('api/dashboard/admin/ticket-concerns/departments')
                 .then(function (response) {
-                    self.departments = response.data.data;
+                    console.log('Departments response:', response.data);
+                    if (response.data && response.data.data) {
+                        self.departments = response.data.data;
+                    } else if (Array.isArray(response.data)) {
+                        self.departments = response.data;
+                    } else {
+                        console.error('Unexpected response format for departments');
+                        self.departments = [];
+                    }
                     self.loading = false;
                 })
-                .catch(function () {
+                .catch(function (error) {
+                    console.error('Error fetching departments:', error);
                     self.loading = false;
                 });
         },

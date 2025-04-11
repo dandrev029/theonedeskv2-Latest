@@ -40,6 +40,38 @@
                                             <div class="mt-1 relative rounded-md shadow-sm">
                                                 <input id="email" v-model="user.email" class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5" placeholder="email@email.com" type="email">
                                             </div>
+                                            <p v-if="emailChanged && !user.email_verified_at" class="mt-2 text-sm text-red-600">
+                                                {{ $t('You will need to verify your email after updating your account.') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6 grid grid-cols-3 gap-6">
+                                        <div class="col-span-3">
+                                            <label class="block text-sm font-medium leading-5 text-gray-700" for="phone_number">{{ $t('Phone Number') }}</label>
+                                            <div class="mt-1 relative rounded-md shadow-sm">
+                                                <input id="phone_number" v-model="user.phone_number" class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5" placeholder="+1 (555) 123-4567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6 grid grid-cols-3 gap-6">
+                                        <div class="col-span-3">
+                                            <label class="block text-sm font-medium leading-5 text-gray-700" for="unit_number">{{ $t('Unit Number') }}</label>
+                                            <div class="mt-1 relative rounded-md shadow-sm">
+                                                <input id="unit_number" v-model="user.unit_number" class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5" :placeholder="$t('Unit Number')">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6 grid grid-cols-3 gap-6">
+                                        <div class="col-span-3">
+                                            <label class="block text-sm font-medium leading-5 text-gray-700" for="condo_location">{{ $t('Condo Location') }}</label>
+                                            <div class="mt-1 relative rounded-md shadow-sm">
+                                                <div class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5 bg-gray-100">
+                                                    {{ user.condo_location ? user.condo_location.name : $t('Not specified') }}
+                                                </div>
+                                                <p class="mt-2 text-sm text-gray-500">
+                                                    {{ $t('Your condo location was set during registration and cannot be changed.') }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="mt-6">
@@ -167,18 +199,28 @@ export default {
     mounted() {
         this.getUser();
     },
+    computed: {
+        emailChanged() {
+            return this.originalEmail && this.user.email !== this.originalEmail;
+        }
+    },
     data() {
         return {
             loading: {
                 details: true,
                 password: false,
             },
+            originalEmail: null,
             user: {
                 name: null,
                 avatar: null,
                 gravatar: null,
                 avatar_preview: null,
                 email: null,
+                phone_number: null,
+                unit_number: null,
+                condo_location_id: null,
+                email_verified_at: null,
                 current_password: null,
                 password: null,
                 password_confirmation: null,
@@ -193,6 +235,11 @@ export default {
                 self.loading.details = false;
                 self.user.name = response.data.name;
                 self.user.email = response.data.email;
+                self.originalEmail = response.data.email;
+                self.user.phone_number = response.data.phone_number;
+                self.user.unit_number = response.data.unit_number;
+                self.user.condo_location_id = response.data.condo_location_id;
+                self.user.email_verified_at = response.data.email_verified_at;
                 self.user.avatar = response.data.avatar;
                 self.user.gravatar = response.data.gravatar;
                 self.user.avatar_preview = response.data.avatar;
@@ -200,6 +247,7 @@ export default {
                 self.loading.details = false;
             });
         },
+
         selectAvatar() {
             this.$refs.changeAvatar.click();
         },
@@ -229,6 +277,8 @@ export default {
             self.loading.details = true;
             formData.append('name', self.user.name);
             formData.append('email', self.user.email);
+            formData.append('phone_number', self.user.phone_number || '');
+            formData.append('unit_number', self.user.unit_number || '');
             if (self.user.avatar === 'gravatar') {
                 formData.append('gravatar', 'true');
             } else if (self.user.avatar instanceof File) {
@@ -239,6 +289,8 @@ export default {
                 self.user.avatar = response.data.avatar;
                 self.user.gravatar = response.data.gravatar;
                 self.user.avatar_preview = response.data.avatar;
+                self.originalEmail = response.data.email;
+                self.user.email_verified_at = response.data.email_verified_at;
                 self.$refs.changeAvatar.value = '';
                 self.$store.commit('updateUser', response.data);
                 self.$notify({
@@ -246,6 +298,15 @@ export default {
                     text: self.$i18n.t('Your account details have been updated').toString(),
                     type: 'success'
                 })
+
+                // Show email verification message if email was changed
+                if (self.emailChanged && !self.user.email_verified_at) {
+                    self.$notify({
+                        title: self.$i18n.t('Email Verification Required').toString(),
+                        text: self.$i18n.t('Please check your email for a verification link').toString(),
+                        type: 'warning'
+                    })
+                }
             }).catch(function () {
                 self.loading.details = false;
             });

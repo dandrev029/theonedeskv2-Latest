@@ -46,11 +46,11 @@ class CondoLocationController extends Controller
         $condoLocation = new CondoLocation();
         $condoLocation->name = $request->get('name');
         $condoLocation->status = $request->get('status', true);
-        
+
         if ($condoLocation->save()) {
             return response()->json(['message' => __('Data saved correctly'), 'condo_location' => new CondoLocationResource($condoLocation)]);
         }
-        
+
         return response()->json(['message' => __('An error occurred while saving data')], 500);
     }
 
@@ -77,11 +77,11 @@ class CondoLocationController extends Controller
         $request->validated();
         $condoLocation->name = $request->get('name');
         $condoLocation->status = $request->get('status');
-        
+
         if ($condoLocation->save()) {
             return response()->json(['message' => __('Data updated correctly'), 'condo_location' => new CondoLocationResource($condoLocation)]);
         }
-        
+
         return response()->json(['message' => __('An error occurred while updating data')], 500);
     }
 
@@ -96,11 +96,11 @@ class CondoLocationController extends Controller
         if ($condoLocation->users()->count() > 0) {
             return response()->json(['message' => __('Cannot delete condo location with associated users')], 422);
         }
-        
+
         if ($condoLocation->delete()) {
             return response()->json(['message' => __('Data deleted correctly')]);
         }
-        
+
         return response()->json(['message' => __('An error occurred while deleting data')], 500);
     }
 }

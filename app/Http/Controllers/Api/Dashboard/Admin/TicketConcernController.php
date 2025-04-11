@@ -138,7 +138,13 @@ class TicketConcernController extends Controller
      */
     public function departments(): AnonymousResourceCollection
     {
+        // Get all departments ordered by name
         $departments = Department::orderBy('name')->get();
+
+        // Debug: Log the number of departments found
+        \Log::info('Departments found: ' . $departments->count());
+
+        // Return the departments as a resource collection
         return DepartmentSelectResource::collection($departments);
     }
 

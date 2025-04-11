@@ -27,6 +27,8 @@ class DetailsRequest extends FormRequest
         return [
             'name' => ['required', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,'.Auth::user()->id],
+            'phone_number' => ['nullable', 'string', 'max:20'],
+            'unit_number' => ['nullable', 'string', 'max:50'],
             'avatar' => ['image', 'max:1000', 'dimensions:ratio=1/1']
         ];
     }
@@ -46,6 +48,10 @@ class DetailsRequest extends FormRequest
             'email.email' => __('The :attribute must be a valid email address', ['attribute' => __('email')]),
             'email.max' => __('The :attribute may not be greater than :max characters', ['attribute' => __('email'), 'max' => 255]),
             'email.unique' => __('The :attribute has already been taken', ['attribute' => __('email')]),
+
+            'phone_number.max' => __('The :attribute may not be greater than :max characters', ['attribute' => __('phone number'), 'max' => 20]),
+
+            'unit_number.max' => __('The :attribute may not be greater than :max characters', ['attribute' => __('unit number'), 'max' => 50]),
 
             'avatar.image' => __('The file has to be an image', ['attribute' => __('avatar')]),
             'avatar.max' => __('The :attribute may not be greater than :max kilobytes', ['attribute' => __('avatar'), 'max' => 1000]),

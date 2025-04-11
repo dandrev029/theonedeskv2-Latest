@@ -42,6 +42,9 @@ Route::group(['prefix' => 'auth'], static function () {
 // Condo locations for registration form
 Route::get('condo-locations/select', [DashboardAdminCondoLocationController::class, 'select'])->name('condo-locations.select');
 
+// Public departments endpoint for dropdowns
+Route::get('departments', [\App\Http\Controllers\Api\DepartmentController::class, 'index'])->name('departments.index');
+
 Route::group(['prefix' => 'account'], static function () {
     Route::post('update', [AccountAccountController::class, 'update'])->name('account.update');
     Route::post('password', [AccountAccountController::class, 'password'])->name('account.password');
