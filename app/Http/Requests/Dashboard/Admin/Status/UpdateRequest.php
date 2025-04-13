@@ -25,6 +25,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'max:255'],
+            'color' => ['required', 'string', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
         ];
     }
 
@@ -38,6 +39,8 @@ class UpdateRequest extends FormRequest
         return [
             'name.required' => __('The :attribute field is required', ['attribute' => __('name')]),
             'name.max' => __('The :attribute may not be greater than :max characters', ['attribute' => __('name'), 'max' => 255]),
+            'color.required' => __('The :attribute field is required', ['attribute' => __('color')]),
+            'color.regex' => __('The :attribute must be a valid hex color code', ['attribute' => __('color')]),
         ];
     }
 }

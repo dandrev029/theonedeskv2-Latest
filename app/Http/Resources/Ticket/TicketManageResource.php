@@ -34,6 +34,7 @@ class TicketManageResource extends JsonResource
             'condo_location' => $ticket->condoLocation ? ['id' => $ticket->condoLocation->id, 'name' => $ticket->condoLocation->name] : null,
             'condo_location_id' => $ticket->condo_location_id,
             'voucher_code' => $ticket->voucher_code,
+            'scheduled_visit_at' => $ticket->scheduled_visit_at ? $ticket->scheduled_visit_at->toISOString() : null,
             'status' => new StatusResource($ticket->status),
             'status_id' => $ticket->status_id,
             'priority' => new PriorityResource($ticket->priority),

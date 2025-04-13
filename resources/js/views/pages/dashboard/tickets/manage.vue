@@ -102,7 +102,8 @@
                         <div class="flex items-center justify-end m-3 sm:m-0">
                             <div class="text-2xl font-semibold">#{{ ticket.id }}</div>
                             <div v-if="ticket.status" class="px-3">
-                                <div class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
+                                <div class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium"
+                                     :style="{ backgroundColor: ticket.status.color + '33', color: ticket.status.color }">
                                     {{ ticket.status.name }}
                                 </div>
                             </div>
@@ -114,6 +115,10 @@
                         <div class="sm:flex sm:items-center py-3 max-w-full border-b">
                             <div class="px-6 sm:pl-6 sm:pr-3 sm:flex-1 sm:w-3/4">
                                 <div class="text-xl truncate">{{ ticket.subject }}</div>
+                                <div v-if="ticket.scheduled_visit_at" class="flex items-center text-sm text-gray-600 mt-2 mb-2">
+                                    <svg-vue class="h-4 w-4 mr-1" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                    <span>{{ $t('Scheduled Visit') }}: {{ ticket.scheduled_visit_at | momentFormatDateTime }}</span>
+                                </div>
                                 <template v-for="(label, index) in ticket.labels">
                                     <div
                                         :style="{backgroundColor: label.color}"
@@ -168,7 +173,11 @@
                                                     class="block form-select pl-3 pr-9 py-2 border-l border-r-0 border-t-0 border-b-0 border-gray-400 rounded-none bg-white text-sm leading-5 font-medium text-gray-700 hover:text-gray-500 focus:z-10 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150"
                                                 >
                                                     <template v-for="status in statusList">
-                                                        <option :value="status.id">{{ status.name }}</option>
+                                                        <option :value="status.id" :style="{
+                                                            backgroundColor: (status.id === ticketReply.status_id) ? status.color + '33' : 'transparent'
+                                                        }">
+                                                            {{ status.name }}
+                                                        </option>
                                                     </template>
                                                 </select>
                                                 <button
@@ -241,20 +250,196 @@
                     </div>
                 </div>
             </div>
-            <div :style="{flex: '0 0 240px', width: '240px'}" class="bg-gray-100 hidden lg:block border-l">
-                <div v-if="ticket.user" class="p-6">
-                    <div class="flex">
-                        <img
-                            :alt="$t('Avatar')"
-                            :src="ticket.user.avatar !== 'gravatar' ? ticket.user.avatar : ticket.user.gravatar"
-                            class="h-16 w-16"
-                        />
+            <div :style="{flex: '0 0 320px', width: '320px'}" class="hidden lg:block border-l">
+                <div v-if="ticket.user" class="h-full overflow-y-auto">
+                    <!-- Tenant Profile Section -->
+                    <div class="bg-gradient-to-r from-indigo-600 to-blue-500 py-6 px-4">
+                        <div class="flex items-center">
+                            <div class="relative">
+                                <img
+                                    :alt="$t('Avatar')"
+                                    :src="ticket.user.avatar !== 'gravatar' ? ticket.user.avatar : ticket.user.gravatar"
+                                    class="h-16 w-16 rounded-full object-cover border-2 border-white shadow-md"
+                                />
+                                <span class="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-green-400 border-2 border-white"></span>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-white font-medium text-lg truncate">{{ ticket.user.name }}</h3>
+                                <div class="flex items-center text-sm text-white opacity-90 mb-1">
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" icon="font-awesome.envelope-solid"></svg-vue>
+                                    <span class="truncate">{{ ticket.user.email }}</span>
+                                </div>
+                                <div class="flex items-center text-sm text-white opacity-90">
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" icon="font-awesome.phone-alt-solid"></svg-vue>
+                                    <span class="truncate">{{ ticket.user.phone_number || $t('No phone number') }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mt-2">
-                        <div class="text-gray-800 font-medium truncate">{{ ticket.user.name }}</div>
-                        <div class="flex items-center text-sm leading-5 text-gray-600">
-                            <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" icon="font-awesome.envelope-solid"></svg-vue>
-                            <span class="truncate">{{ ticket.user.email }}</span>
+
+                    <!-- Ticket Details Section -->
+                    <div class="divide-y divide-gray-200">
+                        <!-- Ticket Summary -->
+                        <div class="px-4 py-4 bg-white">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {{ $t('Ticket Summary') }}
+                            </h4>
+                            <p class="text-sm font-medium text-gray-800">{{ ticket.subject }}</p>
+                        </div>
+
+                        <!-- Status & Priority Section -->
+                        <div class="px-4 py-4 bg-white">
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- Status -->
+                                <div>
+                                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                        {{ $t('Status') }}
+                                    </h4>
+                                    <div v-if="ticket.status" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                                        :style="{ backgroundColor: ticket.status.color + '20', color: ticket.status.color }">
+                                        <span class="w-2 h-2 rounded-full mr-1.5"
+                                            :style="{ backgroundColor: ticket.status.color }"></span>
+                                        {{ ticket.status.name }}
+                                    </div>
+                                    <div v-else class="text-sm text-gray-500">{{ $t('Unassigned') }}</div>
+                                </div>
+                                <!-- Priority -->
+                                <div>
+                                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                        {{ $t('Priority') }}
+                                    </h4>
+                                    <div class="text-sm font-medium text-gray-800">
+                                        {{ ticket.priority ? ticket.priority.name : $t('Unassigned') }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Condo Location -->
+                        <div class="px-4 py-4 bg-white">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {{ $t('Condo Location') }}
+                            </h4>
+                            <div class="flex items-center">
+                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.map-marker-alt-solid"></svg-vue>
+                                <span class="text-sm text-gray-800">
+                                    {{ ticket.condoLocation && ticket.condoLocation.name 
+                                       ? ticket.condoLocation.name 
+                                       : (ticket.condo_location && ticket.condo_location.name 
+                                          ? ticket.condo_location.name 
+                                          : $t('Not specified')) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Scheduled Visit -->
+                        <div class="px-4 py-4 bg-white">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {{ $t('Scheduled Visit') }}
+                            </h4>
+                            <div class="flex items-center">
+                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                <span v-if="ticket.scheduled_visit_at" class="text-sm text-gray-800">
+                                    {{ ticket.scheduled_visit_at | momentFormatDateTime }}
+                                </span>
+                                <span v-else class="text-sm text-gray-500">{{ $t('Not scheduled') }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Voucher Code -->
+                        <div class="px-4 py-4 bg-white">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {{ $t('Voucher Code') }}
+                            </h4>
+                            <div class="flex items-center">
+                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.ticket-alt-solid"></svg-vue>
+                                <span v-if="ticket.voucher_code" class="text-sm font-medium text-gray-800">
+                                    {{ ticket.voucher_code }}
+                                </span>
+                                <span v-else class="text-sm text-gray-500">{{ $t('No voucher') }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Assigned Agent -->
+                        <div class="px-4 py-4 bg-white">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {{ $t('Assigned Agent') }}
+                            </h4>
+                            <div class="flex items-center">
+                                <div v-if="ticket.agent" class="flex items-center">
+                                    <img
+                                        :src="ticket.agent.avatar !== 'gravatar' ? ticket.agent.avatar : ticket.agent.gravatar"
+                                        :alt="ticket.agent.name"
+                                        class="h-6 w-6 rounded-full mr-2"
+                                    />
+                                    <span class="text-sm font-medium text-gray-800">{{ ticket.agent.name }}</span>
+                                </div>
+                                <div v-else class="flex items-center">
+                                    <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.user-regular"></svg-vue>
+                                    <span class="text-sm text-gray-500">{{ $t('Unassigned') }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Department -->
+                        <div class="px-4 py-4 bg-white">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {{ $t('Department') }}
+                            </h4>
+                            <div class="flex items-center">
+                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.users-class-regular"></svg-vue>
+                                <span v-if="ticket.department" class="text-sm font-medium text-gray-800">
+                                    {{ ticket.department.name }}
+                                </span>
+                                <span v-else class="text-sm text-gray-500">{{ $t('Unassigned') }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Ticket timestamps -->
+                        <div class="px-4 py-4 bg-white">
+                            <div class="space-y-2">
+                                <!-- Created At timestamp -->
+                                <div>
+                                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                        {{ $t('Created') }}
+                                    </h4>
+                                    <div class="flex items-center">
+                                        <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.clock-regular"></svg-vue>
+                                        <span class="text-sm text-gray-600">{{ ticket.created_at | momentFormatDateTime }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Updated At timestamp -->
+                                <div>
+                                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                        {{ $t('Updated') }}
+                                    </h4>
+                                    <div class="flex items-center">
+                                        <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.history-solid"></svg-vue>
+                                        <span class="text-sm text-gray-600">
+                                            {{ ticket.updated_at | momentFormatDateTime }}
+                                            <span class="text-xs text-gray-500 ml-1">({{ ticket.updated_at | momentFormatDateTimeAgo }})</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Labels Section (if any) -->
+                        <div v-if="ticket.labels && ticket.labels.length > 0" class="px-4 py-4 bg-white">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {{ $t('Labels') }}
+                            </h4>
+                            <div class="flex flex-wrap gap-2">
+                                <div
+                                    v-for="(label, index) in ticket.labels"
+                                    :key="index"
+                                    :style="{backgroundColor: label.color}"
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white"
+                                >
+                                    {{ label.name }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -386,11 +571,12 @@ export default {
         }
     },
     filters: {
-        momentFormatDateTime: function (value) {
-            return moment(value).locale(window.app.app_date_locale).format(window.app.app_date_format + ' HH:mm');
-        },
         momentFormatDateTimeAgo: function (value) {
             return moment(value).locale(window.app.app_date_locale).fromNow();
+        },
+        momentFormatDateTime: function (value) {
+            // Parse the ISO string with the timezone information preserved
+            return moment.utc(value).tz(window.app.app_timezone).locale(window.app.app_date_locale).format(window.app.app_date_format + ' h:mm A');
         },
     },
     methods: {

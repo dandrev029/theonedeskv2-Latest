@@ -75,6 +75,19 @@
                                             >
                                         </div>
                                     </div>
+                                    <div class="col-span-3" v-if="isWifiDepartment">
+                                        <label class="block text-sm font-medium leading-5 text-gray-700" for="scheduled_visit_at">{{ $t('Schedule a Visit') }}</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <input
+                                                id="scheduled_visit_at"
+                                                v-model="ticket.scheduled_visit_at"
+                                                type="datetime-local"
+                                                class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                                :placeholder="$t('Select date and time for visit')"
+                                            >
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">{{ $t('Select your preferred date and time for a visit') }}</p>
+                                    </div>
                                     <div class="col-span-3">
                                         <label class="block text-sm font-medium leading-5 text-gray-700" for="priority">{{ $t('Priority') }}</label>
                                         <div class="mt-1 relative rounded-md shadow-sm">
@@ -154,6 +167,7 @@ export default {
                 priority_id: null,
                 body: '',
                 attachments: [],
+                scheduled_visit_at: null,
             },
             departmentList: [],
             concernList: [],
@@ -176,7 +190,7 @@ export default {
             const wifiKeywords = ['wifi', 'wireless', 'internet', 'network', 'connection'];
             const selectedDepartment = this.departmentList.find(dept => dept.id === this.ticket.department_id);
             if (!selectedDepartment) return false;
-            
+
             const departmentName = selectedDepartment.name.toLowerCase();
             return wifiKeywords.some(keyword => departmentName.includes(keyword));
         }

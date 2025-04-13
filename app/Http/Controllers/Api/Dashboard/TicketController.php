@@ -107,6 +107,10 @@ class TicketController extends Controller
         $ticket->priority_id = $request->get('priority_id');
         $ticket->department_id = $request->get('department_id');
         $ticket->user_id = $request->get('user_id');
+        
+        if ($request->has('scheduled_visit_at')) {
+            $ticket->scheduled_visit_at = $request->get('scheduled_visit_at');
+        }
 
         // Get the user's condo location
         $user = User::find($request->get('user_id'));

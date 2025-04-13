@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $name
+ * @property string $color
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @method static Builder|Status newModelQuery()
@@ -21,10 +22,21 @@ use Illuminate\Support\Carbon;
  * @method static Builder|Status whereCreatedAt($value)
  * @method static Builder|Status whereId($value)
  * @method static Builder|Status whereName($value)
+ * @method static Builder|Status whereColor($value)
  * @method static Builder|Status whereUpdatedAt($value)
  * @mixin Eloquent
  */
 class Status extends Model
 {
     use HasFactory;
+    
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'color',
+    ];
 }

@@ -21,6 +21,7 @@ class StatusResource extends JsonResource
         return [
             'id' => $status->id,
             'name' => $status->name,
+            'color' => $status->color,
             'created_at' => $status->created_at->toISOString()
         ];
     }

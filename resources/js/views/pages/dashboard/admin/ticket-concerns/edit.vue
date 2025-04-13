@@ -25,10 +25,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="my-6 bg-white shadow overflow-hidden sm:rounded-md">
                 <loading :status="loading"/>
-                <form @submit.prevent="updateTicketConcern" class="p-6">
-                    <div class="mb-4">
+                <form v-if="!loading" @submit.prevent="updateTicketConcern" class="p-6">
+                    <div class="mb-6">
                         <label class="block text-sm font-medium leading-5 text-gray-700" for="name">
-                            {{ $t('Name') }}
+                            {{ $t('Name') }} <span class="text-red-500">*</span>
                         </label>
                         <div class="mt-1 rounded-md shadow-sm">
                             <input
@@ -37,10 +37,13 @@
                                 class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
                                 type="text"
                                 required
+                                :placeholder="$t('Enter concern name')"
                             >
                         </div>
+                        <p v-if="formErrors.name" class="mt-1 text-xs text-red-500">{{ formErrors.name }}</p>
+                        <p v-else class="mt-1 text-xs text-gray-500">{{ $t('A descriptive name for this ticket concern') }}</p>
                     </div>
-                    <div class="mb-4">
+                    <div class="mb-6">
                         <label class="block text-sm font-medium leading-5 text-gray-700">
                             {{ $t('Status') }}
                         </label>
@@ -52,7 +55,7 @@
                                     name="status"
                                     type="radio"
                                     :value="true"
-                                    class="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                                    class="form-radio h-5 w-5 text-indigo-600 transition duration-150 ease-in-out"
                                 >
                                 <label for="status-active" class="ml-3">
                                     <span class="block text-sm leading-5 text-gray-700">{{ $t('Active') }}</span>
@@ -65,61 +68,110 @@
                                     name="status"
                                     type="radio"
                                     :value="false"
-                                    class="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                                    class="form-radio h-5 w-5 text-indigo-600 transition duration-150 ease-in-out"
                                 >
                                 <label for="status-inactive" class="ml-3">
                                     <span class="block text-sm leading-5 text-gray-700">{{ $t('Inactive') }}</span>
                                 </label>
                             </div>
+                            <p v-if="formErrors.status" class="mt-1 text-xs text-red-500">{{ formErrors.status }}</p>
                         </div>
                     </div>
-                    <div class="mb-4">
+                    <div class="mb-6">
                         <label class="block text-sm font-medium leading-5 text-gray-700" for="department_id">
                             {{ $t('Department') }}
                         </label>
-                        <div class="mt-1 rounded-md shadow-sm">
-                            <input-select-scrollable
-                                id="department_id"
-                                v-model="ticketConcern.department_id"
-                                :options="departments"
-                                option-label="name"
-                                :searchable="true"
-                                :placeholder="$t('Select a department for this concern')"
-                            />
+                        <div class="mt-1 relative">
+                            <div :class="{'opacity-50 pointer-events-none': loadingDepartments}" class="rounded-md shadow-sm">
+                                <input-select-scrollable
+                                    id="department_id"
+                                    v-model="ticketConcern.department_id"
+                                    :options="departments"
+                                    option-label="name"
+                                    :searchable="true"
+                                    :placeholder="loadingDepartments ? $t('Loading departments...') : $t('Select a department for this concern')"
+                                    :clear-on-select="false"
+                                    :show-labels="false"
+                                    class="dropdown-improved"
+                                >
+                                    <template v-slot:noResult>
+                                        <div class="py-2 px-4 text-gray-500">{{ $t('No departments found') }}</div>
+                                    </template>
+                                    <template v-slot:noOptions>
+                                        <div class="py-2 px-4 text-gray-500">{{ $t('No departments available') }}</div>
+                                    </template>
+                                </input-select-scrollable>
+                            </div>
+                            <div v-if="loadingDepartments" class="absolute right-0 top-0 bottom-0 flex items-center pr-3">
+                                <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
                         </div>
-                        <p class="mt-2 text-sm text-gray-500">
+                        <p v-if="formErrors.department_id" class="mt-1 text-xs text-red-500">{{ formErrors.department_id }}</p>
+                        <p v-else class="mt-2 text-sm text-gray-500">
                             {{ $t('Select the department that this concern belongs to.') }}
                         </p>
                     </div>
-                    <div class="mb-4">
+                    <div class="mb-6">
                         <label class="block text-sm font-medium leading-5 text-gray-700" for="assigned_to">
                             {{ $t('Assigned To') }}
                         </label>
-                        <div class="mt-1 rounded-md shadow-sm">
-                            <input-select-scrollable
-                                id="assigned_to"
-                                v-model="ticketConcern.assigned_to"
-                                :options="dashboardUsers"
-                                option-label="name"
-                                :searchable="true"
-                                :placeholder="$t('Select a user to handle this concern')"
-                            >
-                                <template v-slot:option="{ option }">
-                                    <div class="flex items-center">
-                                        <img
-                                            :src="option.avatar || option.gravatar"
-                                            :alt="option.name"
-                                            class="h-6 w-6 rounded-full mr-2"
-                                        >
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">{{ option.name }}</div>
-                                            <div class="text-xs text-gray-500">{{ option.email }}</div>
+                        <div class="mt-1 relative">
+                            <div :class="{'opacity-50 pointer-events-none': loadingUsers}" class="rounded-md shadow-sm">
+                                <input-select-scrollable
+                                    id="assigned_to"
+                                    v-model="ticketConcern.assigned_to"
+                                    :options="dashboardUsers"
+                                    option-label="name"
+                                    :searchable="true"
+                                    :placeholder="loadingUsers ? $t('Loading users...') : $t('Select a user to handle this concern')"
+                                    :clear-on-select="false"
+                                    :show-labels="false"
+                                    class="dropdown-improved"
+                                >
+                                    <template v-slot:option="{ option }">
+                                        <div class="flex items-center">
+                                            <img
+                                                :src="option.avatar || option.gravatar"
+                                                :alt="option.name"
+                                                class="h-6 w-6 rounded-full mr-2"
+                                            >
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ option.name }}</div>
+                                                <div class="text-xs text-gray-500 truncate max-w-xs">{{ option.email }}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </template>
-                            </input-select-scrollable>
+                                    </template>
+                                    <template v-slot:selectedOption="{ option }">
+                                        <div v-if="option" class="flex items-center">
+                                            <img
+                                                :src="option.avatar || option.gravatar"
+                                                :alt="option.name"
+                                                class="h-5 w-5 rounded-full mr-2"
+                                            >
+                                            <span class="truncate">{{ option.name }}</span>
+                                        </div>
+                                        <span v-else class="text-gray-500">{{ $t('Select a user') }}</span>
+                                    </template>
+                                    <template v-slot:noResult>
+                                        <div class="py-2 px-4 text-gray-500">{{ $t('No users found') }}</div>
+                                    </template>
+                                    <template v-slot:noOptions>
+                                        <div class="py-2 px-4 text-gray-500">{{ $t('No users available') }}</div>
+                                    </template>
+                                </input-select-scrollable>
+                            </div>
+                            <div v-if="loadingUsers" class="absolute right-0 top-0 bottom-0 flex items-center pr-3">
+                                <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
                         </div>
-                        <p class="mt-2 text-sm text-gray-500">
+                        <p v-if="formErrors.assigned_to" class="mt-1 text-xs text-red-500">{{ formErrors.assigned_to }}</p>
+                        <p v-else class="mt-2 text-sm text-gray-500">
                             {{ $t('Select a user with dashboard access who will handle tickets with this concern category.') }}
                         </p>
                     </div>
@@ -137,10 +189,15 @@
                                 <button
                                     id="submit-ticket-concern"
                                     type="submit"
-                                    class="inline-flex justify-center py-2 px-4 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700 transition duration-150 ease-in-out"
+                                    class="inline-flex items-center justify-center py-2 px-4 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700 transition duration-150 ease-in-out"
                                     data-style="zoom-in"
+                                    :disabled="saving"
                                 >
-                                    {{ $t('Update') }}
+                                    <svg v-if="saving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {{ saving ? $t('Updating...') : $t('Update') }}
                                 </button>
                             </span>
                         </div>
@@ -179,13 +236,19 @@
                             type="button"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
                             @click="deleteTicketConcern"
+                            :disabled="deleting"
                         >
-                            {{ $t('Delete') }}
+                            <svg v-if="deleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            {{ deleting ? $t('Deleting...') : $t('Delete') }}
                         </button>
                         <button
                             type="button"
                             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                             @click="deleteTicketConcernModal = false"
+                            :disabled="deleting"
                         >
                             {{ $t('Cancel') }}
                         </button>
@@ -207,7 +270,11 @@ export default {
     data() {
         return {
             loading: true,
+            saving: false,
+            deleting: false,
             deleteTicketConcernModal: false,
+            loadingUsers: false,
+            loadingDepartments: false,
             dashboardUsers: [],
             departments: [],
             ticketConcern: {
@@ -216,93 +283,166 @@ export default {
                 status: true,
                 assigned_to: null,
                 department_id: null
-            }
+            },
+            formErrors: {}
         }
     },
     mounted() {
-        this.getDashboardUsers();
-        this.getDepartments();
-        this.getTicketConcern();
+        this.initialize();
     },
     methods: {
+        initialize() {
+            // Load data in parallel
+            Promise.all([
+                this.getDashboardUsers(),
+                this.getDepartments(),
+                this.getTicketConcern()
+            ]).finally(() => {
+                this.loading = false;
+            });
+        },
         getDashboardUsers() {
             const self = this;
-            axios.get('api/dashboard/admin/ticket-concerns/users/dashboard')
+            self.loadingUsers = true;
+            
+            return axios.get('api/dashboard/admin/ticket-concerns/users/dashboard')
                 .then(function (response) {
-                    self.dashboardUsers = response.data.data;
+                    if (response.data && response.data.data) {
+                        self.dashboardUsers = response.data.data;
+                    } else {
+                        self.$notify({
+                            title: self.$i18n.t('Warning').toString(),
+                            text: self.$i18n.t('Could not load users data correctly').toString(),
+                            type: 'warning'
+                        });
+                        self.dashboardUsers = [];
+                    }
                 })
-                .catch(function () {
-                    // Handle error silently
+                .catch(function (error) {
+                    console.error('Error fetching dashboard users:', error);
+                    self.dashboardUsers = [];
+                })
+                .finally(function () {
+                    self.loadingUsers = false;
                 });
         },
         getDepartments() {
             const self = this;
-            console.log('Fetching departments...');
-            axios.get('/api/ticket-concerns/departments')
+            self.loadingDepartments = true;
+            
+            return axios.get('/api/ticket-concerns/departments')
                 .then(function (response) {
-                    console.log('Departments response:', response.data);
                     if (response.data && response.data.data) {
                         self.departments = response.data.data;
                     } else if (Array.isArray(response.data)) {
                         self.departments = response.data;
                     } else {
-                        console.error('Unexpected response format for departments');
                         self.departments = [];
                     }
-                    console.log('Departments loaded:', self.departments);
                 })
                 .catch(function (error) {
                     console.error('Error fetching departments:', error);
+                    self.departments = [];
                     self.$notify({
                         title: self.$i18n.t('Error').toString(),
-                        text: error.response ? error.response.data.error || error.response.data.message : error.message,
+                        text: error.response ? error.response.data.error || error.response.data.message || self.$i18n.t('Could not load departments') : self.$i18n.t('Could not load departments'),
                         type: 'error'
                     });
+                })
+                .finally(function () {
+                    self.loadingDepartments = false;
                 });
         },
         getTicketConcern() {
             const self = this;
-            self.loading = true;
-            axios.get('api/dashboard/admin/ticket-concerns/' + this.$route.params.id)
+            
+            return axios.get('api/dashboard/admin/ticket-concerns/' + this.$route.params.id)
                 .then(function (response) {
-                    self.ticketConcern = response.data.data;
-                    self.loading = false;
+                    if (response.data && response.data.data) {
+                        self.ticketConcern = response.data.data;
+                    } else {
+                        self.$notify({
+                            title: self.$i18n.t('Error').toString(),
+                            text: self.$i18n.t('Could not load ticket concern data'),
+                            type: 'error'
+                        });
+                        self.$router.push('/dashboard/admin/ticket-concerns');
+                    }
                 })
-                .catch(function () {
-                    self.loading = false;
+                .catch(function (error) {
+                    console.error('Error fetching ticket concern:', error);
+                    self.$notify({
+                        title: self.$i18n.t('Error').toString(),
+                        text: error.response ? error.response.data.message || self.$i18n.t('Could not load ticket concern') : self.$i18n.t('Could not load ticket concern'),
+                        type: 'error'
+                    });
                     self.$router.push('/dashboard/admin/ticket-concerns');
                 });
         },
         updateTicketConcern() {
             const self = this;
-            const ladda = Ladda.create(document.querySelector('#submit-ticket-concern'));
-            ladda.start();
-            self.loading = true;
+            self.saving = true;
+            self.formErrors = {};
+            
+            // Basic form validation
+            if (!self.ticketConcern.name || self.ticketConcern.name.trim() === '') {
+                self.formErrors.name = self.$i18n.t('Name is required');
+                self.saving = false;
+                self.$notify({
+                    title: self.$i18n.t('Validation Error').toString(),
+                    text: self.formErrors.name,
+                    type: 'error'
+                });
+                return;
+            }
+
+            const ladda = typeof Ladda !== 'undefined' ? Ladda.create(document.querySelector('#submit-ticket-concern')) : null;
+            if (ladda) ladda.start();
 
             axios.put('api/dashboard/admin/ticket-concerns/' + this.ticketConcern.id, this.ticketConcern)
                 .then(function (response) {
                     self.$notify({
                         title: self.$i18n.t('Success').toString(),
-                        text: response.data.message,
+                        text: response.data.message || self.$i18n.t('Ticket concern updated successfully'),
                         type: 'success'
                     });
                     self.$router.push('/dashboard/admin/ticket-concerns');
                 })
                 .catch(function (error) {
-                    self.loading = false;
-                    if (error.response && error.response.data && error.response.data.message) {
+                    if (error.response && error.response.data) {
+                        if (error.response.data.errors) {
+                            self.formErrors = error.response.data.errors;
+                            const firstError = Object.values(error.response.data.errors)[0];
+                            self.$notify({
+                                title: self.$i18n.t('Error').toString(),
+                                text: Array.isArray(firstError) ? firstError[0] : firstError,
+                                type: 'error'
+                            });
+                        } else if (error.response.data.message) {
+                            self.$notify({
+                                title: self.$i18n.t('Error').toString(),
+                                text: error.response.data.message,
+                                type: 'error'
+                            });
+                        }
+                    } else {
                         self.$notify({
                             title: self.$i18n.t('Error').toString(),
-                            text: error.response.data.message,
+                            text: self.$i18n.t('An unexpected error occurred'),
                             type: 'error'
                         });
                     }
-                    ladda.stop();
+                    
+                    if (ladda) ladda.stop();
+                })
+                .finally(function () {
+                    self.saving = false;
                 });
         },
         deleteTicketConcern() {
             const self = this;
-            self.loading = true;
+            self.deleting = true;
+            
             axios.delete('api/dashboard/admin/ticket-concerns/' + this.ticketConcern.id)
                 .then(function () {
                     self.$notify({
@@ -313,7 +453,6 @@ export default {
                     self.$router.push('/dashboard/admin/ticket-concerns');
                 })
                 .catch(function (error) {
-                    self.loading = false;
                     self.deleteTicketConcernModal = false;
                     if (error.response && error.response.data && error.response.data.message) {
                         self.$notify({
@@ -321,9 +460,75 @@ export default {
                             text: error.response.data.message,
                             type: 'error'
                         });
+                    } else {
+                        self.$notify({
+                            title: self.$i18n.t('Error').toString(),
+                            text: self.$i18n.t('An unexpected error occurred while deleting'),
+                            type: 'error'
+                        });
                     }
+                })
+                .finally(function() {
+                    self.deleting = false;
                 });
         }
     }
 }
 </script>
+
+<style scoped>
+.dropdown-improved :deep(.multiselect__tags) {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    border-color: #d2d6dc;
+    min-height: 38px;
+}
+
+.dropdown-improved :deep(.multiselect__placeholder) {
+    padding-top: 0;
+    margin-bottom: 0;
+    color: #6b7280;
+}
+
+.dropdown-improved :deep(.multiselect__single) {
+    padding-top: 0;
+    margin-bottom: 0;
+}
+
+.dropdown-improved :deep(.multiselect__input) {
+    margin-bottom: 0;
+}
+
+.dropdown-improved :deep(.multiselect__content-wrapper) {
+    border-color: #d2d6dc;
+    border-bottom-left-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-height: 240px !important; /* Force a larger height for the dropdown */
+    overflow-y: auto !important; /* Ensure scrolling is enabled */
+    position: absolute !important; /* Ensure the dropdown isn't constrained */
+    width: 100% !important; /* Full width */
+    z-index: 999 !important; /* Higher z-index to avoid being cut off */
+}
+
+.dropdown-improved :deep(.multiselect__element) {
+    display: block !important; /* Ensure each option is properly displayed */
+}
+
+.dropdown-improved :deep(.multiselect__option--highlight) {
+    background-color: #5850ec;
+}
+
+.dropdown-improved :deep(.multiselect__option--highlight::after) {
+    background-color: #5850ec;
+}
+
+/* Fix for mobile view */
+@media (max-width: 640px) {
+    .dropdown-improved :deep(.multiselect__content-wrapper) {
+        position: fixed !important;
+        top: auto !important;
+        bottom: auto !important;
+    }
+}
+</style>

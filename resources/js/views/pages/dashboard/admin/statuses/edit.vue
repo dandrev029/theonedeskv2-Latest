@@ -32,6 +32,21 @@
                                         >
                                     </div>
                                 </div>
+                                
+                                <div class="col-span-3">
+                                    <label class="block text-sm font-medium leading-5 text-gray-700" for="color">{{ $t('Color') }}</label>
+                                    <div class="mt-1 relative rounded-md shadow-sm flex items-center">
+                                        <input
+                                            id="color"
+                                            v-model="status.color"
+                                            type="color"
+                                            class="form-input h-10 w-20 p-1 transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                            required
+                                        >
+                                        <span class="ml-2 text-sm text-gray-500">{{ status.color }}</span>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">{{ $t('Choose a color for this status') }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -72,6 +87,7 @@ export default {
             deleteStatusModal: false,
             status: {
                 name: null,
+                color: '#777777',
             },
         }
     },

@@ -170,7 +170,29 @@
                                                                     multiple
                                                                     option-label="name"
                                                                     @change="getTickets"
-                                                                />
+                                                                >
+                                                                    <template v-slot:selectedOption="props">
+                                                                        <template v-if="props && !props.anySelected">
+                                                                            <span class="block truncate">{{ $t('Select an option') }}</span>
+                                                                        </template>
+                                                                        <template v-else>
+                                                                            <span class="block truncate">{{ $t('Selected') }} {{ Object.keys(filters.statuses).length }} {{ $t('options') }}</span>
+                                                                        </template>
+                                                                    </template>
+                                                                    <template v-slot:selectOption="props">
+                                                                        <div class="flex items-center space-x-3">
+                                                                            <div class="flex-shrink-0 inline-block">
+                                                                                <div 
+                                                                                    class="h-5 w-5 rounded-full border border-gray-300" 
+                                                                                    :style="{ backgroundColor: props.option.color }"
+                                                                                ></div>
+                                                                            </div>
+                                                                            <div :class="Object.values(filters.statuses).indexOf(props.option.id) > -1 ? 'font-semibold' : 'font-normal'" class="font-normal block truncate">
+                                                                                {{ props.option.name }}
+                                                                            </div>
+                                                                        </div>
+                                                                    </template>
+                                                                </input-select>
                                                             </div>
                                                             <div class="col-span-3 mb-2">
                                                                 <label class="block text-sm font-medium leading-5 text-gray-700" for="label">
@@ -233,7 +255,7 @@
                                                                 <input-select
                                                                     id="per_page"
                                                                     v-model="perPage"
-                                                                    :options="[{id: 5, name: 5}, {id: 10, name: 10}, {id: 25, name: 25}, {id: 50, name: 50}]"
+                                                                    :options="[{id: 5, name: 5}, {id: 10, name: 10}, {id: 25}, {id: 50}]"
                                                                     option-label="name"
                                                                     required
                                                                     @change="getTickets"
@@ -382,6 +404,27 @@
                                             <div class="text-sm leading-5 text-gray-500 w-full truncate">
                                                 {{ ticket.lastReply ? ticket.lastReply.body : null }}
                                             </div>
+                                            <div class="flex flex-col mt-1 space-y-1">
+                                                <div v-if="ticket.condoLocation && ticket.condoLocation.name || ticket.condo_location && ticket.condo_location.name" class="text-xs text-gray-500">
+                                                    {{ $t('Location') }}: {{ ticket.condoLocation && ticket.condoLocation.name ? ticket.condoLocation.name : ticket.condo_location && ticket.condo_location.name ? ticket.condo_location.name : '' }}
+                                                </div>
+                                                <div v-if="ticket.scheduled_visit_at" class="text-xs text-gray-500">
+                                                    {{ $t('Visit') }}: {{ ticket.scheduled_visit_at | momentFormatDateTime }}
+                                                </div>
+                                                <div v-if="ticket.voucher_code" class="text-xs text-gray-500">
+                                                    {{ $t('Voucher') }}: {{ ticket.voucher_code }}
+                                                </div>
+                                                <div class="flex flex-row text-xs text-gray-500">
+                                                    <div class="flex items-center">
+                                                        <div 
+                                                            class="w-2 h-2 mr-1 rounded-full" 
+                                                            :style="{ backgroundColor: ticket.status ? ticket.status.color : '#777777' }"
+                                                        ></div>
+                                                        {{ $t('Status') }}: {{ ticket.status ? ticket.status.name : $t('Unassigned') }}
+                                                    </div>
+                                                    <div class="ml-2">{{ $t('Agent') }}: {{ ticket.agent ? ticket.agent.name : $t('Unassigned') }}</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <svg-vue class="ml-4 h-5 w-5 text-gray-400 group-hover:text-gray-500 group-focus:text-gray-600 transition ease-in-out duration-150" icon="font-awesome.angle-right-regular"></svg-vue>
@@ -408,8 +451,20 @@
                                 <th class="hidden lg:table-cell px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider">
                                     {{ $t('Customer') }}
                                 </th>
-                                <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto" colspan="2">
+                                <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
                                     {{ $t('Ticket summary') }}
+                                </th>
+                                <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
+                                    {{ $t('Condo location') }}
+                                </th>
+                                <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
+                                    {{ $t('Scheduled visit at') }}
+                                </th>
+                                <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
+                                    {{ $t('Voucher code') }}
+                                </th>
+                                <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
+                                    {{ $t('Status') }}
                                 </th>
                                 <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
                                     {{ $t('Agent') }}
@@ -476,7 +531,33 @@
                                         </div>
                                     </td>
                                     <td class="px-3 py-4 whitespace-no-wrap leading-5">
-                                        <div class="text-sm leading-5 font-medium text-gray-900">
+                                        <div class="text-sm leading-5 text-gray-900">
+                                            {{ ticket.condoLocation && ticket.condoLocation.name ? ticket.condoLocation.name :
+                                               (ticket.condo_location && ticket.condo_location.name ? ticket.condo_location.name : $t('Not specified')) }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 whitespace-no-wrap leading-5">
+                                        <div v-if="ticket.scheduled_visit_at" class="text-sm leading-5 text-gray-900">
+                                            {{ ticket.scheduled_visit_at | momentFormatDateTime }}
+                                        </div>
+                                        <div v-else class="text-sm leading-5 text-gray-500">
+                                            {{ $t('Not scheduled') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 whitespace-no-wrap leading-5">
+                                        <div v-if="ticket.voucher_code" class="text-sm leading-5 text-gray-900">
+                                            {{ ticket.voucher_code }}
+                                        </div>
+                                        <div v-else class="text-sm leading-5 text-gray-500">
+                                            {{ $t('No voucher') }}
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 whitespace-no-wrap leading-5">
+                                        <div class="text-sm leading-5 font-medium text-gray-900 flex items-center">
+                                            <div 
+                                                class="w-3 h-3 mr-2 rounded-full" 
+                                                :style="{ backgroundColor: ticket.status ? ticket.status.color : '#777777' }"
+                                            ></div>
                                             {{ ticket.status ? ticket.status.name : $t('Unassigned') }}
                                         </div>
                                         <div class="text-sm leading-5 text-gray-500">
@@ -694,6 +775,10 @@ export default {
     filters: {
         momentFormatDateTimeAgo: function (value) {
             return moment(value).locale(window.app.app_date_locale).fromNow();
+        },
+        momentFormatDateTime: function (value) {
+            // Parse the ISO string with the timezone information preserved
+            return moment.utc(value).tz(window.app.app_timezone).locale(window.app.app_date_locale).format(window.app.app_date_format + ' h:mm A');
         },
     },
     mounted() {

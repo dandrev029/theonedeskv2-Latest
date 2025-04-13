@@ -37,13 +37,6 @@
             {{ $t('Administration') }}
         </div>
         <menu-item
-            v-if="$store.state.permissions && $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.CondoLocationController']"
-            :label="$t('Condo Locations')"
-            :mobile="mobile"
-            :icon="['fas', 'building']"
-            to="/dashboard/admin/condo-locations"
-        ></menu-item>
-        <menu-item
             v-if="$store.state.permissions && $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.DepartmentController']"
             :label="$t('Departments')"
             :mobile="mobile"
@@ -103,14 +96,14 @@
             v-if="$store.state.permissions && $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.CondoLocationController']"
             :label="$t('Condo Locations')"
             :mobile="mobile"
-            icon="font-awesome.building-regular"
+            icon="font-awesome.building"
             to="/dashboard/admin/condo-locations"
         ></menu-item>
         <menu-item
             v-if="$store.state.permissions && $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController']"
             :label="$t('Ticket Concerns')"
             :mobile="mobile"
-            icon="font-awesome.tag-solid"
+            icon="font-awesome.tag"
             to="/dashboard/admin/ticket-concerns"
         ></menu-item>
     </div>

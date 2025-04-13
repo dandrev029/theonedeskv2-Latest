@@ -103,6 +103,19 @@
                                     </div>
                                 </div>
                                 <div class="col-span-3">
+                                    <label class="block text-sm font-medium leading-5 text-gray-700" for="scheduled_visit_at">{{ $t('Schedule a Visit') }}</label>
+                                    <div class="mt-1 relative rounded-md shadow-sm">
+                                        <input
+                                            id="scheduled_visit_at"
+                                            v-model="ticket.scheduled_visit_at"
+                                            type="datetime-local"
+                                            class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                            :placeholder="$t('Select date and time for visit')"
+                                        >
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500">{{ $t('Select preferred date and time for tenant visit') }}</p>
+                                </div>
+                                <div class="col-span-3">
                                     <label class="block text-sm font-medium leading-5 text-gray-700" for="status">{{ $t('Status') }}</label>
                                     <div class="mt-1 relative rounded-md shadow-sm">
                                         <input-select
@@ -202,6 +215,7 @@ export default {
                 priority_id: 1,
                 body: '',
                 attachments: [],
+                scheduled_visit_at: null,
             },
             departmentList: [],
             userList: [],

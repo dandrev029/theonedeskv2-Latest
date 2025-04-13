@@ -21,7 +21,12 @@
                                     <div class="flex items-center px-4 py-4 sm:px-6">
                                         <div class="min-w-0 flex-1 flex items-center">
                                             <div class="min-w-0 flex-1 pr-4 lg:grid lg:grid-cols-2 lg:gap-4">
-                                                <div class="flex">
+                                                <div class="flex items-center">
+                                                    <div 
+                                                        class="w-6 h-6 mr-3 rounded-full border border-gray-300" 
+                                                        :style="{ backgroundColor: status.color }"
+                                                        title="Status color"
+                                                    ></div>
                                                     <div class="inline-block align-middle text-sm font-medium leading-5 text-gray-900">{{ status.name }}</div>
                                                 </div>
                                             </div>

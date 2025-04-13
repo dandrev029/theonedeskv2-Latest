@@ -80,6 +80,9 @@ class TicketController extends Controller
         $ticket->concern_id = $request->get('concern_id');
         $ticket->voucher_code = $request->get('voucher_code');
         $ticket->status_id = 1;
+        if ($request->has('scheduled_visit_at')) {
+            $ticket->scheduled_visit_at = $request->get('scheduled_visit_at');
+        }
         if ($request->has('department_id')) {
             $ticket->department_id = $request->get('department_id');
         }

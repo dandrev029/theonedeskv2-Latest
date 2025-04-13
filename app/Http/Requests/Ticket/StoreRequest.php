@@ -29,6 +29,7 @@ class StoreRequest extends FormRequest
             'voucher_code' => ['nullable', 'string', 'max:50'],
             'department_id' => ['exclude_if:department_id,null', 'exists:departments,id'],
             'priority_id' => ['nullable', 'exists:priorities,id'],
+            'scheduled_visit_at' => ['nullable', 'date'],
             'body' => ['required'],
         ];
     }
@@ -52,6 +53,8 @@ class StoreRequest extends FormRequest
             'department_id.exists' => __('The selected :attribute is invalid', ['attribute' => __('department')]),
 
             'priority_id.exists' => __('The selected :attribute is invalid', ['attribute' => __('priority')]),
+
+            'scheduled_visit_at.date' => __('The :attribute must be a valid date', ['attribute' => __('scheduled visit')]),
 
             'body.required' => __('The :attribute field is required', ['attribute' => __('body')]),
         ];

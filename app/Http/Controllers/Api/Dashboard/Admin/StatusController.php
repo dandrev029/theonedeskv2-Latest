@@ -47,6 +47,7 @@ class StatusController extends Controller
     {
         $request->validated();
         $status->name = $request->get('name');
+        $status->color = $request->get('color');
         if ($status->save()) {
             return response()->json(['message' => 'Data updated correctly', 'status' => new StatusResource($status)]);
         }

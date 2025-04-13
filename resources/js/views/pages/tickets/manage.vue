@@ -26,6 +26,17 @@
                     <div class="sm:flex sm:items-center py-3 max-w-full">
                         <div class="px-6 sm:pl-6 sm:pr-3 sm:flex-1 sm:w-3/4">
                             <div class="text-xl truncate">{{ ticket.subject }}</div>
+                            <div v-if="ticket.scheduled_visit_at" class="flex items-center text-sm text-gray-600 mt-2">
+                                <svg-vue class="h-4 w-4 mr-1" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                <span>{{ $t('Scheduled Visit') }}: {{ ticket.scheduled_visit_at | momentFormatDateTime }}</span>
+                            </div>
+                            <div v-if="ticket.status" class="flex items-center text-sm mt-2">
+                                <div class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium mr-2"
+                                     :style="{ backgroundColor: ticket.status.color + '33', color: ticket.status.color }">
+                                    {{ ticket.status.name }}
+                                </div>
+                                <span class="text-gray-600">{{ $t('Status') }}</span>
+                            </div>
                         </div>
                         <div class="px-6 sm:pl-3 sm:pr-6 sm:flex-1 sm:w-1/4">
                             <div class="flex items-center sm:float-right">
@@ -160,11 +171,12 @@ export default {
         }
     },
     filters: {
-        momentFormatDateTime: function (value) {
-            return moment(value).locale(window.app.app_date_locale).format(window.app.app_date_format + ' HH:mm');
-        },
         momentFormatDateTimeAgo: function (value) {
             return moment(value).locale(window.app.app_date_locale).fromNow();
+        },
+        momentFormatDateTime: function (value) {
+            // Parse the ISO string with the timezone information preserved
+            return moment.utc(value).tz(window.app.app_timezone).locale(window.app.app_date_locale).format(window.app.app_date_format + ' h:mm A');
         },
     },
     mounted() {

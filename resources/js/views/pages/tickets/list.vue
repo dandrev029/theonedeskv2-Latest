@@ -130,8 +130,14 @@
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-no-wrap leading-5">
-                                                <div class="text-sm text-gray-800">
-                                                    {{ ticket.status.name }}
+                                                <div class="flex items-center">
+                                                    <div 
+                                                        class="w-3 h-3 mr-2 rounded-full" 
+                                                        :style="{ backgroundColor: ticket.status.color }"
+                                                    ></div>
+                                                    <div class="text-sm leading-5">
+                                                        {{ ticket.status.name }}
+                                                    </div>
                                                 </div>
                                             </td>
                                         </router-link>

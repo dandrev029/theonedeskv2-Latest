@@ -1,5 +1,5 @@
 <template>
-    <div v-on-clickaway="closeDropdown" class="relative">
+    <div v-on-clickaway="closeDropdown" class="relative" style="position: relative; z-index: 30;">
         <div class="inline-block w-full rounded-md shadow-sm cursor-pointer">
             <button
                 aria-expanded="true"
@@ -47,10 +47,10 @@
                 </span>
             </button>
         </div>
-        <div v-show="open" class="absolute z-20 mt-1 mb-2 w-full rounded-md bg-white shadow-lg">
+        <div v-show="open" class="absolute z-50 mt-1 mb-2 w-full rounded-md bg-white shadow-lg" style="position: absolute; top: 100%; left: 0;">
             <ul
                 class="max-h-60 rounded-md py-1 text-base leading-6 shadow-xs overflow-auto focus:outline-none sm:text-sm sm:leading-5"
-                style="max-height: 300px; overflow-y: auto;"
+                style="max-height: 300px; overflow-y: auto; position: relative;"
                 role="listbox"
                 tabindex="-1"
             >
@@ -211,6 +211,14 @@ export default {
                     self.$refs.search.focus();
                 }, 100);
             }
+
+            if (e === true) {
+                // Add resize listener when dropdown opens
+                window.addEventListener('resize', this.adjustDropdownPosition);
+            } else {
+                // Remove resize listener when dropdown closes
+                window.removeEventListener('resize', this.adjustDropdownPosition);
+            }
         }
     },
     data() {
@@ -218,6 +226,15 @@ export default {
             open: false,
             search: null,
         }
+    },
+    mounted() {
+        // Add scroll event listener to handle dropdown position when page scrolls
+        window.addEventListener('scroll', this.adjustDropdownPosition, true);
+    },
+    beforeDestroy() {
+        // Clean up event listeners
+        window.removeEventListener('resize', this.adjustDropdownPosition);
+        window.removeEventListener('scroll', this.adjustDropdownPosition, true);
     },
     methods: {
         openDropdown() {
@@ -234,6 +251,10 @@ export default {
                         self.$refs.search.focus();
                     }, 100);
                 }
+                // Ensure dropdown is visible in viewport
+                self.$nextTick(() => {
+                    self.adjustDropdownPosition();
+                });
             }
         },
         closeDropdown() {
@@ -255,6 +276,27 @@ export default {
                 this.selected = option;
             }
             this.closeDropdown();
+        },
+        adjustDropdownPosition() {
+            // Get dropdown element
+            const dropdown = this.$el.querySelector('.absolute.z-50');
+            if (!dropdown) return;
+
+            // Get viewport dimensions
+            const viewportHeight = window.innerHeight;
+            const dropdownRect = dropdown.getBoundingClientRect();
+
+            // Check if dropdown extends beyond viewport
+            if (dropdownRect.bottom > viewportHeight) {
+                // Position dropdown above the input if it would extend beyond viewport
+                dropdown.style.top = 'auto';
+                dropdown.style.bottom = '100%';
+                dropdown.style.maxHeight = (dropdownRect.top - 20) + 'px'; // 20px buffer
+            } else {
+                // Position dropdown below the input (default)
+                dropdown.style.top = '100%';
+                dropdown.style.bottom = 'auto';
+            }
         }
     }
 }

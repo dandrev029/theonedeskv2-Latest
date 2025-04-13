@@ -80,6 +80,7 @@ class Ticket extends Model
         'user_id' => 'integer',
         'agent_id' => 'integer',
         'closed_at' => 'datetime',
+        'scheduled_visit_at' => 'datetime',
     ];
 
     public function getRouteKeyName(): string
