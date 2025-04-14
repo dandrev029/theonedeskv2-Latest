@@ -3,6 +3,7 @@
 namespace App\Notifications\Ticket;
 
 use App\Models\Ticket;
+use App\Traits\CreatesAppNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -10,7 +11,7 @@ use Str;
 
 class NewTicketRequest extends Notification
 {
-    use Queueable;
+    use Queueable, CreatesAppNotification;
 
     private $ticket;
 
@@ -32,7 +33,7 @@ class NewTicketRequest extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -59,8 +60,22 @@ class NewTicketRequest extends Notification
      */
     public function toArray($notifiable)
     {
+        // Create an in-app notification
+        $this->createAppNotification(
+            $notifiable->id,
+            __('New ticket created'),
+            __('Your ticket has been created: ') . $this->ticket->subject,
+            'ticket',
+            'font-awesome.ticket-alt-solid',
+            '/tickets/' . $this->ticket->uuid
+        );
+
         return [
-            //
+            'id' => $this->ticket->id,
+            'uuid' => $this->ticket->uuid,
+            'subject' => $this->ticket->subject,
+            'type' => 'ticket_created',
+            'message' => __('Your ticket has been created')
         ];
     }
 }

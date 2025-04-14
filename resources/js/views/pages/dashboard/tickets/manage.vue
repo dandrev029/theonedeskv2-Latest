@@ -323,11 +323,26 @@
                             <div class="flex items-center">
                                 <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.map-marker-alt-solid"></svg-vue>
                                 <span class="text-sm text-gray-800">
-                                    {{ ticket.condoLocation && ticket.condoLocation.name 
-                                       ? ticket.condoLocation.name 
-                                       : (ticket.condo_location && ticket.condo_location.name 
-                                          ? ticket.condo_location.name 
+                                    {{ ticket.condoLocation && ticket.condoLocation.name
+                                       ? ticket.condoLocation.name
+                                       : (ticket.condo_location && ticket.condo_location.name
+                                          ? ticket.condo_location.name
                                           : $t('Not specified')) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Unit Number -->
+                        <div class="px-4 py-4 bg-white">
+                            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                                {{ $t('Unit Number') }}
+                            </h4>
+                            <div class="flex items-center">
+                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.building-regular"></svg-vue>
+                                <span class="text-sm text-gray-800">
+                                    {{ ticket.user && ticket.user.unit_number 
+                                       ? ticket.user.unit_number 
+                                       : $t('Not specified') }}
                                 </span>
                             </div>
                         </div>
@@ -347,9 +362,9 @@
                         </div>
 
                         <!-- Voucher Code -->
-                        <div class="px-4 py-4 bg-white">
+                        <div v-if="isWifiHelpdesk" class="px-4 py-4 bg-white">
                             <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                                {{ $t('Voucher Code') }}
+                                {{ $t('Voucher Code') }} ({{ isWifiHelpdesk ? 'Visible' : 'Hidden' }})
                             </h4>
                             <div class="flex items-center">
                                 <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.ticket-alt-solid"></svg-vue>
@@ -408,7 +423,7 @@
                                         <span class="text-sm text-gray-600">{{ ticket.created_at | momentFormatDateTime }}</span>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Updated At timestamp -->
                                 <div>
                                     <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
@@ -578,6 +593,29 @@ export default {
             // Parse the ISO string with the timezone information preserved
             return moment.utc(value).tz(window.app.app_timezone).locale(window.app.app_date_locale).format(window.app.app_date_format + ' h:mm A');
         },
+    },
+    computed: {
+        isWifiHelpdesk() {
+            // Hard-coded check for MIS user (WiFi Helpdesk)
+            const user = this.$store.state.user;
+            if (user && user.name === 'MIS') {
+                return true;
+            }
+
+            // Check if user has departments directly
+            if (user && user.departments && user.departments.length > 0) {
+                return user.departments.some(dept =>
+                    dept.name.toLowerCase().includes('wifi')
+                );
+            }
+
+            // Check if user's role name contains WiFi
+            if (user && user.role && user.role.name) {
+                return user.role.name.toLowerCase().includes('wifi');
+            }
+
+            return false;
+        }
     },
     methods: {
         getTicket() {

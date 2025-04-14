@@ -37,7 +37,8 @@ class UserResource extends JsonResource
             'status' => (bool) $user->status,
             'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->toISOString() : null,
             'created_at' => $user->created_at->toISOString(),
-            'updated_at' => $user->updated_at->toISOString()
+            'updated_at' => $user->updated_at->toISOString(),
+            'departments' => $user->departments
         ];
     }
 }

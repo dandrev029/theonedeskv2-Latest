@@ -30,7 +30,8 @@ class UserDetailsResource extends JsonResource
             'role_id' => $user->role_id,
             'status' => (bool) $user->status,
             'created_at' => $user->created_at->toISOString(),
-            'updated_at' => $user->updated_at->toISOString()
+            'updated_at' => $user->updated_at->toISOString(),
+            'departments' => $user->departments
         ];
     }
 }

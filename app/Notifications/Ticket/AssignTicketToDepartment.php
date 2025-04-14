@@ -4,6 +4,7 @@ namespace App\Notifications\Ticket;
 
 use App\Models\Ticket;
 use App\Models\User;
+use App\Traits\CreatesAppNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -11,7 +12,7 @@ use Str;
 
 class AssignTicketToDepartment extends Notification
 {
-    use Queueable;
+    use Queueable, CreatesAppNotification;
 
     private $ticket;
     private $agent;
@@ -36,7 +37,7 @@ class AssignTicketToDepartment extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -63,8 +64,22 @@ class AssignTicketToDepartment extends Notification
      */
     public function toArray($notifiable)
     {
+        // Create an in-app notification
+        $this->createAppNotification(
+            $notifiable->id,
+            __('New ticket assigned to your department'),
+            __('Ticket assigned to your department: ') . $this->ticket->subject,
+            'ticket_assigned',
+            'font-awesome.user-tag-solid',
+            '/dashboard/tickets/' . $this->ticket->uuid . '/manage'
+        );
+
         return [
-            //
+            'id' => $this->ticket->id,
+            'uuid' => $this->ticket->uuid,
+            'subject' => $this->ticket->subject,
+            'type' => 'ticket_assigned',
+            'message' => __('New ticket assigned to your department')
         ];
     }
 }

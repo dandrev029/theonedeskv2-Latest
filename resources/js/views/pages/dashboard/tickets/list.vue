@@ -182,8 +182,8 @@
                                                                     <template v-slot:selectOption="props">
                                                                         <div class="flex items-center space-x-3">
                                                                             <div class="flex-shrink-0 inline-block">
-                                                                                <div 
-                                                                                    class="h-5 w-5 rounded-full border border-gray-300" 
+                                                                                <div
+                                                                                    class="h-5 w-5 rounded-full border border-gray-300"
                                                                                     :style="{ backgroundColor: props.option.color }"
                                                                                 ></div>
                                                                             </div>
@@ -411,13 +411,13 @@
                                                 <div v-if="ticket.scheduled_visit_at" class="text-xs text-gray-500">
                                                     {{ $t('Visit') }}: {{ ticket.scheduled_visit_at | momentFormatDateTime }}
                                                 </div>
-                                                <div v-if="ticket.voucher_code" class="text-xs text-gray-500">
+                                                <div v-if="ticket.voucher_code && isWifiHelpdesk" class="text-xs text-gray-500">
                                                     {{ $t('Voucher') }}: {{ ticket.voucher_code }}
                                                 </div>
                                                 <div class="flex flex-row text-xs text-gray-500">
                                                     <div class="flex items-center">
-                                                        <div 
-                                                            class="w-2 h-2 mr-1 rounded-full" 
+                                                        <div
+                                                            class="w-2 h-2 mr-1 rounded-full"
                                                             :style="{ backgroundColor: ticket.status ? ticket.status.color : '#777777' }"
                                                         ></div>
                                                         {{ $t('Status') }}: {{ ticket.status ? ticket.status.name : $t('Unassigned') }}
@@ -460,8 +460,8 @@
                                 <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
                                     {{ $t('Scheduled visit at') }}
                                 </th>
-                                <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
-                                    {{ $t('Voucher code') }}
+                                <th v-if="isWifiHelpdesk" class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
+                                    {{ $t('Voucher code') }} ({{ isWifiHelpdesk ? 'Visible' : 'Hidden' }})
                                 </th>
                                 <th class="px-3 py-2 text-left text-xs leading-4 font-medium text-gray-600 uppercase tracking-wider whitespace-no-wrap overflow-x-auto">
                                     {{ $t('Status') }}
@@ -544,7 +544,7 @@
                                             {{ $t('Not scheduled') }}
                                         </div>
                                     </td>
-                                    <td class="px-3 py-4 whitespace-no-wrap leading-5">
+                                    <td v-if="isWifiHelpdesk" class="px-3 py-4 whitespace-no-wrap leading-5">
                                         <div v-if="ticket.voucher_code" class="text-sm leading-5 text-gray-900">
                                             {{ ticket.voucher_code }}
                                         </div>
@@ -554,8 +554,8 @@
                                     </td>
                                     <td class="px-3 py-4 whitespace-no-wrap leading-5">
                                         <div class="text-sm leading-5 font-medium text-gray-900 flex items-center">
-                                            <div 
-                                                class="w-3 h-3 mr-2 rounded-full" 
+                                            <div
+                                                class="w-3 h-3 mr-2 rounded-full"
                                                 :style="{ backgroundColor: ticket.status ? ticket.status.color : '#777777' }"
                                             ></div>
                                             {{ ticket.status ? ticket.status.name : $t('Unassigned') }}
@@ -770,6 +770,27 @@ export default {
                 || this.filters.labels.length !== 0
                 || this.filters.statuses.length !== 0
                 || this.filters.priorities.length !== 0;
+        },
+        isWifiHelpdesk() {
+            // Hard-coded check for MIS user (WiFi Helpdesk)
+            const user = this.$store.state.user;
+            if (user && user.name === 'MIS') {
+                return true;
+            }
+
+            // Check if user has departments directly
+            if (user && user.departments && user.departments.length > 0) {
+                return user.departments.some(dept =>
+                    dept.name.toLowerCase().includes('wifi')
+                );
+            }
+
+            // Check if user's role name contains WiFi
+            if (user && user.role && user.role.name) {
+                return user.role.name.toLowerCase().includes('wifi');
+            }
+
+            return false;
         }
     },
     filters: {

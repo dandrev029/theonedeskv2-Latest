@@ -2,7 +2,26 @@ import '@/plugins/lodash';
 import '@/plugins/moment';
 import '@/plugins/ladda';
 import '@/plugins/axios';
+import '@/plugins/filters';
 import "@/components";
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
+window.Pusher = Pusher;
+
+// Initialize Laravel Echo
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: window.app && window.app.pusher_key ? window.app.pusher_key : process.env.MIX_PUSHER_APP_KEY,
+    cluster: window.app && window.app.pusher_cluster ? window.app.pusher_cluster : process.env.MIX_PUSHER_APP_CLUSTER,
+    forceTLS: true
+});
+
+// Log Pusher configuration for debugging
+console.log('Pusher configuration:', {
+    key: window.app && window.app.pusher_key ? window.app.pusher_key : process.env.MIX_PUSHER_APP_KEY,
+    cluster: window.app && window.app.pusher_cluster ? window.app.pusher_cluster : process.env.MIX_PUSHER_APP_CLUSTER
+});
 
 import Vue from "vue";
 import Vuex from 'vuex';

@@ -23,6 +23,8 @@
         'app_date_format' => Setting::get('app_date_format'),
         'app_date_locale' => Setting::get('app_date_locale'),
         'app_timezone' => Setting::get('app_timezone'),
+        'pusher_key' => env('PUSHER_APP_KEY'),
+        'pusher_cluster' => env('PUSHER_APP_CLUSTER'),
     ], JSON_THROW_ON_ERROR) !!};
 </script>
 <script src="{{ url(mix('js/app.js')) }}"></script>

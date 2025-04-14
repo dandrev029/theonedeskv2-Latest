@@ -4,6 +4,7 @@ namespace App\Notifications\Ticket;
 
 use App\Models\Setting;
 use App\Models\Ticket;
+use App\Traits\CreatesAppNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,7 +14,7 @@ use Str;
 
 class NewTicketFromAgent extends Notification
 {
-    use Queueable;
+    use Queueable, CreatesAppNotification;
 
     private $ticket;
 
@@ -35,7 +36,7 @@ class NewTicketFromAgent extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -62,8 +63,22 @@ class NewTicketFromAgent extends Notification
      */
     public function toArray($notifiable)
     {
+        // Create an in-app notification
+        $this->createAppNotification(
+            $notifiable->id,
+            __('New ticket created for you'),
+            __('An agent has created a ticket for you: ') . $this->ticket->subject,
+            'ticket',
+            'font-awesome.ticket-alt-solid',
+            '/tickets/' . $this->ticket->uuid
+        );
+
         return [
-            //
+            'id' => $this->ticket->id,
+            'uuid' => $this->ticket->uuid,
+            'subject' => $this->ticket->subject,
+            'type' => 'ticket_created',
+            'message' => __('An agent has created a ticket for you')
         ];
     }
 }

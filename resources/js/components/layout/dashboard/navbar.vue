@@ -6,9 +6,9 @@
         <div class="w-full px-4 flex justify-end">
             <div class="flex">
                 <div class="ml-4 flex-1 flex items-center md:ml-6">
-                    <!--<button class="p-1 text-gray-400 rounded-full hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:shadow-outline focus:text-gray-500" aria-label="Notifications">-->
-                    <!--    <svg-vue class="h-6 w-6 p-px" icon="font-awesome.bell-regular"></svg-vue>-->
-                    <!--</button>-->
+                    <!-- Notification Dropdown Component -->
+                    <notification-dropdown ref="notificationDropdown" v-on-clickaway="closeNotificationDropdown" />
+                    
                     <div v-on-clickaway="closeDropdown" class="ml-3 relative">
                         <button
                             id="user-menu"
@@ -107,6 +107,11 @@ export default {
         },
         closeDropdown() {
             this.dropdownOpen = false;
+        },
+        closeNotificationDropdown() {
+            if (this.$refs.notificationDropdown) {
+                this.$refs.notificationDropdown.closeDropdown();
+            }
         }
     }
 }

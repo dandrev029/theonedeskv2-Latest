@@ -6,6 +6,9 @@
                     <logo div-padding text-class="text-gray-800"></logo>
                 </router-link>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <!-- Notification Dropdown Component -->
+                    <notification-dropdown ref="notificationDropdown" v-on-clickaway="closeNotificationDropdown" />
+                    
                     <div class="ml-3 relative">
                         <template v-if="$store.state.user">
                             <div v-on-clickaway="closeDropdown" class="ml-3 relative">
@@ -109,6 +112,12 @@
         </div>
         <div v-show="menuOpen" class="sm:hidden">
             <div class="py-3 border-t border-gray-200">
+                <!-- Mobile notifications -->
+                <div v-if="$store.state.user" class="flex items-center px-4 py-3 border-b border-gray-200">
+                    <notification-dropdown />
+                    <span class="ml-3 text-sm font-medium text-gray-700">{{ $t('Notifications') }}</span>
+                </div>
+                
                 <template v-if="$store.state.user">
                     <div class="flex items-center px-4">
                         <div class="flex-shrink-0">
@@ -176,10 +185,11 @@
 <script>
 import {mixin as clickaway} from '../../../utilities/vue-clickaway-compat';
 import Logo from "@/components/layout/shared/logo";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 
 export default {
     name: "navbar",
-    components: {Logo},
+    components: {Logo, NotificationDropdown},
     mixins: [clickaway],
     data() {
         return {
@@ -196,6 +206,11 @@ export default {
         },
         closeDropdown() {
             this.dropdownOpen = false;
+        },
+        closeNotificationDropdown() {
+            if (this.$refs.notificationDropdown) {
+                this.$refs.notificationDropdown.closeDropdown();
+            }
         }
     }
 }

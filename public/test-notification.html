@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notification</title>
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+    <script>
+        // Wait for the page to load
+        window.addEventListener('DOMContentLoaded', function() {
+            // Initialize Pusher
+            const pusher = new Pusher('55f75e5b9765246430ba', {
+                cluster: 'ap1',
+                forceTLS: true,
+                authEndpoint: '/broadcasting/auth',
+                auth: {
+                    headers: {
+                        'X-CSRF-Token': 'csrf_token_placeholder',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }
+            });
+
+            // Log Pusher configuration
+            addLogMessage('Pusher configuration: ' + JSON.stringify({
+                key: '55f75e5b9765246430ba',
+                cluster: 'ap1',
+                authEndpoint: '/broadcasting/auth'
+            }));
+
+            // Subscribe to the channel
+            const userId = prompt('Enter your user ID:');
+            if (!userId) {
+                alert('User ID is required');
+                return;
+            }
+
+            // Log connection status
+            pusher.connection.bind('connected', function() {
+                addLogMessage('Connected to Pusher');
+            });
+
+            pusher.connection.bind('error', function(err) {
+                addLogMessage('Error connecting to Pusher: ' + JSON.stringify(err));
+            });
+
+            // Try to subscribe to the channel
+            try {
+                const channel = pusher.subscribe('private-notifications.' + userId);
+
+                channel.bind('pusher:subscription_succeeded', function() {
+                    addLogMessage('Successfully subscribed to channel: private-notifications.' + userId);
+                });
+
+                channel.bind('pusher:subscription_error', function(status) {
+                    addLogMessage('Error subscribing to channel: ' + status);
+                });
+
+                // Listen for notification events
+                channel.bind('.notification.new', function(data) {
+                    addLogMessage('Received notification: ' + JSON.stringify(data));
+
+                    // Display the notification
+                    const notification = document.createElement('div');
+                    notification.className = 'notification';
+                    notification.innerHTML = `
+                        <h3>${data.title}</h3>
+                        <p>${data.message}</p>
+                        <small>${data.created_at}</small>
+                    `;
+                    document.getElementById('notifications').appendChild(notification);
+                });
+            } catch (error) {
+                addLogMessage('Error setting up Pusher: ' + error.message);
+            }
+        });
+
+        function addLogMessage(message) {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            log.appendChild(entry);
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #notifications {
+            margin-top: 20px;
+        }
+        .notification {
+            background-color: #f0f8ff;
+            border-left: 4px solid #4a90e2;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .notification h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .notification p {
+            margin: 5px 0;
+        }
+        .notification small {
+            color: #777;
+            font-size: 12px;
+        }
+        #log {
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Notification</h1>
+    <p>This page will listen for notifications from Pusher.</p>
+
+    <div id="notifications">
+        <h2>Notifications</h2>
+        <!-- Notifications will be added here -->
+    </div>
+
+    <div id="log">
+        <h2>Log</h2>
+        <!-- Log messages will be added here -->
+    </div>
+</body>
+</html>

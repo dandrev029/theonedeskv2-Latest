@@ -75,7 +75,7 @@
                                             >
                                         </div>
                                     </div>
-                                    <div class="col-span-3" v-if="isWifiDepartment">
+                                    <div class="col-span-3">
                                         <label class="block text-sm font-medium leading-5 text-gray-700" for="scheduled_visit_at">{{ $t('Schedule a Visit') }}</label>
                                         <div class="mt-1 relative rounded-md shadow-sm">
                                             <input
@@ -257,7 +257,39 @@ export default {
         saveTicket() {
             const self = this;
             self.loading.form = true;
-            axios.post('api/tickets', self.ticket).then(function (response) {
+
+            // Create a copy of the ticket data to avoid modifying the original
+            const ticketData = { ...self.ticket };
+
+            // If scheduled_visit_at is set, ensure it has a time component and
+            // is properly formatted using ISO standard for consistent handling
+            if (ticketData.scheduled_visit_at) {
+                // Parse the datetime-local input value
+                // The datetime-local input returns a string in the format YYYY-MM-DDThh:mm
+                // which is interpreted as local time by the browser
+
+                // Use moment.js to handle the timezone conversion properly
+                // First create a moment object in the local timezone
+                const localMoment = moment(ticketData.scheduled_visit_at);
+
+                // Check if the time part is missing or set to midnight (browser default)
+                // If so, set it to a reasonable time (4:00 PM)
+                if (localMoment.hour() === 0 && localMoment.minute() === 0) {
+                    localMoment.hour(16).minute(0); // Set to 4:00 PM
+                }
+
+                // Convert to UTC for storage in the database
+                const utcMoment = localMoment.utc();
+
+                // Set the value as an ISO string for the API
+                ticketData.scheduled_visit_at = utcMoment.format();
+
+                // Log for debugging
+                console.log('Scheduled visit time set to:', localMoment.format('YYYY-MM-DD h:mm A'));
+                console.log('UTC time for storage:', utcMoment.format());
+            }
+
+            axios.post('api/tickets', ticketData).then(function (response) {
                 self.$notify({
                     title: self.$i18n.t('Success').toString(),
                     text: self.$i18n.t('Data saved correctly').toString(),

@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Dashboard\TicketController as DashboardTicketContro
 use App\Http\Controllers\Api\File\FileController as FileFileController;
 use App\Http\Controllers\Api\Language\LanguageController as LanguageLanguageController;
 use App\Http\Controllers\Api\Ticket\TicketController as UserTicketController;
+use App\Http\Controllers\API\NotificationController;
 
 Route::group(['prefix' => 'lang'], static function () {
     Route::get('/', [LanguageLanguageController::class, 'list'])->name('language.list');
@@ -65,6 +66,20 @@ Route::get('tickets/priorities', [UserTicketController::class, 'priorities'])->n
 Route::post('tickets/attachments', [FileFileController::class, 'uploadAttachment'])->name('tickets.upload-attachment');
 Route::post('tickets/{ticket}/reply', [UserTicketController::class, 'reply'])->name('tickets.reply');
 Route::apiResource('tickets', UserTicketController::class)->except(['update', 'destroy']);
+
+Route::group(['prefix' => 'notifications'], static function () {
+    Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/', [NotificationController::class, 'store'])->name('notifications.store');
+    Route::get('/{id}', [NotificationController::class, 'show'])->name('notifications.show');
+    Route::post('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+    Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
+    Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    
+    // Additional notification endpoints
+    Route::post('/multiple', [NotificationController::class, 'createForMultipleUsers'])->name('notifications.create-for-multiple-users');
+    Route::post('/role', [NotificationController::class, 'createForRole'])->name('notifications.create-for-role');
+    Route::post('/all', [NotificationController::class, 'createForAllUsers'])->name('notifications.create-for-all-users');
+});
 
 Route::group(['prefix' => 'dashboard'], static function () {
 

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusher Test</title>
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+    <script>
+        // Enable pusher logging - don't include this in production
+        Pusher.logToConsole = true;
+
+        var pusher = new Pusher('55f75e5b9765246430ba', {
+            cluster: 'ap1',
+            forceTLS: true
+        });
+
+        var channel = pusher.subscribe('test-channel');
+        channel.bind('test-event', function(data) {
+            addMessage('Received test event: ' + JSON.stringify(data));
+        });
+
+        // Connection status
+        pusher.connection.bind('connected', function() {
+            addMessage('Connected to Pusher!');
+        });
+
+        pusher.connection.bind('connecting', function() {
+            addMessage('Connecting to Pusher...');
+        });
+
+        pusher.connection.bind('disconnected', function() {
+            addMessage('Disconnected from Pusher');
+        });
+
+        pusher.connection.bind('failed', function(error) {
+            addMessage('Connection to Pusher failed: ' + error.message);
+        });
+
+        function addMessage(message) {
+            var messageElement = document.createElement('div');
+            messageElement.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            document.getElementById('messages').appendChild(messageElement);
+        }
+
+        function sendTestEvent() {
+            fetch('/test-pusher.php')
+                .then(response => response.text())
+                .then(data => {
+                    addMessage('Sent test event: ' + data);
+                })
+                .catch(error => {
+                    addMessage('Error sending test event: ' + error);
+                });
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #3a80d2;
+        }
+        #messages {
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+        #messages div {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pusher Test</h1>
+    <p>This is a simple page to test Pusher connectivity.</p>
+    
+    <button onclick="sendTestEvent()">Send Test Event</button>
+    
+    <div id="messages">
+        <div>Waiting for messages...</div>
+    </div>
+</body>
+</html>

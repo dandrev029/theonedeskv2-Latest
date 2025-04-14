@@ -11,6 +11,8 @@ import DropdownSelect from '@/components/forms/dropdown-select';
 import InputColor from '@/components/forms/input-color';
 import InputWysiwyg from '@/components/forms/input-wysiwyg';
 
+import NotificationDropdown from '@/components/notifications/NotificationDropdown';
+
 Vue.component('loading', Loading);
 Vue.component('attachment', Attachment);
 
@@ -21,4 +23,6 @@ Vue.component('input-select-scrollable', InputSelectScrollable);
 Vue.component('dropdown-select', DropdownSelect);
 Vue.component('input-color', InputColor);
 Vue.component('input-wysiwyg', InputWysiwyg);
+
+Vue.component('notification-dropdown', NotificationDropdown);
 
