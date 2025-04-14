@@ -5,7 +5,7 @@
                 aria-expanded="true"
                 aria-haspopup="listbox"
                 aria-labelledby="listbox-label"
-                class="relative w-full rounded-md border border-gray-400 bg-white text-left focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition ease-in-out duration-150 sm:text-sm sm:leading-5"
+                class="relative w-full rounded-md border border-secondary-300 bg-white text-left focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition ease-in-out duration-150 sm:text-sm sm:leading-5"
                 type="button"
                 @click="openDropdown"
             >
@@ -18,7 +18,7 @@
                                     v-model="search"
                                     :placeholder="$t('Search')"
                                     aria-label="Search"
-                                    class="pl-3 pr-10 py-2 relative w-full rounded-md focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition ease-in-out duration-150 sm:text-sm sm:leading-5"
+                                    class="pl-3 pr-10 py-2 relative w-full rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition ease-in-out duration-150 sm:text-sm sm:leading-5"
                                     @click.prevent
                                 >
                             </div>
@@ -43,7 +43,7 @@
                     </div>
                 </template>
                 <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 20 20"><path d="M7 7l3-3 3 3m0 6l-3 3-3-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>
+                    <svg class="h-5 w-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 20 20"><path d="M7 7l3-3 3 3m0 6l-3 3-3-3" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>
                 </span>
             </button>
         </div>

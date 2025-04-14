@@ -11,11 +11,15 @@ export default {
         chartData: {
             type: Object,
             required: true,
+        },
+        options: {
+            type: Object,
+            default: null
         }
     },
     data() {
         return {
-            options: {
+            defaultOptions: {
                 scales: {
                     yAxes: [{
                         ticks: {
@@ -33,7 +37,9 @@ export default {
         }
     },
     mounted() {
-        this.renderChart(this.chartData, this.options);
+        // Use custom options if provided, otherwise use default options
+        const chartOptions = this.options || this.defaultOptions;
+        this.renderChart(this.chartData, chartOptions);
     },
     methods: {
         update() {

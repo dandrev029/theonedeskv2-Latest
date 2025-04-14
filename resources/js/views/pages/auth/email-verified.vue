@@ -1,28 +1,28 @@
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen flex items-center justify-center bg-secondary-50 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
             <div>
                 <div class="flex justify-center">
                     <div v-if="status === 'success'" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
                         <svg-vue class="h-6 w-6 text-green-600" icon="font-awesome.check-circle-solid"></svg-vue>
                     </div>
-                    <div v-else-if="status === 'already_verified'" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-                        <svg-vue class="h-6 w-6 text-blue-600" icon="font-awesome.info-circle-solid"></svg-vue>
+                    <div v-else-if="status === 'already_verified'" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary-100">
+                        <svg-vue class="h-6 w-6 text-primary-600" icon="font-awesome.info-circle-solid"></svg-vue>
                     </div>
                     <div v-else class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                         <svg-vue class="h-6 w-6 text-red-600" icon="font-awesome.exclamation-circle-solid"></svg-vue>
                     </div>
                 </div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-secondary-900">
                     {{ getTitle() }}
                 </h2>
-                <p class="mt-2 text-center text-sm text-gray-600">
+                <p class="mt-2 text-center text-sm text-secondary-600">
                     {{ getMessage() }}
                 </p>
             </div>
             <div class="flex justify-center">
                 <router-link
-                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 max-w-xs"
+                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 max-w-xs"
                     to="/auth/login"
                 >
                     {{ $t('Go to Login') }}
@@ -30,7 +30,7 @@
             </div>
             <div v-if="status === 'error'" class="flex justify-center mt-4">
                 <router-link
-                    class="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                    class="text-sm font-medium text-primary-600 hover:text-primary-500"
                     to="/auth/verify-email"
                 >
                     {{ $t('Request a new verification link') }}

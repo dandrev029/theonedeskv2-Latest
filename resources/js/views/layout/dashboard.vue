@@ -1,5 +1,5 @@
 <template>
-    <div class="h-screen flex overflow-hidden bg-gray-100">
+    <div class="h-screen flex overflow-hidden bg-secondary-100">
         <sidebar :sidebarVisible="sidebarVisible" @toggleSidebar="toggleSidebar"></sidebar>
         <div class="flex flex-col w-0 flex-1 overflow-hidden">
             <navbar @toggleSidebar="toggleSidebar"></navbar>

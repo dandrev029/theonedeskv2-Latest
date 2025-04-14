@@ -5,7 +5,7 @@
     >
         <svg-vue
             :icon="icon"
-            class="mr-3 w-5 h-5 text-gray-400 group-hover:text-gray-300 group-focus:text-gray-300 transition ease-in-out duration-150"
+            class="mr-3 w-5 h-5 text-primary-300 group-hover:text-white group-focus:text-white transition ease-in-out duration-150"
         ></svg-vue>
         {{ label }}
     </router-link>

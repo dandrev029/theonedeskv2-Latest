@@ -7,10 +7,10 @@
             <div class="h-full min-h-screen flex">
                 <div class="w-full m-auto">
                     <div class="flex justify-center">
-                        <div class="w-full max-w-md bg-white shadow-md rounded p-10 my-10">
+                        <div class="w-full max-w-md bg-white shadow-sm rounded-lg border border-secondary-200 p-10 my-10">
                             <router-link class="flex items-center justify-center mb-8" to="/">
                                 <img :src="$store.state.settings.icon" alt="App icon" class="w-12 h-12 mr-5"/>
-                                <div class="inline-block text-2xl text-gray-800 uppercase">{{ $store.state.settings.name }}</div>
+                                <div class="inline-block text-2xl text-primary-800 font-semibold uppercase">{{ $store.state.settings.name }}</div>
                             </router-link>
                             <router-view/>
                         </div>

@@ -1,6 +1,6 @@
 <template>
-    <div class="relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
-        <button aria-label="Open sidebar" class="px-4 text-gray-500 focus:outline-none focus:bg-gray-100 focus:text-gray-600 md:hidden" @click="$emit('toggleSidebar')">
+    <div class="relative z-10 flex-shrink-0 flex h-16 bg-white shadow-sm">
+        <button aria-label="Open sidebar" class="px-4 text-primary-600 focus:outline-none focus:bg-primary-50 focus:text-primary-700 md:hidden" @click="$emit('toggleSidebar')">
             <svg-vue class="h-6 w-6" icon="font-awesome.bars-regular"></svg-vue>
         </button>
         <div class="w-full px-4 flex justify-end">
@@ -8,7 +8,7 @@
                 <div class="ml-4 flex-1 flex items-center md:ml-6">
                     <!-- Notification Dropdown Component -->
                     <notification-dropdown ref="notificationDropdown" v-on-clickaway="closeNotificationDropdown" />
-                    
+
                     <div v-on-clickaway="closeDropdown" class="ml-3 relative">
                         <button
                             id="user-menu"
@@ -41,8 +41,8 @@
                                             class="h-8 w-8 mr-3 align-middle rounded-full"
                                         />
                                         <div class="w-40">
-                                            <div class="text-sm font-medium truncate text-gray-800">{{ $store.state.user.name }}</div>
-                                            <div class="text-xs truncate text-gray-500">{{ $store.state.user.email }}</div>
+                                            <div class="text-sm font-medium truncate text-primary-800">{{ $store.state.user.name }}</div>
+                                            <div class="text-xs truncate text-primary-500">{{ $store.state.user.email }}</div>
                                         </div>
                                     </div>
                                     <router-link

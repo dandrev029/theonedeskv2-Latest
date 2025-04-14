@@ -74,7 +74,7 @@ Route::group(['prefix' => 'notifications'], static function () {
     Route::post('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
     Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
     Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
-    
+
     // Additional notification endpoints
     Route::post('/multiple', [NotificationController::class, 'createForMultipleUsers'])->name('notifications.create-for-multiple-users');
     Route::post('/role', [NotificationController::class, 'createForRole'])->name('notifications.create-for-role');
@@ -87,6 +87,7 @@ Route::group(['prefix' => 'dashboard'], static function () {
         Route::get('count', [DashboardStatsController::class, 'count'])->name('dashboard.stats-count');
         Route::get('registered-users', [DashboardStatsController::class, 'registeredUsers'])->name('dashboard.stats.registered-users');
         Route::get('opened-tickets', [DashboardStatsController::class, 'openedTickets'])->name('dashboard.stats.opened-tickets');
+        Route::get('ticket-analytics', [DashboardStatsController::class, 'ticketAnalytics'])->name('dashboard.stats.ticket-analytics');
     });
 
     Route::get('tickets/filters', [DashboardTicketController::class, 'filters'])->name('dashboard.tickets.filters');
