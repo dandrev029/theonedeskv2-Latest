@@ -1,7 +1,11 @@
 <template>
   <div class="relative">
     <button
-      class="p-1 text-gray-400 rounded-full hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:shadow-outline focus:text-gray-500 relative"
+      :class="getDarkModeClasses({
+        lightHover: 'hover:bg-gray-100 hover:text-gray-500',
+        darkHover: 'hover:bg-gray-700 hover:text-gray-300'
+      })"
+      class="p-1 text-gray-400 rounded-full focus:outline-none focus:shadow-outline relative"
       aria-label="Notifications"
       @click="toggleDropdown"
     >
@@ -21,12 +25,12 @@
     >
       <div
         v-show="isOpen"
-        class="origin-top-right absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-md shadow-lg z-50"
+        class="origin-top-right absolute right-0 mt-2 w-80 md:w-96 rounded-md shadow-lg z-50" :class="bgPrimary"
       >
-        <div class="py-1 rounded-md bg-white shadow-xs">
+        <div class="py-1 rounded-md shadow-xs" :class="bgPrimary">
           <!-- Notification Header -->
-          <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-sm font-semibold text-gray-700">{{ $t('Notifications') }}</h3>
+          <div class="px-4 py-3 border-b flex justify-between items-center" :class="borderPrimary">
+            <h3 class="text-sm font-semibold" :class="textPrimary">{{ $t('Notifications') }}</h3>
             <button
               v-if="notifications.length > 0 && unreadCount > 0"
               @click="markAllAsRead"
@@ -37,7 +41,7 @@
           </div>
 
           <!-- Notifications List -->
-          <div v-if="notifications.length === 0" class="px-4 py-6 text-center text-sm text-gray-500">
+          <div v-if="notifications.length === 0" class="px-4 py-6 text-center text-sm" :class="textTertiary">
             {{ $t('No notifications') }}
           </div>
           <div v-else class="max-h-80 overflow-y-auto">
@@ -45,8 +49,10 @@
               v-for="notification in notifications"
               :key="notification.id"
               :class="[
-                'px-4 py-3 hover:bg-gray-50 flex items-start cursor-pointer',
-                notification.is_read ? 'bg-white' : 'bg-blue-50'
+                'px-4 py-3 flex items-start cursor-pointer',
+                $store.state.darkMode ?
+                  (notification.is_read ? 'bg-gray-800 hover:bg-gray-700' : 'bg-blue-900 hover:bg-blue-800') :
+                  (notification.is_read ? 'bg-white hover:bg-gray-50' : 'bg-blue-50 hover:bg-blue-100')
               ]"
               @click="openNotification(notification)"
             >
@@ -57,14 +63,14 @@
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate">{{ notification.title }}</p>
-                <p class="text-sm text-gray-600 truncate">{{ notification.message }}</p>
-                <p class="text-xs text-gray-500 mt-1">{{ formatTime(notification.created_at) }}</p>
+                <p class="text-sm font-medium truncate" :class="textPrimary">{{ notification.title }}</p>
+                <p class="text-sm" :class="textSecondary">{{ notification.message }}</p>
+                <p class="text-xs mt-1" :class="textTertiary">{{ formatTime(notification.created_at) }}</p>
               </div>
               <div class="ml-2">
                 <button
                   @click.stop="removeNotification(notification.id)"
-                  class="text-gray-400 hover:text-gray-600"
+                  :class="getDarkModeClasses({lightText: 'text-gray-400', darkText: 'text-gray-500', lightHover: 'hover:text-gray-600', darkHover: 'hover:text-gray-300'})"
                   aria-label="Delete notification"
                 >
                   <svg-vue class="h-4 w-4" icon="font-awesome.times-solid"></svg-vue>
@@ -74,7 +80,7 @@
           </div>
 
           <!-- Footer -->
-          <div v-if="notifications.length > 0" class="px-4 py-2 border-t border-gray-200 text-center">
+          <div v-if="notifications.length > 0" class="px-4 py-2 border-t text-center" :class="borderPrimary">
             <button
               @click="viewAllNotifications"
               class="text-xs text-blue-600 hover:text-blue-800 focus:outline-none"

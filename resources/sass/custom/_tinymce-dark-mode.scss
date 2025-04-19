@@ -1,0 +1,148 @@
+/* TinyMCE Dark Mode Styles */
+
+.dark-mode {
+    /* TinyMCE Editor Container */
+    .tox-tinymce {
+        border-color: var(--border-color) !important;
+    }
+    
+    /* TinyMCE Toolbar */
+    .tox-toolbar,
+    .tox-toolbar__primary,
+    .tox-toolbar__overflow {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    /* TinyMCE Toolbar Buttons */
+    .tox-tbtn {
+        color: var(--text-secondary) !important;
+        
+        &:hover {
+            background-color: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        &.tox-tbtn--enabled {
+            background-color: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
+        }
+    }
+    
+    /* TinyMCE Menu */
+    .tox-menu {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    /* TinyMCE Menu Items */
+    .tox-collection__item {
+        color: var(--text-secondary) !important;
+        
+        &:hover {
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+    }
+    
+    /* TinyMCE Status Bar */
+    .tox-statusbar {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-tertiary) !important;
+    }
+    
+    /* TinyMCE Dialog */
+    .tox-dialog {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    /* TinyMCE Dialog Header */
+    .tox-dialog__header {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    /* TinyMCE Dialog Footer */
+    .tox-dialog__footer {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    /* TinyMCE Dialog Body */
+    .tox-dialog__body {
+        color: var(--text-primary) !important;
+    }
+    
+    /* TinyMCE Dialog Body Content */
+    .tox-dialog__body-content {
+        color: var(--text-primary) !important;
+    }
+    
+    /* TinyMCE Dialog Label */
+    .tox-label {
+        color: var(--text-secondary) !important;
+    }
+    
+    /* TinyMCE Dialog Input */
+    .tox-textfield,
+    .tox-textarea,
+    .tox-selectfield select {
+        background-color: var(--input-bg) !important;
+        border-color: var(--input-border) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    /* TinyMCE Dialog Button */
+    .tox-button {
+        background-color: #18A5A7 !important;
+        border-color: #18A5A7 !important;
+        color: white !important;
+        
+        &:hover {
+            background-color: #158a8c !important;
+            border-color: #158a8c !important;
+        }
+    }
+    
+    /* TinyMCE Dialog Secondary Button */
+    .tox-button--secondary {
+        background-color: var(--bg-tertiary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-secondary) !important;
+        
+        &:hover {
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+    }
+    
+    /* TinyMCE Notification */
+    .tox-notification {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    /* TinyMCE Notification Icon */
+    .tox-notification__icon {
+        color: var(--text-primary) !important;
+    }
+    
+    /* TinyMCE Notification Body */
+    .tox-notification__body {
+        color: var(--text-primary) !important;
+    }
+    
+    /* TinyMCE Notification Dismiss */
+    .tox-notification__dismiss {
+        color: var(--text-tertiary) !important;
+        
+        &:hover {
+            color: var(--text-primary) !important;
+        }
+    }
+}

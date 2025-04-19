@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\File\FileController as FileFileController;
 use App\Http\Controllers\Api\Language\LanguageController as LanguageLanguageController;
 use App\Http\Controllers\Api\Ticket\TicketController as UserTicketController;
 use App\Http\Controllers\API\NotificationController;
+use Illuminate\Support\Facades\Artisan;
 
 Route::group(['prefix' => 'lang'], static function () {
     Route::get('/', [LanguageLanguageController::class, 'list'])->name('language.list');
@@ -48,6 +49,13 @@ Route::get('departments', [\App\Http\Controllers\Api\DepartmentController::class
 
 // Public endpoint for ticket concern departments
 Route::get('ticket-concerns/departments', [\App\Http\Controllers\Api\Dashboard\Admin\TicketConcernController::class, 'publicDepartments'])->name('ticket-concerns.public-departments');
+
+// Fix departments endpoint
+Route::post('dashboard/admin/fix-departments', [\App\Http\Controllers\Api\Dashboard\Admin\FixDepartmentsController::class, 'fixDepartments'])->name('dashboard.admin.fix-departments');
+Route::get('fix-departments', function() {
+    Artisan::call('fix:ticket-concern-departments');
+    return response()->json(['success' => true, 'message' => 'Departments fixed successfully']);
+})->name('fix-departments');
 
 Route::group(['prefix' => 'account'], static function () {
     Route::post('update', [AccountAccountController::class, 'update'])->name('account.update');
@@ -91,6 +99,7 @@ Route::group(['prefix' => 'dashboard'], static function () {
     });
 
     Route::get('tickets/filters', [DashboardTicketController::class, 'filters'])->name('dashboard.tickets.filters');
+    Route::get('tickets/updates', [DashboardTicketController::class, 'updates'])->name('dashboard.tickets.updates');
     Route::get('tickets/departments-by-condo-location', [DashboardTicketController::class, 'departmentsByUserCondoLocation'])->name('dashboard.tickets.departments-by-condo-location');
     Route::get('tickets/canned-replies', [DashboardTicketController::class, 'cannedReplies'])->name('dashboard.tickets.canned-replies');
     Route::post('tickets/quick-actions', [DashboardTicketController::class, 'quickActions'])->name('dashboard.tickets.quick-actions');

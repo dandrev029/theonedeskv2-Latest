@@ -1,0 +1,56 @@
+/* Dark Mode Fixes for White Spaces */
+
+.dark-mode {
+    /* Fix for ticket concern cards */
+    .bg-white, 
+    .bg-gray-50, 
+    .bg-gray-100, 
+    .bg-gray-200 {
+        background-color: var(--card-bg) !important;
+    }
+
+    /* Fix for text colors in dark mode */
+    .text-gray-900, 
+    .text-gray-800 {
+        color: var(--text-primary) !important;
+    }
+
+    .text-gray-700, 
+    .text-gray-600 {
+        color: var(--text-secondary) !important;
+    }
+
+    .text-gray-500, 
+    .text-gray-400 {
+        color: var(--text-tertiary) !important;
+    }
+
+    /* Fix for ticket concern cards */
+    .ticket-card,
+    .ticket-card-header,
+    .ticket-card-body,
+    .ticket-card-footer {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    /* Fix for department badges */
+    .department-badge {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-secondary) !important;
+    }
+
+    /* Fix for ticket concern cards in admin section */
+    [class*="ticket-concerns"] .bg-white {
+        background-color: var(--card-bg) !important;
+    }
+
+    [class*="ticket-concerns"] .bg-gray-50 {
+        background-color: var(--bg-secondary) !important;
+    }
+
+    /* Fix for ticket concern card footer */
+    [class*="ticket-concerns"] .rounded-lg .bg-gray-50 {
+        background-color: var(--bg-secondary) !important;
+    }
+}

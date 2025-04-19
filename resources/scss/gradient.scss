@@ -1,0 +1,35 @@
+/* Green gradient styles for sidebar and buttons */
+
+/* Sidebar gradient - using exact colors from the reference (#18A5A7 to #BFFFC7) */
+.sidebar-gradient {
+    background: linear-gradient(180deg, #18A5A7 0%, #BFFFC7 100%);
+}
+
+/* Solid color for the logo header area */
+.sidebar-header-solid {
+    background-color: #18A5A7;
+}
+
+/* Ticket details user profile gradient */
+.ticket-details-user-gradient {
+    background: linear-gradient(90deg, #18A5A7 0%, #BFFFC7 100%);
+}
+
+/* Sidebar menu item hover effect */
+.sidebar-gradient-hover:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Button gradient */
+.gradient-button {
+    background: linear-gradient(90deg, #18A5A7 0%, #BFFFC7 100%);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.gradient-button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}

@@ -68,6 +68,7 @@ import AdminDashboardCondoLocationsNew from "@/views/pages/dashboard/admin/condo
 import AdminDashboardCondoLocationsEdit from "@/views/pages/dashboard/admin/condo-locations/edit";
 
 import AdminDashboardTicketConcernsList from "@/views/pages/dashboard/admin/ticket-concerns/list";
+import AdminDashboardTicketConcernsListEnhanced from "@/views/pages/dashboard/admin/ticket-concerns/list-enhanced";
 import AdminDashboardTicketConcernsNew from "@/views/pages/dashboard/admin/ticket-concerns/new";
 import AdminDashboardTicketConcernsEdit from "@/views/pages/dashboard/admin/ticket-concerns/edit";
 
@@ -154,7 +155,8 @@ let routes = [
             {path: 'admin/condo-locations/new', component: AdminDashboardCondoLocationsNew, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.CondoLocationController'}},
             {path: 'admin/condo-locations/:id/edit', component: AdminDashboardCondoLocationsEdit, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.CondoLocationController'}},
 
-            {path: 'admin/ticket-concerns', component: AdminDashboardTicketConcernsList, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController'}},
+            {path: 'admin/ticket-concerns', component: AdminDashboardTicketConcernsListEnhanced, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController'}},
+            {path: 'admin/ticket-concerns/classic', component: AdminDashboardTicketConcernsList, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController'}},
             {path: 'admin/ticket-concerns/new', component: AdminDashboardTicketConcernsNew, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController'}},
             {path: 'admin/ticket-concerns/:id/edit', component: AdminDashboardTicketConcernsEdit, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController'}},
 

@@ -3,6 +3,8 @@ import '@/plugins/moment';
 import '@/plugins/ladda';
 import '@/plugins/axios';
 import '@/plugins/filters';
+import '@/plugins/darkmode';
+import '@/utilities/dark-mode-index';
 import "@/components";
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
@@ -33,6 +35,10 @@ import VueElementLoading from 'vue-element-loading';
 import TextareaAutosize from 'vue-textarea-autosize';
 import vueFilterPrettyBytes from 'vue-filter-pretty-bytes';
 
+// Custom directives
+import IntersectDirective from '@/directives/intersect';
+import '@/directives/dark-mode';
+
 import store from '@/store';
 import App from "@/views/app";
 import i18n from "@/language";
@@ -45,6 +51,9 @@ Vue.use(Notifications);
 Vue.use(TextareaAutosize);
 Vue.use(vueFilterPrettyBytes);
 Vue.component('VueElementLoading', VueElementLoading);
+
+// Register custom directives
+Vue.directive('intersect', IntersectDirective);
 if (window.app.recaptcha_enabled) {
     Vue.use(VueReCaptcha, {siteKey: window.app.recaptcha_public});
 }
@@ -60,6 +69,7 @@ new Vue({
         this.initI18n();
         this.$store.commit('setUser');
         this.$store.commit('setSettings', window.app);
+        this.initDarkMode();
     },
     methods: {
         initI18n() {
@@ -71,6 +81,58 @@ new Vue({
             axios.get('api/lang/' + self.$i18n.locale).then(function (response) {
                 self.$i18n.setLocaleMessage(self.$i18n.locale, response.data);
             });
+        },
+        initDarkMode() {
+            // Apply dark mode if it's enabled in the store
+            if (this.$store.state.darkMode) {
+                document.body.classList.add('dark-mode');
+                // Set a data attribute on the html element for CSS targeting
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+
+            // Add a listener for system preference changes
+            this.setupSystemDarkModeListener();
+        },
+
+        setupSystemDarkModeListener() {
+            // Check if the browser supports matchMedia
+            if (window.matchMedia) {
+                const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+                // Add change listener
+                try {
+                    // Chrome & Firefox
+                    darkModeMediaQuery.addEventListener('change', e => {
+                        this.handleSystemDarkModeChange(e.matches);
+                    });
+                } catch (e1) {
+                    try {
+                        // Safari
+                        darkModeMediaQuery.addListener(e => {
+                            this.handleSystemDarkModeChange(e.matches);
+                        });
+                    } catch (e2) {
+                        console.error('Could not setup dark mode listener:', e2);
+                    }
+                }
+            }
+        },
+
+        handleSystemDarkModeChange(isDarkMode) {
+            // Only apply system preference if user hasn't explicitly set a preference
+            if (localStorage.getItem('darkMode') === null) {
+                this.$store.state.darkMode = isDarkMode;
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            }
         },
     }
 }).$mount("#app");

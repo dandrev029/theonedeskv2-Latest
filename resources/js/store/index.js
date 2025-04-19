@@ -9,7 +9,8 @@ const store = new Vuex.Store({
         permissions: {},
         settings: false,
         notifications: [],
-        unreadNotificationsCount: 0
+        unreadNotificationsCount: 0,
+        darkMode: localStorage.getItem('darkMode') === 'true'
     },
     mutations: {
         setSettings(state, data) {
@@ -68,6 +69,24 @@ const store = new Vuex.Store({
                 notification.is_read = true;
             });
             state.unreadNotificationsCount = 0;
+        },
+        toggleDarkMode(state) {
+            state.darkMode = !state.darkMode;
+            localStorage.setItem('darkMode', state.darkMode);
+
+            // Apply or remove dark-mode class to body and set data-theme attribute
+            if (state.darkMode) {
+                document.body.classList.add('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+
+            // Dispatch a custom event that components can listen for
+            document.dispatchEvent(new CustomEvent('darkmode-changed', {
+                detail: { darkMode: state.darkMode }
+            }));
         },
     },
     actions: {

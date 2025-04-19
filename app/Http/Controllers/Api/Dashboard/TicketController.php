@@ -107,7 +107,7 @@ class TicketController extends Controller
         $ticket->priority_id = $request->get('priority_id');
         $ticket->department_id = $request->get('department_id');
         $ticket->user_id = $request->get('user_id');
-        
+
         if ($request->has('scheduled_visit_at')) {
             $ticket->scheduled_visit_at = $request->get('scheduled_visit_at');
         }
@@ -260,50 +260,50 @@ class TicketController extends Controller
 
     /**
      * Get departments filtered by a user's condo location
-     * 
+     *
      * @param Request $request
      * @return JsonResponse
      */
     public function departmentsByUserCondoLocation(Request $request): JsonResponse
     {
         $userId = $request->get('user_id');
-        
+
         if (!$userId) {
             return response()->json(['message' => 'User ID is required'], 400);
         }
-        
+
         $user = User::find($userId);
-        
+
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
-        
+
         $condoLocationId = $user->condo_location_id;
-        
+
         // If user has a condo location, filter departments that are specific to that location
         if ($condoLocationId) {
             $condoLocation = CondoLocation::find($condoLocationId);
-            
+
             if ($condoLocation) {
                 // Get the condo location name
                 $locationName = strtolower($condoLocation->name);
-                
+
                 // Get all departments that belong to this condo location
                 // Using a more precise filtering approach:
                 // 1. Use exact word boundaries when possible
                 // 2. Match department names that explicitly mention the condo location
                 $departmentsQuery = Department::where('public', true);
-                
+
                 // If location name contains multiple words, we handle it differently
                 $locationWords = explode(' ', $locationName);
-                
+
                 if (count($locationWords) > 1) {
                     // For multi-word locations, match departments containing the full location name
                     // or at least the distinctive parts of it
                     $departmentsQuery->where(function($query) use ($locationName, $locationWords) {
                         // Try to match the full location name
                         $query->where('name', 'like', '%' . $locationName . '%');
-                        
+
                         // Also match if it contains distinctive parts (locations often have "One", "The", etc.)
                         // which are less useful for filtering
                         foreach ($locationWords as $word) {
@@ -317,9 +317,9 @@ class TicketController extends Controller
                     // For single-word locations, we can be more precise
                     $departmentsQuery->where('name', 'like', '%' . $locationName . '%');
                 }
-                
+
                 $departments = $departmentsQuery->orderBy('name')->get();
-                
+
                 // If no departments found specifically for this location, don't fall back
                 // to showing all departments - this prevents location-specific departments
                 // from being shown to users from other locations
@@ -327,11 +327,11 @@ class TicketController extends Controller
                     // Return an empty collection instead of all departments
                     return response()->json(DepartmentSelectResource::collection(collect([])));
                 }
-                
+
                 return response()->json(DepartmentSelectResource::collection($departments));
             }
         }
-        
+
         // Default: return all public departments
         return response()->json(DepartmentSelectResource::collection(
             Department::where('public', true)->orderBy('name')->get()
@@ -464,5 +464,51 @@ class TicketController extends Controller
     public function uploadAttachment(StoreFileRequest $request): JsonResponse
     {
         return (new FileController())->uploadAttachment($request);
+    }
+
+    /**
+     * Get ticket updates since a specific timestamp
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updates(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $since = $request->get('since');
+
+        if (!$since) {
+            return response()->json(['updates' => []]);
+        }
+
+        // Query for tickets updated since the given timestamp
+        $query = Ticket::where('updated_at', '>', $since);
+
+        // Apply user permissions
+        if ($user->role_id !== 1) {
+            $query->where(function (Builder $query) use ($user) {
+                $query->where('agent_id', $user->id);
+                $query->orWhere('closed_by', $user->id);
+                $query->orWhereIn('department_id', $user->departments()->pluck('id')->toArray());
+                $query->orWhere(function (Builder $query) use ($user) {
+                    $departments = array_unique(array_merge(
+                        $user->departments()->pluck('id')->toArray(),
+                        Department::where('all_agents', 1)->pluck('id')->toArray()
+                    ));
+                    $query->whereNull('agent_id');
+                    $query->whereIn('department_id', $departments);
+                });
+            });
+        }
+
+        // Get the updated tickets
+        $updatedTickets = $query->orderBy('updated_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'updates' => TicketListResource::collection($updatedTickets)
+        ]);
     }
 }

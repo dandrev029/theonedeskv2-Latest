@@ -1,5 +1,5 @@
 <template>
-    <div class="relative z-10 flex-shrink-0 flex h-16 bg-white shadow-sm">
+    <div class="relative z-10 flex-shrink-0 flex h-16 shadow-sm" :class="bgPrimary">
         <button aria-label="Open sidebar" class="px-4 text-primary-600 focus:outline-none focus:bg-primary-50 focus:text-primary-700 md:hidden" @click="$emit('toggleSidebar')">
             <svg-vue class="h-6 w-6" icon="font-awesome.bars-regular"></svg-vue>
         </button>
@@ -8,6 +8,12 @@
                 <div class="ml-4 flex-1 flex items-center md:ml-6">
                     <!-- Notification Dropdown Component -->
                     <notification-dropdown ref="notificationDropdown" v-on-clickaway="closeNotificationDropdown" />
+
+                    <!-- Dark Mode Toggle -->
+                    <div class="flex items-center ml-2 mr-1">
+                        <span class="text-xs mr-2 hidden sm:inline" :class="textTertiary">{{ $store.state.darkMode ? $t('Light') : $t('Dark') }}</span>
+                        <dark-mode-toggle />
+                    </div>
 
                     <div v-on-clickaway="closeDropdown" class="ml-3 relative">
                         <button
@@ -33,21 +39,21 @@
                             leave-to-class="transform opacity-0 scale-95"
                         >
                             <div v-show="dropdownOpen" class="origin-top-right z-10 absolute right-0 mt-2 w-56 rounded-md shadow-lg">
-                                <div aria-labelledby="user-menu" aria-orientation="vertical" class="py-1 rounded-md bg-white shadow-xs" role="menu">
-                                    <div class="flex items-center px-4 ce py-2 border-b border-gray-100">
+                                <div aria-labelledby="user-menu" aria-orientation="vertical" class="py-1 rounded-md shadow-xs" :class="bgPrimary" role="menu">
+                                    <div class="flex items-center px-4 ce py-2 border-b" :class="borderPrimary">
                                         <img
                                             :src="$store.state.user.avatar === 'gravatar' ? $store.state.user.gravatar : $store.state.user.avatar"
                                             alt="User avatar"
                                             class="h-8 w-8 mr-3 align-middle rounded-full"
                                         />
                                         <div class="w-40">
-                                            <div class="text-sm font-medium truncate text-primary-800">{{ $store.state.user.name }}</div>
-                                            <div class="text-xs truncate text-primary-500">{{ $store.state.user.email }}</div>
+                                            <div class="text-sm font-medium truncate" :class="textPrimary">{{ $store.state.user.name }}</div>
+                                            <div class="text-xs truncate" :class="textTertiary">{{ $store.state.user.email }}</div>
                                         </div>
                                     </div>
                                     <router-link
                                         v-if="$store.state.user ? $store.state.user.role.dashboard_access : false"
-                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                                        class="block px-4 py-2 text-sm transition ease-in-out duration-150" :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                                         role="menuitem"
                                         to="/dashboard/home"
                                         @click.native="dropdownOpen = false"
@@ -55,7 +61,7 @@
                                         {{ $t('Dashboard') }}
                                     </router-link>
                                     <router-link
-                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                                        class="block px-4 py-2 text-sm transition ease-in-out duration-150" :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                                         role="menuitem"
                                         to="/tickets/list"
                                         @click.native="dropdownOpen = false"
@@ -63,7 +69,7 @@
                                         {{ $t('My tickets') }}
                                     </router-link>
                                     <router-link
-                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                                        class="block px-4 py-2 text-sm transition ease-in-out duration-150" :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                                         role="menuitem"
                                         to="/account"
                                         @click.native="dropdownOpen = false"
@@ -71,7 +77,7 @@
                                         {{ $t('Account settings') }}
                                     </router-link>
                                     <a
-                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                                        class="block px-4 py-2 text-sm transition ease-in-out duration-150" :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                                         href="/auth/logout"
                                         role="menuitem"
                                         @click.prevent="signOut"

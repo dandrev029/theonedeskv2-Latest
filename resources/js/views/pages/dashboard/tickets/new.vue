@@ -104,14 +104,23 @@
                                 </div>
                                 <div class="col-span-3">
                                     <label class="block text-sm font-medium leading-5 text-gray-700" for="scheduled_visit_at">{{ $t('Schedule a Visit') }}</label>
-                                    <div class="mt-1 relative rounded-md shadow-sm">
-                                        <input
-                                            id="scheduled_visit_at"
-                                            v-model="ticket.scheduled_visit_at"
-                                            type="datetime-local"
-                                            class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
-                                            :placeholder="$t('Select date and time for visit')"
+                                    <div class="mt-1 flex">
+                                        <div class="relative rounded-md shadow-sm flex-grow">
+                                            <input
+                                                id="scheduled_visit_at"
+                                                v-model="ticket.scheduled_visit_at"
+                                                type="datetime-local"
+                                                class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                                                :placeholder="$t('Select date and time for visit')"
+                                            >
+                                        </div>
+                                        <button
+                                            type="button"
+                                            @click="setVisitTimeToNow"
+                                            class="ml-2 inline-flex items-center px-3 py-2 border border-primary-300 text-sm leading-4 font-medium rounded-md text-primary-700 bg-white hover:text-primary-500 focus:outline-none focus:border-primary-300 focus:shadow-outline-primary active:text-primary-800 active:bg-primary-50 transition ease-in-out duration-150"
                                         >
+                                            {{ $t('NOW') }}
+                                        </button>
                                     </div>
                                     <p class="mt-1 text-xs text-gray-500">{{ $t('Select preferred date and time for tenant visit') }}</p>
                                 </div>
@@ -259,6 +268,20 @@ export default {
         }
     },
     methods: {
+        setVisitTimeToNow() {
+            // Get current date and time in local timezone
+            const now = moment();
+
+            // Format as YYYY-MM-DDThh:mm which is the format expected by datetime-local input
+            this.ticket.scheduled_visit_at = now.format('YYYY-MM-DD[T]HH:mm');
+
+            // Show a notification to confirm
+            this.$notify({
+                title: this.$i18n.t('Visit Time Set').toString(),
+                text: this.$i18n.t('Visit time set to now').toString(),
+                type: 'success'
+            });
+        },
         getFilters() {
             const self = this;
             self.loading.form = true;

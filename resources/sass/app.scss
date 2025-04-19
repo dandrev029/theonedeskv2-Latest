@@ -8,8 +8,18 @@
 @import "~tailwindcss/utilities";
 @import "./custom/utilities";
 
+// Dark Mode
+@import "./custom/dark-mode";
+@import "./custom/dark-mode-components";
+@import "./custom/tinymce-dark-mode";
+@import "./custom/datatable-dark-mode";
+@import "./custom/dark-mode-fix";
+
 // Plugins
 @import '~ladda/css/ladda';
 
 // Custom
 @import "./custom/sections";
+
+// Gradient styles
+@import "../scss/gradient";

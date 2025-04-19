@@ -1,8 +1,8 @@
 <template>
     <div class="grid grid-cols-1 gap-6">
-        <div class="flex flex-col bg-white rounded-lg shadow-sm border border-secondary-200">
-            <div class="p-4 border-b border-secondary-200">
-                <div class="font-semibold text-secondary-800 flex items-center">
+        <div class="flex flex-col rounded-lg shadow-sm border" :class="{'bg-white border-secondary-200': !$store.state.darkMode, 'bg-gray-800 border-gray-700': $store.state.darkMode}">
+            <div class="p-4 border-b" :class="{'border-secondary-200': !$store.state.darkMode, 'border-gray-700': $store.state.darkMode}">
+                <div class="font-semibold flex items-center" :class="{'text-secondary-800': !$store.state.darkMode, 'text-white': $store.state.darkMode}">
                     <svg-vue class="h-5 w-5 text-primary-600 mr-2" icon="font-awesome.chart-bar-regular"></svg-vue>
                     {{ $t('Ticket Response & Resolution Analytics') }}
                 </div>
@@ -10,49 +10,49 @@
             <div class="p-4">
                 <loading :status="loading"/>
                 <div v-if="!loading" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div class="bg-white overflow-hidden rounded-lg border border-secondary-200 p-4">
+                    <div class="overflow-hidden rounded-lg border p-4" :class="{'bg-white border-secondary-200': !$store.state.darkMode, 'bg-gray-800 border-gray-700': $store.state.darkMode}">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 bg-primary-100 rounded-full p-3 mr-4">
                                 <svg-vue class="h-6 w-6 text-primary-600" icon="font-awesome.clock-regular"></svg-vue>
                             </div>
                             <div>
-                                <dt class="text-sm font-medium text-secondary-500 truncate">
+                                <dt class="text-sm font-medium truncate" :class="{'text-secondary-500': !$store.state.darkMode, 'text-gray-400': $store.state.darkMode}">
                                     {{ $t('Avg. First Response Time') }}
                                 </dt>
-                                <dd class="mt-1 text-2xl font-semibold text-secondary-900">
+                                <dd class="mt-1 text-2xl font-semibold" :class="{'text-secondary-900': !$store.state.darkMode, 'text-white': $store.state.darkMode}">
                                     {{ currentMonthStats.avg_response_time }} {{ $t('hours') }}
                                 </dd>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white overflow-hidden rounded-lg border border-secondary-200 p-4">
+                    <div class="overflow-hidden rounded-lg border p-4" :class="{'bg-white border-secondary-200': !$store.state.darkMode, 'bg-gray-800 border-gray-700': $store.state.darkMode}">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 bg-green-100 rounded-full p-3 mr-4">
                                 <svg-vue class="h-6 w-6 text-green-600" icon="font-awesome.check-circle-regular"></svg-vue>
                             </div>
                             <div>
-                                <dt class="text-sm font-medium text-secondary-500 truncate">
+                                <dt class="text-sm font-medium truncate" :class="{'text-secondary-500': !$store.state.darkMode, 'text-gray-400': $store.state.darkMode}">
                                     {{ $t('Avg. Resolution Time') }}
                                 </dt>
-                                <dd class="mt-1 text-2xl font-semibold text-secondary-900">
+                                <dd class="mt-1 text-2xl font-semibold" :class="{'text-secondary-900': !$store.state.darkMode, 'text-white': $store.state.darkMode}">
                                     {{ currentMonthStats.avg_resolution_time }} {{ $t('hours') }}
                                 </dd>
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white overflow-hidden rounded-lg border border-secondary-200 p-4">
+                    <div class="overflow-hidden rounded-lg border p-4" :class="{'bg-white border-secondary-200': !$store.state.darkMode, 'bg-gray-800 border-gray-700': $store.state.darkMode}">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 bg-blue-100 rounded-full p-3 mr-4">
                                 <svg-vue class="h-6 w-6 text-blue-600" icon="font-awesome.percentage-regular"></svg-vue>
                             </div>
                             <div>
-                                <dt class="text-sm font-medium text-secondary-500 truncate">
+                                <dt class="text-sm font-medium truncate" :class="{'text-secondary-500': !$store.state.darkMode, 'text-gray-400': $store.state.darkMode}">
                                     {{ $t('First Response Rate') }}
                                 </dt>
-                                <dd class="mt-1 text-2xl font-semibold text-secondary-900">
+                                <dd class="mt-1 text-2xl font-semibold" :class="{'text-secondary-900': !$store.state.darkMode, 'text-white': $store.state.darkMode}">
                                     {{ currentMonthStats.first_response_rate }}%
                                 </dd>
-                                <p class="text-xs text-secondary-500">
+                                <p class="text-xs" :class="{'text-secondary-500': !$store.state.darkMode, 'text-gray-400': $store.state.darkMode}">
                                     {{ currentMonthStats.tickets_with_response }} / {{ currentMonthStats.total_tickets }} {{ $t('tickets') }}
                                 </p>
                             </div>
@@ -76,7 +76,7 @@ export default {
             loading: true,
             chartData: {
                 labels: [
-                    this.$t('Jan'), this.$t('Feb'), this.$t('Mar'), this.$t('Apr'), this.$t('May'), this.$t('Jun'), 
+                    this.$t('Jan'), this.$t('Feb'), this.$t('Mar'), this.$t('Apr'), this.$t('May'), this.$t('Jun'),
                     this.$t('Jul'), this.$t('Aug'), this.$t('Sept'), this.$t('Oct'), this.$t('Nov'), this.$t('Dec')
                 ],
                 datasets: [

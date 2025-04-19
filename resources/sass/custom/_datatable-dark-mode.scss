@@ -1,0 +1,105 @@
+/* DataTables Dark Mode Styles */
+
+.dark-mode-datatable {
+    /* DataTable Wrapper */
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    
+    /* DataTable Header */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_processing,
+    .dataTables_wrapper .dataTables_paginate {
+        color: var(--text-secondary);
+    }
+    
+    /* DataTable Search Input */
+    .dataTables_wrapper .dataTables_filter input {
+        background-color: var(--input-bg);
+        border-color: var(--input-border);
+        color: var(--text-primary);
+        
+        &::placeholder {
+            color: var(--text-tertiary);
+        }
+    }
+    
+    /* DataTable Length Select */
+    .dataTables_wrapper .dataTables_length select {
+        background-color: var(--input-bg);
+        border-color: var(--input-border);
+        color: var(--text-primary);
+    }
+    
+    /* DataTable Pagination */
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        background-color: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-secondary) !important;
+        
+        &:hover {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary) !important;
+            border-color: var(--border-color);
+        }
+        
+        &.current,
+        &.current:hover {
+            background: linear-gradient(180deg, #18A5A7 0%, #BFFFC7 100%);
+            color: white !important;
+            border-color: transparent;
+        }
+        
+        &.disabled,
+        &.disabled:hover {
+            background-color: var(--bg-secondary);
+            color: var(--text-tertiary) !important;
+            border-color: var(--border-color);
+        }
+    }
+}
+
+.dark-mode-table {
+    /* DataTable */
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    
+    /* DataTable Header */
+    thead th {
+        background-color: var(--bg-secondary);
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+    
+    /* DataTable Body */
+    tbody td {
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    /* DataTable Row Hover */
+    tbody tr:hover {
+        background-color: var(--bg-secondary);
+    }
+    
+    /* DataTable Striped Rows */
+    &.stripe tbody tr.odd {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+    
+    /* DataTable Bordered */
+    &.bordered td,
+    &.bordered th {
+        border-color: var(--border-color);
+    }
+    
+    /* DataTable Sorting Icons */
+    thead .sorting:after,
+    thead .sorting_asc:after,
+    thead .sorting_desc:after,
+    thead .sorting_asc_disabled:after,
+    thead .sorting_desc_disabled:after {
+        color: var(--text-tertiary);
+    }
+}

@@ -1,5 +1,6 @@
 <template>
     <div class="relative flex-1">
+        <!-- Main Header -->
         <div class="bg-white border-b border-gray-200 py-6 sm:px-6 lg:px-8 px-5">
             <div class="md:flex md:items-center md:justify-between">
                 <div class="flex-1 min-w-0">
@@ -282,6 +283,55 @@
             </div>
         </div>
         <loading :status="loading"/>
+
+        <!-- Sticky Search Bar and View Toggle -->
+        <div class="sticky-header py-3 px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between">
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <div class="search-icon">
+                        <svg-vue class="h-5 w-5" icon="font-awesome.search-regular"></svg-vue>
+                    </div>
+                    <input
+                        v-model.lazy="filters.search"
+                        :placeholder="$t('Search tickets...')"
+                        type="text"
+                        @keyup.enter="getTickets"
+                    >
+                </div>
+
+                <!-- View Toggle and Actions -->
+                <div class="flex items-center space-x-2">
+                    <!-- View Toggle -->
+                    <div class="flex rounded-md shadow-sm">
+                        <button
+                            :class="['view-toggle-btn', !isGridView ? 'active' : '']"
+                            @click="isGridView = false"
+                        >
+                            <svg-vue class="h-4 w-4 mr-1" icon="font-awesome.list-solid"></svg-vue>
+                            {{ $t('List') }}
+                        </button>
+                        <button
+                            :class="['view-toggle-btn', isGridView ? 'active' : '']"
+                            @click="isGridView = true"
+                        >
+                            <svg-vue class="h-4 w-4 mr-1" icon="font-awesome.th-large-solid"></svg-vue>
+                            {{ $t('Grid') }}
+                        </button>
+                    </div>
+
+                    <!-- Refresh Button -->
+                    <button
+                        type="button"
+                        class="view-toggle-btn"
+                        @click="getTickets"
+                    >
+                        <svg-vue class="h-4 w-4" icon="font-awesome.sync-regular"></svg-vue>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="tickets-list">
             <div class="hidden sm:block">
                 <div v-show="selectedRows.length > 0" v-on-clickaway="closeQuickActionDropdown" class="tickets-list-toolbar">
@@ -374,7 +424,50 @@
                     </button>
                 </div>
             </div>
-            <template v-if="ticketList.length > 0">
+            <!-- Grid View -->
+            <div v-if="isGridView && ticketList.length > 0" class="p-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <ticket-card
+                        v-for="ticket in ticketList"
+                        :key="ticket.id"
+                        :ticket="ticket"
+                        :is-new="newTickets.includes(ticket.id)"
+                        class="relative"
+                        @click.native="$router.push('/dashboard/tickets/' + ticket.uuid + '/manage')"
+                    >
+                        <div class="absolute top-0 right-0 p-2">
+                            <input
+                                :id="'ticket-grid-' + ticket.id"
+                                v-model="selectedRows"
+                                :value="ticket.id"
+                                aria-label="Checkbox"
+                                class="form-checkbox cursor-pointer h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+                                type="checkbox"
+                                @change="selectTicket"
+                                @click.stop
+                            >
+                        </div>
+                    </ticket-card>
+                </div>
+
+                <!-- Infinite Scroll Loader -->
+                <div v-if="hasMoreTickets" class="infinite-scroll-loader" v-intersect="loadMoreTickets">
+                    <div v-if="loadingMore" class="flex items-center justify-center">
+                        <svg-vue class="animate-spin h-5 w-5 text-primary-500 mr-2" icon="font-awesome.spinner-solid"></svg-vue>
+                        {{ $t('Loading more tickets...') }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skeleton Loader for Grid View -->
+            <div v-else-if="isGridView && loading" class="p-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <ticket-skeleton v-for="n in 6" :key="n" :is-grid="true" />
+                </div>
+            </div>
+
+            <!-- List View -->
+            <template v-else-if="!isGridView && ticketList.length > 0">
                 <div class="sm:hidden">
                     <ul class="border-b border-gray-200 divide-y divide-gray-200">
                         <template v-for="ticket in ticketList">
@@ -581,6 +674,12 @@
                     </div>
                 </div>
             </template>
+            <!-- Skeleton Loader for List View -->
+            <div v-else-if="!isGridView && loading" class="p-4">
+                <ticket-skeleton v-for="n in 5" :key="n" :is-grid="false" />
+            </div>
+
+            <!-- Empty State -->
             <template v-else-if="!loading">
                 <div class="h-full flex">
                     <div class="m-auto">
@@ -591,17 +690,24 @@
                             <div class="flex justify-center items-center">
                                 <div class="w-full font-semibold text-2xl">{{ $t('No records found') }}</div>
                             </div>
-                            <template v-if="anyFilter">
-                                <div class="flex justify-center items-center">
-                                    <div>{{ $t('Try changing the filters, or rephrasing your search') }}.</div>
-                                </div>
-                            </template>
+                            <div class="mt-4 text-center text-gray-500">
+                                {{ $t('Try adjusting your search or filter to find what you\'re looking for.') }}
+                            </div>
+                            <div v-if="anyFilter" class="mt-6">
+                                <button
+                                    class="btn btn-blue shadow-sm rounded-md"
+                                    @click="resetFilters"
+                                >
+                                    {{ $t('Reset filters') }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </template>
         </div>
-        <nav class="bg-white absolute bottom-0 left-0 w-full px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <!-- Pagination (only visible in list view) -->
+        <nav v-if="!isGridView && ticketList.length > 0" class="bg-white absolute bottom-0 left-0 w-full px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
             <div class="hidden sm:block">
                 <p class="text-sm leading-5 text-gray-700">
                     {{ $t('Showing') }}
@@ -722,7 +828,9 @@ export default {
     data() {
         return {
             loading: true,
+            loadingMore: false,
             filtersSidebar: false,
+            isGridView: false,
             filters: {
                 search: '',
                 user: '',
@@ -757,8 +865,12 @@ export default {
             statusList: [],
             priorityList: [],
             ticketList: [],
+            allTickets: [],
+            newTickets: [],
             selectAll: false,
             selectedRows: [],
+            observer: null,
+            lastUpdatedAt: null
         }
     },
     computed: {
@@ -791,6 +903,9 @@ export default {
             }
 
             return false;
+        },
+        hasMoreTickets() {
+            return this.pagination.currentPage < this.pagination.totalPages;
         }
     },
     filters: {
@@ -805,6 +920,13 @@ export default {
     mounted() {
         this.getTickets();
         this.getFilters();
+        this.setupIntersectionObserver();
+        this.setupRealTimeUpdates();
+    },
+    beforeDestroy() {
+        if (this.observer) {
+            this.observer.disconnect();
+        }
     },
     methods: {
         openFiltersSidebar() {
@@ -951,6 +1073,108 @@ export default {
                 self.getTickets();
             }).catch(function () {
                 self.closeQuickActionDropdown();
+            });
+        },
+
+        // New methods for modern UI features
+        resetFilters() {
+            this.filters = {
+                search: '',
+                user: '',
+                agents: [],
+                departments: [],
+                labels: [],
+                statuses: [1, 2],
+                priorities: [],
+            };
+            this.getTickets();
+        },
+
+        setupIntersectionObserver() {
+            // Create an Intersection Observer for infinite scroll
+            this.observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && this.hasMoreTickets && !this.loadingMore) {
+                    this.loadMoreTickets();
+                }
+            }, {
+                threshold: 0.5
+            });
+        },
+
+        loadMoreTickets() {
+            if (!this.hasMoreTickets || this.loadingMore) return;
+
+            const self = this;
+            self.loadingMore = true;
+            const nextPage = self.pagination.currentPage + 1;
+
+            axios.get('api/dashboard/tickets', {
+                params: {
+                    page: nextPage,
+                    sort: self.sort,
+                    perPage: self.perPage,
+                    search: self.filters.search,
+                    user: self.filters.user,
+                    agents: self.filters.agents,
+                    departments: self.filters.departments,
+                    labels: self.filters.labels,
+                    statuses: self.filters.statuses,
+                    priorities: self.filters.priorities,
+                }
+            }).then(function (response) {
+                // Append new tickets to the list
+                const newTickets = response.data.items;
+                self.ticketList = [...self.ticketList, ...newTickets];
+                self.pagination = response.data.pagination;
+                self.loadingMore = false;
+            }).catch(function () {
+                self.loadingMore = false;
+            });
+        },
+
+        setupRealTimeUpdates() {
+            // Store the last updated timestamp to check for new tickets
+            if (this.ticketList.length > 0) {
+                this.lastUpdatedAt = this.ticketList[0].updated_at;
+            }
+
+            // Set up a polling interval to check for updates
+            setInterval(() => {
+                this.checkForUpdates();
+            }, 30000); // Check every 30 seconds
+        },
+
+        checkForUpdates() {
+            if (!this.lastUpdatedAt) return;
+
+            const self = this;
+            axios.get('api/dashboard/tickets/updates', {
+                params: {
+                    since: self.lastUpdatedAt
+                }
+            }).then(function (response) {
+                if (response.data.updates && response.data.updates.length > 0) {
+                    // Mark new or updated tickets
+                    const updatedIds = response.data.updates.map(ticket => ticket.id);
+                    self.newTickets = [...new Set([...self.newTickets, ...updatedIds])];
+
+                    // Update the last updated timestamp
+                    if (response.data.updates[0].updated_at) {
+                        self.lastUpdatedAt = response.data.updates[0].updated_at;
+                    }
+
+                    // Show notification
+                    self.$notify({
+                        title: self.$i18n.t('New Updates').toString(),
+                        text: self.$i18n.t('There are new or updated tickets').toString(),
+                        type: 'info'
+                    });
+
+                    // Refresh the list if we're on the first page
+                    if (self.pagination.currentPage === 1) {
+                        self.getTickets();
+                    }
+                }
             });
         },
     }

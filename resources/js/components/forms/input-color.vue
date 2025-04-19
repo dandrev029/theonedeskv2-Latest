@@ -1,6 +1,6 @@
 <template>
     <div>
-        <label :for="id" class="block text-sm font-medium leading-5 text-gray-700">{{ label }}</label>
+        <label :for="id" class="block text-sm font-medium leading-5" :class="{'text-gray-700': !$store.state.darkMode, 'text-gray-300': $store.state.darkMode}">{{ label }}</label>
         <div class="mt-1 flex rounded-md shadow-sm">
             <div class="relative flex items-stretch flex-grow focus-within:z-10">
                 <div :style="{backgroundColor: input}" class="absolute rounded-l-md inset-y-0 left-0 w-10 flex items-center pointer-events-none border-r border-gray-400"/>
@@ -10,7 +10,7 @@
                     :placeholder="placeholder"
                     :required="required"
                     aria-label="Color picker"
-                    class="form-input rounded-none rounded-l-md pl-12 block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
+                    class="form-input rounded-none rounded-l-md pl-12 block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5" :class="{'bg-white text-gray-900 border-gray-300': !$store.state.darkMode, 'bg-gray-800 text-white border-gray-700': $store.state.darkMode}"
                 >
             </div>
             <div v-on-clickaway="closeDropdown" class="inline-block text-left">

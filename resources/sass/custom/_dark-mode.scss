@@ -1,0 +1,258 @@
+/* Dark Mode Variables and Styles */
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-tertiary: #6b7280;
+    --border-color: #e5e7eb;
+    --card-bg: #ffffff;
+    --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --input-bg: #ffffff;
+    --input-border: #d1d5db;
+    --input-focus-border: rgba(24, 165, 167, 0.5);
+    --input-focus-shadow: 0 0 0 1px rgba(24, 165, 167, 0.5);
+    --header-bg: #ffffff;
+    --sidebar-bg: #ffffff;
+}
+
+.dark-mode {
+    --bg-primary: #111827;
+    --bg-secondary: #1f2937;
+    --bg-tertiary: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #e5e7eb;
+    --text-tertiary: #d1d5db;
+    --border-color: #374151;
+    --card-bg: #1f2937;
+    --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --input-bg: #374151;
+    --input-border: #4b5563;
+    --input-focus-border: rgba(24, 165, 167, 0.7);
+    --input-focus-shadow: 0 0 0 1px rgba(24, 165, 167, 0.7);
+    --header-bg: #1f2937;
+    --sidebar-bg: #111827;
+}
+
+/* Apply dark mode to base elements */
+.dark-mode {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+
+    /* Ticket List */
+    .tickets-list {
+        background-color: var(--bg-primary);
+    }
+
+    /* Sticky Header */
+    .sticky-header {
+        background-color: var(--header-bg);
+        border-color: var(--border-color);
+    }
+
+    /* Search Bar */
+    .search-bar input {
+        background-color: var(--input-bg);
+        border-color: var(--input-border);
+        color: var(--text-primary);
+    }
+
+    .search-bar input::placeholder {
+        color: var(--text-tertiary);
+    }
+
+    .search-bar .search-icon {
+        color: var(--text-tertiary);
+    }
+
+    /* View Toggle Button */
+    .view-toggle-btn {
+        background-color: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    .view-toggle-btn:hover {
+        background-color: var(--bg-tertiary);
+    }
+
+    .view-toggle-btn.active {
+        background-color: rgba(24, 165, 167, 0.2);
+        color: #18A5A7;
+        border-color: rgba(24, 165, 167, 0.3);
+    }
+
+    /* Ticket Card */
+    .ticket-card {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        box-shadow: var(--card-shadow);
+    }
+
+    .ticket-card-header {
+        border-color: var(--border-color);
+    }
+
+    .ticket-card-footer {
+        background-color: var(--bg-secondary);
+        border-color: var(--border-color);
+    }
+
+    /* Table */
+    table {
+        background-color: var(--bg-primary);
+    }
+
+    table th {
+        color: var(--text-secondary);
+    }
+
+    table td {
+        color: var(--text-primary);
+    }
+
+    table tr:hover {
+        background-color: var(--bg-secondary);
+    }
+
+    /* Pagination */
+    nav.bg-white {
+        background-color: var(--bg-primary) !important;
+        border-color: var(--border-color);
+    }
+
+    .pagination-link {
+        background-color: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
+    /* Form inputs in dark mode */
+    input, select, textarea, .form-input, .form-select, .form-textarea {
+        background-color: var(--input-bg) !important;
+        border-color: var(--input-border) !important;
+        color: var(--text-primary) !important;
+    }
+
+    input::placeholder, select::placeholder, textarea::placeholder,
+    .form-input::placeholder, .form-select::placeholder, .form-textarea::placeholder {
+        color: var(--text-tertiary) !important;
+    }
+
+    /* Form labels */
+    .form-label, label {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Form help text */
+    .form-help, .form-hint, .form-text {
+        color: var(--text-tertiary) !important;
+    }
+
+    /* Form validation */
+    .form-error, .form-invalid {
+        color: #ef4444 !important;
+    }
+
+    /* Dropdown menus */
+    .dropdown-menu, .dropdown-content {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    .dropdown-item {
+        color: var(--text-secondary) !important;
+
+        &:hover {
+            background-color: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
+        }
+    }
+
+    /* Buttons with gray colors */
+    .btn-gray-100, .btn-gray-200, .btn-gray-300, .btn-gray-400 {
+        background-color: var(--bg-tertiary) !important;
+        color: var(--text-secondary) !important;
+        border-color: var(--border-color) !important;
+
+        &:hover {
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+    }
+
+    /* Skeleton Loading */
+    .skeleton {
+        background-color: var(--bg-tertiary);
+    }
+
+    /* Charts */
+    .chartjs-render-monitor {
+        background-color: transparent;
+    }
+
+    canvas {
+        background-color: transparent;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-card {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+
+    /* Fix for any remaining white backgrounds */
+    .bg-white {
+        background-color: var(--card-bg) !important;
+    }
+
+    /* Fix for text colors in dark mode */
+    /* Primary text colors */
+    .text-secondary-900, .text-gray-900 {
+        color: var(--text-primary) !important;
+    }
+
+    .text-secondary-800, .text-gray-800 {
+        color: var(--text-primary) !important;
+    }
+
+    /* Secondary text colors */
+    .text-secondary-700, .text-gray-700 {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Tertiary text colors */
+    .text-secondary-600, .text-secondary-500, .text-gray-600, .text-gray-500 {
+        color: var(--text-tertiary) !important;
+    }
+
+    /* Muted text colors */
+    .text-secondary-400, .text-gray-400 {
+        color: var(--text-tertiary) !important;
+    }
+
+    /* Form labels */
+    label.text-gray-700 {
+        color: var(--text-secondary) !important;
+    }
+
+    /* Headings */
+    h1, h2, h3, h4, h5, h6 {
+        &.text-gray-900, &.text-gray-800 {
+            color: var(--text-primary) !important;
+        }
+    }
+
+    /* Links */
+    a:not(.btn):not(.router-link) {
+        &.text-gray-700, &.text-gray-600 {
+            color: var(--text-secondary) !important;
+
+            &:hover {
+                color: var(--text-primary) !important;
+            }
+        }
+    }
+}

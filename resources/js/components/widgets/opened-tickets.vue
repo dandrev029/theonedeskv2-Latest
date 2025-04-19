@@ -1,7 +1,7 @@
 <template>
-    <div class="flex flex-col bg-white rounded-lg shadow-sm border border-secondary-200">
-        <div class="p-4 border-b border-secondary-200">
-            <div class="font-semibold text-secondary-800 flex items-center">
+    <div class="flex flex-col rounded-lg shadow-sm border" :class="{'bg-white border-secondary-200': !$store.state.darkMode, 'bg-gray-800 border-gray-700': $store.state.darkMode}">
+        <div class="p-4 border-b" :class="{'border-secondary-200': !$store.state.darkMode, 'border-gray-700': $store.state.darkMode}">
+            <div class="font-semibold flex items-center" :class="{'text-secondary-800': !$store.state.darkMode, 'text-white': $store.state.darkMode}">
                 <svg-vue class="h-5 w-5 text-primary-600 mr-2" icon="font-awesome.chart-line-regular"></svg-vue>
                 {{ $t('Tickets this month') }} ({{ monthName }} {{ year }})
             </div>
@@ -12,15 +12,15 @@
                 <div class="flex items-center space-x-4">
                     <div class="flex items-center">
                         <span class="inline-block w-3 h-3 rounded-full bg-red-500 mr-1"></span>
-                        <span class="text-xs text-secondary-600">{{ $t('Opened') }}</span>
+                        <span class="text-xs" :class="{'text-secondary-600': !$store.state.darkMode, 'text-gray-300': $store.state.darkMode}">{{ $t('Opened') }}</span>
                     </div>
                     <div class="flex items-center">
                         <span class="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-1"></span>
-                        <span class="text-xs text-secondary-600">{{ $t('Pending') }}</span>
+                        <span class="text-xs" :class="{'text-secondary-600': !$store.state.darkMode, 'text-gray-300': $store.state.darkMode}">{{ $t('Pending') }}</span>
                     </div>
                     <div class="flex items-center">
                         <span class="inline-block w-3 h-3 rounded-full bg-green-500 mr-1"></span>
-                        <span class="text-xs text-secondary-600">{{ $t('Solved') }}</span>
+                        <span class="text-xs" :class="{'text-secondary-600': !$store.state.darkMode, 'text-gray-300': $store.state.darkMode}">{{ $t('Solved') }}</span>
                     </div>
                 </div>
             </div>
@@ -83,12 +83,20 @@ export default {
                     yAxes: [{
                         ticks: {
                             beginAtZero: true,
-                            precision: 0 // Only show whole numbers
+                            precision: 0, // Only show whole numbers
+                            fontColor: this.$store.state.darkMode ? '#e5e7eb' : '#4b5563'
+                        },
+                        gridLines: {
+                            color: this.$store.state.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                         }
                     }],
                     xAxes: [{
+                        ticks: {
+                            fontColor: this.$store.state.darkMode ? '#e5e7eb' : '#4b5563'
+                        },
                         gridLines: {
-                            display: false
+                            display: false,
+                            color: this.$store.state.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                         }
                     }]
                 },
@@ -98,6 +106,11 @@ export default {
                 tooltips: {
                     mode: 'index',
                     intersect: false,
+                    backgroundColor: this.$store.state.darkMode ? '#374151' : '#fff',
+                    titleFontColor: this.$store.state.darkMode ? '#f9fafb' : '#111827',
+                    bodyFontColor: this.$store.state.darkMode ? '#e5e7eb' : '#4b5563',
+                    borderColor: this.$store.state.darkMode ? '#4b5563' : '#e5e7eb',
+                    borderWidth: 1,
                     callbacks: {
                         title: function(tooltipItem, data) {
                             const day = data.labels[tooltipItem[0].index];

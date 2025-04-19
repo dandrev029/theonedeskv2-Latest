@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="my-3 mx-4 uppercase text-primary-200 text-xs font-semibold">
+        <div class="my-3 mx-4 uppercase text-white text-xs font-semibold">
             {{ $t('General') }}
         </div>
         <menu-item
@@ -32,7 +32,7 @@
                 $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.CondoLocationController'] ||
                 $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController']
             )"
-            class="my-3 mx-4 uppercase text-primary-200 text-xs font-semibold"
+            class="my-3 mx-4 uppercase text-white text-xs font-semibold"
         >
             {{ $t('Administration') }}
         </div>

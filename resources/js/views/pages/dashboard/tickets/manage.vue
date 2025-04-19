@@ -253,7 +253,7 @@
             <div :style="{flex: '0 0 320px', width: '320px'}" class="hidden lg:block border-l">
                 <div v-if="ticket.user" class="h-full overflow-y-auto">
                     <!-- Tenant Profile Section -->
-                    <div class="bg-gradient-to-r from-indigo-600 to-blue-500 py-6 px-4">
+                    <div class="ticket-details-user-gradient py-6 px-4">
                         <div class="flex items-center">
                             <div class="relative">
                                 <img
@@ -340,8 +340,8 @@
                             <div class="flex items-center">
                                 <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.building-regular"></svg-vue>
                                 <span class="text-sm text-gray-800">
-                                    {{ ticket.user && ticket.user.unit_number 
-                                       ? ticket.user.unit_number 
+                                    {{ ticket.user && ticket.user.unit_number
+                                       ? ticket.user.unit_number
                                        : $t('Not specified') }}
                                 </span>
                             </div>

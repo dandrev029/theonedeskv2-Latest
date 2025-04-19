@@ -30,9 +30,12 @@
                     leave-to-class="-translate-x-full"
                 >
                     <div
-                        class="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-primary-800"
+                        class="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4"
                         v-show="sidebarVisible"
                     >
+                        <div class="sidebar-header-solid py-2 mb-3">
+                            <logo text-class="text-white"></logo>
+                        </div>
                         <div class="absolute top-0 right-0 -mr-14 p-1">
                             <button
                                 @click="close"
@@ -44,10 +47,8 @@
                                 </svg>
                             </button>
                         </div>
-                        <router-link class="flex flex-shrink-0" to="/">
-                            <logo></logo>
-                        </router-link>
-                        <div class="mt-5 flex-1 h-0 overflow-y-auto">
+
+                        <div class="mt-5 flex-1 h-0 overflow-y-auto sidebar-gradient">
                             <nav>
                                 <menu-list mobile></menu-list>
                             </nav>
@@ -59,11 +60,11 @@
         </div>
         <div class="hidden md:flex md:flex-shrink-0">
             <div class="flex flex-col w-64">
-                <router-link class="flex h-16 flex-shrink-0 bg-primary-900" to="/">
-                    <logo></logo>
+                <router-link class="flex h-16 flex-shrink-0 sidebar-header-solid" to="/">
+                    <logo text-class="text-white"></logo>
                 </router-link>
                 <div class="h-0 flex-1 flex flex-col overflow-y-auto">
-                    <nav class="flex-1 pb-4 bg-primary-800">
+                    <nav class="flex-1 pb-4 sidebar-gradient">
                         <menu-list></menu-list>
                     </nav>
                 </div>

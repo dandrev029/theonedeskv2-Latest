@@ -35,6 +35,7 @@ class TicketConcernResource extends JsonResource
                     'name' => $this->department->name,
                 ];
             }),
+            'tickets_count' => $this->when(isset($this->tickets_count), $this->tickets_count),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];

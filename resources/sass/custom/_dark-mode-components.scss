@@ -1,0 +1,267 @@
+/* Dark Mode Component-Specific Styles */
+
+/* This file contains dark mode styles for specific components */
+
+.dark-mode {
+    /* Ticket List */
+    .ticket-list-item {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        
+        &:hover {
+            background-color: var(--bg-secondary);
+        }
+        
+        .ticket-title {
+            color: var(--text-primary);
+        }
+        
+        .ticket-description {
+            color: var(--text-secondary);
+        }
+        
+        .ticket-meta {
+            color: var(--text-tertiary);
+        }
+    }
+    
+    /* Dashboard Cards */
+    .stat-card {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        
+        .stat-title {
+            color: var(--text-secondary);
+        }
+        
+        .stat-value {
+            color: var(--text-primary);
+        }
+        
+        .stat-icon {
+            color: var(--text-primary);
+        }
+    }
+    
+    /* Ticket Chat */
+    .chat-message {
+        &.user-message {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        &.agent-message {
+            background-color: rgba(24, 165, 167, 0.1);
+            color: var(--text-primary);
+        }
+        
+        .message-meta {
+            color: var(--text-tertiary);
+        }
+    }
+    
+    /* Sidebar Navigation */
+    .sidebar-nav {
+        background-color: var(--sidebar-bg);
+        
+        .nav-item {
+            color: var(--text-secondary);
+            
+            &:hover, &.active {
+                background-color: var(--bg-secondary);
+                color: var(--text-primary);
+            }
+            
+            .nav-icon {
+                color: var(--text-tertiary);
+            }
+            
+            &:hover .nav-icon, &.active .nav-icon {
+                color: var(--text-primary);
+            }
+        }
+    }
+    
+    /* Tables */
+    table {
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+        
+        th {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            border-color: var(--border-color);
+        }
+        
+        td {
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        tr:hover td {
+            background-color: var(--bg-secondary);
+        }
+    }
+    
+    /* Modals */
+    .modal-content {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        
+        .modal-header {
+            border-color: var(--border-color);
+            
+            .modal-title {
+                color: var(--text-primary);
+            }
+            
+            .close {
+                color: var(--text-secondary);
+                
+                &:hover {
+                    color: var(--text-primary);
+                }
+            }
+        }
+        
+        .modal-body {
+            color: var(--text-primary);
+        }
+        
+        .modal-footer {
+            border-color: var(--border-color);
+        }
+    }
+    
+    /* Tabs */
+    .tabs {
+        border-color: var(--border-color);
+        
+        .tab {
+            color: var(--text-secondary);
+            
+            &:hover {
+                color: var(--text-primary);
+            }
+            
+            &.active {
+                color: var(--text-primary);
+                border-color: #18A5A7;
+            }
+        }
+    }
+    
+    /* Alerts */
+    .alert {
+        &.alert-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+        
+        &.alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+        
+        &.alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+        
+        &.alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+    }
+    
+    /* Badges */
+    .badge {
+        &.badge-primary {
+            background-color: rgba(24, 165, 167, 0.1);
+            color: #4fd1c5;
+        }
+        
+        &.badge-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+        
+        &.badge-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #6ee7b7;
+        }
+        
+        &.badge-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+        }
+        
+        &.badge-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #fcd34d;
+        }
+        
+        &.badge-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #93c5fd;
+        }
+    }
+    
+    /* Tooltips */
+    .tooltip {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+    }
+    
+    /* Dropdown Menus */
+    .dropdown-menu {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+        
+        .dropdown-item {
+            color: var(--text-secondary);
+            
+            &:hover {
+                background-color: var(--bg-secondary);
+                color: var(--text-primary);
+            }
+        }
+        
+        .dropdown-divider {
+            border-color: var(--border-color);
+        }
+    }
+    
+    /* Pagination */
+    .pagination {
+        .page-item {
+            .page-link {
+                background-color: var(--bg-secondary);
+                border-color: var(--border-color);
+                color: var(--text-secondary);
+                
+                &:hover {
+                    background-color: var(--bg-tertiary);
+                    color: var(--text-primary);
+                }
+            }
+            
+            &.active .page-link {
+                background-color: #18A5A7;
+                border-color: #18A5A7;
+                color: white;
+            }
+            
+            &.disabled .page-link {
+                background-color: var(--bg-secondary);
+                border-color: var(--border-color);
+                color: var(--text-tertiary);
+            }
+        }
+    }
+}

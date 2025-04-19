@@ -5,7 +5,7 @@
                 aria-expanded="true"
                 aria-haspopup="listbox"
                 aria-labelledby="listbox-label"
-                class="relative w-full rounded-md border border-secondary-300 bg-white text-left focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition ease-in-out duration-150 sm:text-sm sm:leading-5"
+                class="relative w-full rounded-md border text-left focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition ease-in-out duration-150 sm:text-sm sm:leading-5" :class="{'border-secondary-300 bg-white': !$store.state.darkMode, 'border-gray-700 bg-gray-800 text-white': $store.state.darkMode}"
                 type="button"
                 @click="openDropdown"
             >
@@ -18,7 +18,7 @@
                                     v-model="search"
                                     :placeholder="$t('Search')"
                                     aria-label="Search"
-                                    class="pl-3 pr-10 py-2 relative w-full rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition ease-in-out duration-150 sm:text-sm sm:leading-5"
+                                    class="pl-3 pr-10 py-2 relative w-full rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition ease-in-out duration-150 sm:text-sm sm:leading-5" :class="{'bg-white text-gray-900': !$store.state.darkMode, 'bg-gray-700 text-white': $store.state.darkMode}"
                                     @click.prevent
                                 >
                             </div>
@@ -47,9 +47,9 @@
                 </span>
             </button>
         </div>
-        <div v-show="open" class="absolute z-20 mt-1 mb-2 w-full rounded-md bg-white shadow-lg">
+        <div v-show="open" class="absolute z-20 mt-1 mb-2 w-full rounded-md shadow-lg" :class="{'bg-white': !$store.state.darkMode, 'bg-gray-800': $store.state.darkMode}">
             <ul
-                class="max-h-60  rounded-md py-1 text-base leading-6 shadow-xs overflow-auto focus:outline-none sm:text-sm sm:leading-5"
+                class="max-h-60 rounded-md py-1 text-base leading-6 shadow-xs overflow-auto focus:outline-none sm:text-sm sm:leading-5"
                 role="listbox"
                 tabindex="-1"
             >
@@ -57,7 +57,7 @@
                     <li
                         v-if="!required"
                         id="listbox-item-0"
-                        class="text-gray-900 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100"
+                        class="cursor-pointer select-none relative py-2 pl-3 pr-9" :class="{'text-gray-900 hover:bg-gray-100': !$store.state.darkMode, 'text-white hover:bg-gray-700': $store.state.darkMode}"
                         role="option"
                         @click="selectOption(null)"
                     >
@@ -71,7 +71,7 @@
                 <template v-if="Object.keys(filteredOptions).length === 0">
                     <li
                         id="listbox-item-empty"
-                        class="text-gray-900 select-none relative py-2 pl-3 pr-9"
+                        class="select-none relative py-2 pl-3 pr-9" :class="{'text-gray-900': !$store.state.darkMode, 'text-white': $store.state.darkMode}"
                         role="option"
                     >
                         <slot :anySelected="anySelected" name="notFound">
@@ -87,7 +87,7 @@
                     <template v-for="(option, index) in filteredOptions">
                         <li
                             :id="'listbox-item-' + index"
-                            class="text-gray-900 cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100"
+                            class="cursor-pointer select-none relative py-2 pl-3 pr-9" :class="{'text-gray-900 hover:bg-gray-100': !$store.state.darkMode, 'text-white hover:bg-gray-700': $store.state.darkMode}"
                             role="option"
                             @click="selectOption(option[optionKey])"
                         >
