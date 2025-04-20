@@ -196,18 +196,46 @@ export default {
         addReply() {
             const self = this;
             self.loading.reply = true;
-            axios.post('api/tickets/' + self.$route.params.uuid + '/reply', self.ticketReply).then(function (response) {
+
+            // Make sure we have a valid body
+            if (!self.ticketReply.body || self.ticketReply.body.trim() === '') {
                 self.$notify({
-                    title: self.$i18n.t('Success').toString(),
-                    text: self.$i18n.t('Data saved correctly').toString(),
-                    type: 'success'
+                    title: self.$i18n.t('Error').toString(),
+                    text: self.$i18n.t('Reply message cannot be empty').toString(),
+                    type: 'error'
                 });
-                self.discardReply();
-                self.ticket = response.data.ticket;
                 self.loading.reply = false;
-            }).catch(function () {
-                self.loading.reply = false;
-            });
+                return;
+            }
+
+            // Add user_id explicitly to ensure it's sent
+            const replyData = {
+                ...self.ticketReply,
+                user_id: self.$store.state.user.id // Add the user ID from the store
+            };
+
+            axios.post('api/tickets/' + self.$route.params.uuid + '/reply', replyData)
+                .then(function (response) {
+                    self.$notify({
+                        title: self.$i18n.t('Success').toString(),
+                        text: self.$i18n.t('Data saved correctly').toString(),
+                        type: 'success'
+                    });
+                    self.discardReply();
+                    self.ticket = response.data.ticket;
+                    self.loading.reply = false;
+                })
+                .catch(function (error) {
+                    self.$notify({
+                        title: self.$i18n.t('Error').toString(),
+                        text: error.response && error.response.data.message
+                            ? error.response.data.message
+                            : self.$i18n.t('An error occurred while saving data').toString(),
+                        type: 'error'
+                    });
+                    self.loading.reply = false;
+                    console.error('Error sending reply:', error);
+                });
         },
         discardReply() {
             this.ticketReply.body = '';

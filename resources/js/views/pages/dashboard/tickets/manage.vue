@@ -701,19 +701,58 @@ export default {
         addReply() {
             const self = this;
             self.loading.reply = true;
-            axios.post('api/dashboard/tickets/' + self.$route.params.uuid + '/reply', self.ticketReply).then(function (response) {
+
+            // Make sure we have a valid body
+            if (!self.ticketReply.body || self.ticketReply.body.trim() === '') {
                 self.$notify({
-                    title: self.$i18n.t('Success').toString(),
-                    text: self.$i18n.t('Data saved correctly').toString(),
-                    type: 'success'
+                    title: self.$i18n.t('Error').toString(),
+                    text: self.$i18n.t('Reply message cannot be empty').toString(),
+                    type: 'error'
                 });
-                self.ticket = response.data.ticket;
-                self.ticketReply.status_id = response.data.ticket.status_id;
-                self.discardReply();
                 self.loading.reply = false;
-            }).catch(function () {
+                return;
+            }
+
+            // Make sure we have a valid status
+            if (!self.ticketReply.status_id) {
+                self.$notify({
+                    title: self.$i18n.t('Error').toString(),
+                    text: self.$i18n.t('Please select a status').toString(),
+                    type: 'error'
+                });
                 self.loading.reply = false;
-            });
+                return;
+            }
+
+            // Add user_id explicitly to ensure it's sent
+            const replyData = {
+                ...self.ticketReply,
+                user_id: self.$store.state.user.id // Add the user ID from the store
+            };
+
+            axios.post('api/dashboard/tickets/' + self.$route.params.uuid + '/reply', replyData)
+                .then(function (response) {
+                    self.$notify({
+                        title: self.$i18n.t('Success').toString(),
+                        text: self.$i18n.t('Data saved correctly').toString(),
+                        type: 'success'
+                    });
+                    self.ticket = response.data.ticket;
+                    self.ticketReply.status_id = response.data.ticket.status_id;
+                    self.discardReply();
+                    self.loading.reply = false;
+                })
+                .catch(function (error) {
+                    self.$notify({
+                        title: self.$i18n.t('Error').toString(),
+                        text: error.response && error.response.data.message
+                            ? error.response.data.message
+                            : self.$i18n.t('An error occurred while saving data').toString(),
+                        type: 'error'
+                    });
+                    self.loading.reply = false;
+                    console.error('Error sending reply:', error);
+                });
         },
         closeActionDropdown() {
             this.actions.agent = false;

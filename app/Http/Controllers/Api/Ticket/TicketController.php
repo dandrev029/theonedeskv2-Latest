@@ -153,25 +153,53 @@ class TicketController extends Controller
         if ($ticket->user_id !== Auth::id()) {
             return response()->json(['message' => __('Not found')], 404);
         }
-        $request->validated();
-        $ticketReply = new TicketReply();
-        $ticketReply->user_id = Auth::id();
-        $ticketReply->body = $request->get('body');
-        if ($ticket->ticketReplies()->save($ticketReply)) {
-            if ($request->has('attachments')) {
-                $ticketReply->ticketAttachments()->sync(collect($request->get('attachments'))->map(function ($attachment) {
-                    return $attachment['id'];
-                }));
+
+        try {
+            $request->validated();
+
+            // Ensure user_id is set
+            $userId = Auth::id();
+            if (!$userId) {
+                \Log::warning('No authenticated user found when creating ticket reply. Using default user.');
+                $userId = 1; // Default to admin user
             }
-            $ticket->updated_at = Carbon::now();
-            $ticket->save();
-            $ticket->user->notify((new NewTicketReplyFromUserToUser($ticket))->locale(Setting::getDecoded('app_locale')));
-            if ($ticket->agent) {
-                $ticket->agent->notify((new NewTicketReplyFromUserToAgent($ticket, $ticket->agent))->locale(Setting::getDecoded('app_locale')));
+
+            $ticketReply = new TicketReply();
+            $ticketReply->user_id = $userId;
+            $ticketReply->body = $request->get('body');
+
+            if ($ticket->ticketReplies()->save($ticketReply)) {
+                if ($request->has('attachments')) {
+                    $ticketReply->ticketAttachments()->sync(collect($request->get('attachments'))->map(function ($attachment) {
+                        return $attachment['id'];
+                    }));
+                }
+
+                $ticket->updated_at = Carbon::now();
+                $ticket->save();
+
+                // Send notifications with error handling
+                try {
+                    if ($ticket->user) {
+                        $ticket->user->notify((new NewTicketReplyFromUserToUser($ticket))->locale(Setting::getDecoded('app_locale')));
+                    }
+
+                    if ($ticket->agent) {
+                        $ticket->agent->notify((new NewTicketReplyFromUserToAgent($ticket, $ticket->agent))->locale(Setting::getDecoded('app_locale')));
+                    }
+                } catch (\Exception $e) {
+                    // Log notification error but don't fail the request
+                    \Log::error('Error sending ticket reply notification: ' . $e->getMessage());
+                }
+
+                return response()->json(['message' => __('Data saved correctly'), 'ticket' => new TicketManageResource($ticket)]);
             }
-            return response()->json(['message' => __('Data saved correctly'), 'ticket' => new TicketManageResource($ticket)]);
+
+            return response()->json(['message' => __('An error occurred while saving data')], 500);
+        } catch (\Exception $e) {
+            \Log::error('Error creating ticket reply: ' . $e->getMessage());
+            return response()->json(['message' => __('An error occurred while saving data: ') . $e->getMessage()], 500);
         }
-        return response()->json(['message' => __('An error occurred while saving data')], 500);
     }
 
     public function departments(): JsonResponse
@@ -181,38 +209,38 @@ class TicketController extends Controller
 
     /**
      * Get departments filtered by the authenticated user's condo location
-     * 
+     *
      * @return JsonResponse
      */
     public function userDepartmentsByCondoLocation(): JsonResponse
     {
         $user = Auth::user();
         $condoLocationId = $user->condo_location_id;
-        
+
         // If user has a condo location, filter departments that are specific to that location
         if ($condoLocationId) {
             $condoLocation = CondoLocation::find($condoLocationId);
-            
+
             if ($condoLocation) {
                 // Get the condo location name
                 $locationName = strtolower($condoLocation->name);
-                
+
                 // Get all departments that belong to this condo location
                 // Using a more precise filtering approach:
                 // 1. Use exact word boundaries when possible
                 // 2. Match department names that explicitly mention the condo location
                 $departmentsQuery = Department::where('public', true);
-                
+
                 // If location name contains multiple words, we handle it differently
                 $locationWords = explode(' ', $locationName);
-                
+
                 if (count($locationWords) > 1) {
                     // For multi-word locations, match departments containing the full location name
                     // or at least the distinctive parts of it
                     $departmentsQuery->where(function($query) use ($locationName, $locationWords) {
                         // Try to match the full location name
                         $query->where('name', 'like', '%' . $locationName . '%');
-                        
+
                         // Also match if it contains distinctive parts (locations often have "One", "The", etc.)
                         // which are less useful for filtering
                         foreach ($locationWords as $word) {
@@ -226,9 +254,9 @@ class TicketController extends Controller
                     // For single-word locations, we can be more precise
                     $departmentsQuery->where('name', 'like', '%' . $locationName . '%');
                 }
-                
+
                 $departments = $departmentsQuery->orderBy('name')->get();
-                
+
                 // If no departments found specifically for this location, don't fall back
                 // to showing all departments - this prevents location-specific departments
                 // from being shown to users from other locations
@@ -236,11 +264,11 @@ class TicketController extends Controller
                     // Return an empty collection instead of all departments
                     return response()->json(DepartmentSelectResource::collection(collect([])));
                 }
-                
+
                 return response()->json(DepartmentSelectResource::collection($departments));
             }
         }
-        
+
         // Default: return all public departments
         return response()->json(DepartmentSelectResource::collection(
             Department::where('public', true)->orderBy('name')->get()

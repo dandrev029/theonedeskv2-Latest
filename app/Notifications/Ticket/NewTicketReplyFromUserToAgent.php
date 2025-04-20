@@ -63,15 +63,31 @@ class NewTicketReplyFromUserToAgent extends Notification
      */
     public function toArray($notifiable)
     {
-        // Create an in-app notification
-        $this->createAppNotification(
-            $notifiable->id,
-            __('New reply from user'),
-            __('User has replied to ticket: ') . $this->ticket->subject,
-            'ticket_reply',
-            'font-awesome.comment-alt-solid',
-            '/dashboard/tickets/' . $this->ticket->uuid . '/manage'
-        );
+        try {
+            // Ensure notifiable has an ID
+            if ($notifiable && $notifiable->id) {
+                // Create an in-app notification
+                $this->createAppNotification(
+                    $notifiable->id,
+                    __('New reply from user'),
+                    __('User has replied to ticket: ') . $this->ticket->subject,
+                    'ticket_reply',
+                    'font-awesome.comment-alt-solid',
+                    '/dashboard/tickets/' . $this->ticket->uuid . '/manage'
+                );
+            } else {
+                \Log::warning('Cannot create notification: notifiable has no ID', [
+                    'ticket_id' => $this->ticket->id,
+                    'ticket_uuid' => $this->ticket->uuid
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Log the error but don't throw it to prevent breaking the main functionality
+            \Log::error('Error in NewTicketReplyFromUserToAgent notification: ' . $e->getMessage(), [
+                'ticket_id' => $this->ticket->id,
+                'ticket_uuid' => $this->ticket->uuid
+            ]);
+        }
 
         return [
             'id' => $this->ticket->id,

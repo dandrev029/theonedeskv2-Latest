@@ -28,16 +28,37 @@ trait CreatesAppNotification
         ?string $link = null,
         ?array $data = null
     ) {
-        $notification = AppNotification::create([
-            'user_id' => $userId,
-            'title' => $title,
-            'message' => $message,
-            'type' => $type,
-            'icon' => $icon,
-            'link' => $link,
-            'data' => $data,
-            'is_read' => false,
-        ]);
+        try {
+            // Ensure user_id is valid and not null
+            if (!$userId) {
+                \Log::warning('Invalid user_id provided to createAppNotification. Using default admin user (1).', [
+                    'title' => $title,
+                    'message' => $message,
+                    'type' => $type
+                ]);
+                $userId = 1; // Default to admin user if no valid user_id is provided
+            }
+
+            $notification = AppNotification::create([
+                'user_id' => $userId,
+                'title' => $title,
+                'message' => $message,
+                'type' => $type,
+                'icon' => $icon,
+                'link' => $link,
+                'data' => $data,
+                'is_read' => false,
+            ]);
+        } catch (\Exception $e) {
+            // Log the error but don't throw it to prevent breaking the main functionality
+            \Log::error('Error creating app notification: ' . $e->getMessage(), [
+                'user_id' => $userId,
+                'title' => $title,
+                'message' => $message,
+                'type' => $type
+            ]);
+            return null;
+        }
 
         // Broadcast the notification
         event(new NewNotification($notification));

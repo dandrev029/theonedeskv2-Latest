@@ -176,23 +176,50 @@ class TicketController extends Controller
         if (!$ticket->verifyUser($user)) {
             return response()->json(['message' => __('You do not have permissions to manage this ticket')], 403);
         }
-        $request->validated();
-        $ticketReply = new TicketReply();
-        $ticketReply->user_id = Auth::id();
-        $ticketReply->body = $request->get('body');
-        if ($ticket->ticketReplies()->save($ticketReply)) {
-            if ($request->has('attachments')) {
-                $ticketReply->ticketAttachments()->sync(collect($request->get('attachments'))->map(function ($attachment) {
-                    return $attachment['id'];
-                }));
+
+        try {
+            $request->validated();
+
+            // Ensure user_id is set
+            $userId = Auth::id();
+            if (!$userId) {
+                \Log::warning('No authenticated user found when creating ticket reply. Using default user.');
+                $userId = 1; // Default to admin user
             }
-            $ticket->status_id = $request->get('status_id');
-            $ticket->updated_at = Carbon::now();
-            $ticket->save();
-            $ticket->user->notify((new NewTicketReplyFromAgentToUser($ticket))->locale(Setting::getDecoded('app_locale')));
-            return response()->json(['message' => __('Data saved correctly'), 'ticket' => new TicketManageResource($ticket)]);
+
+            $ticketReply = new TicketReply();
+            $ticketReply->user_id = $userId;
+            $ticketReply->body = $request->get('body');
+
+            if ($ticket->ticketReplies()->save($ticketReply)) {
+                if ($request->has('attachments')) {
+                    $ticketReply->ticketAttachments()->sync(collect($request->get('attachments'))->map(function ($attachment) {
+                        return $attachment['id'];
+                    }));
+                }
+
+                $ticket->status_id = $request->get('status_id');
+                $ticket->updated_at = Carbon::now();
+                $ticket->save();
+
+                // Send notifications with error handling
+                try {
+                    if ($ticket->user) {
+                        $ticket->user->notify((new NewTicketReplyFromAgentToUser($ticket))->locale(Setting::getDecoded('app_locale')));
+                    }
+                } catch (\Exception $e) {
+                    // Log notification error but don't fail the request
+                    \Log::error('Error sending ticket reply notification: ' . $e->getMessage());
+                }
+
+                return response()->json(['message' => __('Data saved correctly'), 'ticket' => new TicketManageResource($ticket)]);
+            }
+
+            return response()->json(['message' => __('An error occurred while saving data')], 500);
+        } catch (\Exception $e) {
+            \Log::error('Error creating ticket reply: ' . $e->getMessage());
+            return response()->json(['message' => __('An error occurred while saving data: ') . $e->getMessage()], 500);
         }
-        return response()->json(['message' => __('An error occurred while saving data')], 500);
     }
 
     /**

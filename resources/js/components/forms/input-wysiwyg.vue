@@ -2,7 +2,7 @@
     <div class="editor rounded-md shadow-sm">
         <slot name="top"/>
         <template v-if="readonly">
-            <div class="border border-gray-400 p-4" v-html="input"></div>
+            <div class="border p-4" :class="$store.state.darkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-400 bg-white text-gray-900'" v-html="input"></div>
         </template>
         <template v-else>
             <tinymce
@@ -29,9 +29,9 @@
                                 <svg-vue class="h-6 w-6" icon="font-awesome.times-light"/>
                             </button>
                         </div>
-                        <div class="h-full flex flex-col pt-6 bg-white shadow-xl">
-                            <header class="px-4 sm:px-6 pb-6 border-b border-gray-200">
-                                <h2 class="text-lg leading-7 font-medium text-gray-900">
+                        <div class="h-full flex flex-col pt-6 shadow-xl" :class="$store.state.darkMode ? 'bg-gray-800' : 'bg-white'">
+                            <header class="px-4 sm:px-6 pb-6 border-b" :class="$store.state.darkMode ? 'border-gray-700' : 'border-gray-200'">
+                                <h2 class="text-lg leading-7 font-medium" :class="$store.state.darkMode ? 'text-white' : 'text-gray-900'">
                                     <template v-if="sidebar.shortCodeSelect">{{ $t('Short codes') }}</template>
                                     <template v-if="sidebar.cannedReplySelect">{{ $t('Canned replies') }}</template>
                                 </h2>
@@ -42,13 +42,13 @@
                                 </template>
                                 <template v-if="sidebar.cannedReplySelect">
                                     <template v-if="cannedReplyList.length > 0">
-                                        <ul class="divide-y divide-gray-200 overflow-y-auto">
+                                        <ul class="divide-y overflow-y-auto" :class="$store.state.darkMode ? 'divide-gray-700' : 'divide-gray-200'">
                                             <template v-for="cannedReply in cannedReplyList">
-                                                <li class="px-6 py-5 relative hover:bg-gray-100 cursor-pointer" @click="setContent(cannedReply.body)">
-                                                    <div class="text-sm leading-5 font-medium text-gray-900 truncate">
+                                                <li class="px-6 py-5 relative cursor-pointer" :class="$store.state.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'" @click="setContent(cannedReply.body)">
+                                                    <div class="text-sm leading-5 font-medium truncate" :class="$store.state.darkMode ? 'text-white' : 'text-gray-900'">
                                                         {{ cannedReply.name }}
                                                     </div>
-                                                    <div class="text-sm leading-5 text-gray-500 truncate">
+                                                    <div class="text-sm leading-5 truncate" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-500'">
                                                         {{ cannedReply.body }}
                                                     </div>
                                                 </li>
@@ -63,7 +63,7 @@
                                                         <svg-vue class="h-full h-auto w-40 mb-8" icon="undraw.browsing"></svg-vue>
                                                     </div>
                                                     <div class="flex justify-center items-center">
-                                                        <div class="w-full font-semibold text-xl">{{ $t('No records found') }}</div>
+                                                        <div class="w-full font-semibold text-xl" :class="$store.state.darkMode ? 'text-white' : 'text-gray-900'">{{ $t('No records found') }}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -142,6 +142,12 @@ export default {
         },
         openSidebar() {
             return this.sidebar.cannedReplySelect || this.sidebar.shortCodeSelect;
+        },
+        editorTheme() {
+            return this.$store.state.darkMode ? 'oxide-dark' : 'oxide';
+        },
+        editorContent() {
+            return this.$store.state.darkMode ? 'dark' : 'default';
         }
     },
     data() {
@@ -149,6 +155,8 @@ export default {
         return {
             editorConfig: {
                 branding: false,
+                skin: this.editorTheme,
+                content_css: this.editorContent,
                 browser_spellcheck: true,
                 paste_as_text: true,
                 statusbar: false,
@@ -215,6 +223,25 @@ export default {
                 cannedReplySelect: false,
             }
         }
+    },
+    watch: {
+        '$store.state.darkMode': {
+            handler(newVal) {
+                if (this.$refs.editor && this.$refs.editor.editor) {
+                    this.$refs.editor.editor.options.set('skin', this.editorTheme);
+                    this.$refs.editor.editor.options.set('content_css', this.editorContent);
+                }
+            }
+        }
+    },
+    mounted() {
+        // Ensure the editor is initialized with the correct theme
+        this.$nextTick(() => {
+            if (this.$refs.editor && this.$refs.editor.editor) {
+                this.$refs.editor.editor.options.set('skin', this.editorTheme);
+                this.$refs.editor.editor.options.set('content_css', this.editorContent);
+            }
+        });
     },
     methods: {
         uploadFile(e) {
