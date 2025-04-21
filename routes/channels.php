@@ -15,5 +15,11 @@ use Illuminate\Support\Facades\Broadcast;
 
 // Channel for user's notifications
 Broadcast::channel('notifications.{userId}', function ($user, $userId) {
+    \Log::info('Channel authorization request', [
+        'channel' => 'notifications.' . $userId,
+        'user_id' => $user->id,
+        'requested_user_id' => $userId,
+        'authorized' => (int) $user->id === (int) $userId
+    ]);
     return (int) $user->id === (int) $userId;
 });

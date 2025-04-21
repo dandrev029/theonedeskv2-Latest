@@ -29,21 +29,81 @@ class NotificationService
         ?string $link = null,
         ?array $data = null
     ) {
-        $notification = AppNotification::create([
-            'user_id' => $userId,
-            'title' => $title,
-            'message' => $message,
-            'type' => $type,
-            'icon' => $icon,
-            'link' => $link,
-            'data' => $data,
-            'is_read' => false,
-        ]);
+        try {
+            // Verify user exists
+            $user = User::find($userId);
+            if (!$user) {
+                \Log::warning('Notification created for non-existent user', [
+                    'user_id' => $userId,
+                    'title' => $title
+                ]);
+                return null;
+            }
 
-        // Broadcast the notification
-        event(new NewNotification($notification));
+            \Log::info('Creating notification', [
+                'user_id' => $userId,
+                'title' => $title,
+                'type' => $type
+            ]);
 
-        return $notification;
+            // Check for existing notifications with the same content in the last 5 minutes
+            $existingNotification = AppNotification::where('user_id', $userId)
+                ->where('title', $title)
+                ->where('message', $message)
+                ->where('created_at', '>=', now()->subMinutes(5))
+                ->first();
+
+            if ($existingNotification) {
+                \Log::info('Skipping duplicate notification', [
+                    'user_id' => $userId,
+                    'title' => $title,
+                    'existing_id' => $existingNotification->id
+                ]);
+                return $existingNotification;
+            }
+
+            // Create new notification if no duplicate exists
+            $notification = AppNotification::create([
+                'user_id' => $userId,
+                'title' => $title,
+                'message' => $message,
+                'type' => $type,
+                'icon' => $icon,
+                'link' => $link,
+                'data' => $data,
+                'is_read' => false,
+            ]);
+
+            \Log::info('Notification created successfully', [
+                'notification_id' => $notification->id,
+                'user_id' => $userId
+            ]);
+
+            // Broadcast the notification
+            try {
+                event(new NewNotification($notification));
+                \Log::info('Notification broadcast event fired', [
+                    'notification_id' => $notification->id,
+                    'user_id' => $userId,
+                    'channel' => 'notifications.' . $userId
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to broadcast notification: ' . $e->getMessage(), [
+                    'notification_id' => $notification->id,
+                    'user_id' => $userId,
+                    'exception' => $e
+                ]);
+            }
+
+            return $notification;
+        } catch (\Exception $e) {
+            \Log::error('Failed to create notification: ' . $e->getMessage(), [
+                'user_id' => $userId,
+                'title' => $title,
+                'exception' => $e
+            ]);
+            return null;
+        }
     }
 
     /**
@@ -106,7 +166,7 @@ class NotificationService
         ?array $data = null
     ) {
         $userIds = User::where('role_id', $roleId)->pluck('id')->toArray();
-        
+
         return $this->createForMultipleUsers(
             $userIds,
             $title,
@@ -138,7 +198,7 @@ class NotificationService
         ?array $data = null
     ) {
         $userIds = User::pluck('id')->toArray();
-        
+
         return $this->createForMultipleUsers(
             $userIds,
             $title,

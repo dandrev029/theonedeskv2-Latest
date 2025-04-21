@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Notifications</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            overflow-x: auto;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-color: #ddd;
+            color: #3498db;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        .notification-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .notification-message {
+            color: #666;
+        }
+        .notification-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Notification System Test</h1>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="department">Test Department Notifications</div>
+        <div class="tab" data-tab="user">Check User Notifications</div>
+    </div>
+    
+    <div class="tab-content active" id="department-tab">
+        <div class="card">
+            <h2>Test Department Notifications</h2>
+            <p>This test will send notifications to all agents in a department.</p>
+            
+            <div class="form-group">
+                <label for="department-id">Department ID:</label>
+                <input type="number" id="department-id" placeholder="Enter department ID">
+            </div>
+            
+            <button id="test-department-btn">Send Test Notifications</button>
+            
+            <div id="department-result" class="result" style="display: none;">
+                <pre id="department-result-content"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-content" id="user-tab">
+        <div class="card">
+            <h2>Check User Notifications</h2>
+            <p>This test will retrieve recent notifications for a user.</p>
+            
+            <div class="form-group">
+                <label for="user-id">User ID:</label>
+                <input type="number" id="user-id" placeholder="Enter user ID">
+            </div>
+            
+            <button id="check-user-btn">Check Notifications</button>
+            
+            <div id="user-result" class="result" style="display: none;">
+                <h3>User Information</h3>
+                <div id="user-info"></div>
+                
+                <h3>App Notifications</h3>
+                <div id="app-notifications"></div>
+                
+                <h3>Laravel Notifications</h3>
+                <div id="laravel-notifications"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show the selected tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId + '-tab').classList.add('active');
+                });
+            });
+            
+            // Test department notifications
+            document.getElementById('test-department-btn').addEventListener('click', function() {
+                const departmentId = document.getElementById('department-id').value;
+                if (!departmentId) {
+                    alert('Please enter a department ID');
+                    return;
+                }
+                
+                this.disabled = true;
+                this.textContent = 'Sending...';
+                
+                fetch(`/api/notifications/test/department?department_id=${departmentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('department-result').style.display = 'block';
+                        document.getElementById('department-result-content').textContent = JSON.stringify(data, null, 2);
+                    })
+                    .catch(error => {
+                        document.getElementById('department-result').style.display = 'block';
+                        document.getElementById('department-result-content').textContent = 'Error: ' + error.message;
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                        this.textContent = 'Send Test Notifications';
+                    });
+            });
+            
+            // Check user notifications
+            document.getElementById('check-user-btn').addEventListener('click', function() {
+                const userId = document.getElementById('user-id').value;
+                if (!userId) {
+                    alert('Please enter a user ID');
+                    return;
+                }
+                
+                this.disabled = true;
+                this.textContent = 'Checking...';
+                
+                fetch(`/api/notifications/test/recent?user_id=${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('user-result').style.display = 'block';
+                        
+                        // Display user info
+                        if (data.success && data.user) {
+                            document.getElementById('user-info').innerHTML = `
+                                <p><strong>ID:</strong> ${data.user.id}</p>
+                                <p><strong>Name:</strong> ${data.user.name}</p>
+                                <p><strong>Email:</strong> ${data.user.email}</p>
+                            `;
+                        } else {
+                            document.getElementById('user-info').innerHTML = '<p>No user information available</p>';
+                        }
+                        
+                        // Display app notifications
+                        if (data.success && data.app_notifications && data.app_notifications.length > 0) {
+                            let html = '';
+                            data.app_notifications.forEach(notification => {
+                                html += `
+                                    <div class="notification-item">
+                                        <div class="notification-title">${notification.title}</div>
+                                        <div class="notification-message">${notification.message}</div>
+                                        <div class="notification-meta">
+                                            Type: ${notification.type} | 
+                                            Created: ${new Date(notification.created_at).toLocaleString()} | 
+                                            Read: ${notification.is_read ? 'Yes' : 'No'}
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            document.getElementById('app-notifications').innerHTML = html;
+                        } else {
+                            document.getElementById('app-notifications').innerHTML = '<p>No app notifications found</p>';
+                        }
+                        
+                        // Display Laravel notifications
+                        if (data.success && data.laravel_notifications && data.laravel_notifications.length > 0) {
+                            let html = '';
+                            data.laravel_notifications.forEach(notification => {
+                                const data = notification.data || {};
+                                html += `
+                                    <div class="notification-item">
+                                        <div class="notification-title">${data.type || 'Notification'}</div>
+                                        <div class="notification-message">${data.message || 'No message'}</div>
+                                        <div class="notification-meta">
+                                            ID: ${notification.id} | 
+                                            Created: ${new Date(notification.created_at).toLocaleString()} | 
+                                            Read: ${notification.read_at ? 'Yes' : 'No'}
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            document.getElementById('laravel-notifications').innerHTML = html;
+                        } else {
+                            document.getElementById('laravel-notifications').innerHTML = '<p>No Laravel notifications found</p>';
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('user-result').style.display = 'block';
+                        document.getElementById('user-info').innerHTML = '<p>Error: ' + error.message + '</p>';
+                        document.getElementById('app-notifications').innerHTML = '';
+                        document.getElementById('laravel-notifications').innerHTML = '';
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                        this.textContent = 'Check Notifications';
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

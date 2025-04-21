@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="">
+    <title>Notification Debug Tool</title>
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input, select {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .log {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f5f5f5;
+            margin-top: 20px;
+            font-family: monospace;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .warning {
+            color: orange;
+        }
+        .info {
+            color: blue;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Notification Debug Tool</h1>
+
+    <div class="grid">
+        <div class="card">
+            <h2>1. Check Pusher Configuration</h2>
+            <button onclick="checkPusherConfig()">Check Configuration</button>
+            <pre id="pusher-config">No data yet</pre>
+        </div>
+
+        <div class="card">
+            <h2>2. Test Pusher Connection</h2>
+            <button onclick="testPusherConnection()">Test Connection</button>
+            <pre id="pusher-connection">No data yet</pre>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>3. Listen for Notifications</h2>
+        <div>
+            <label for="user-id">User ID:</label>
+            <input type="number" id="user-id" placeholder="Enter user ID">
+            <button onclick="listenForNotifications()">Start Listening</button>
+            <button onclick="stopListening()" style="background-color: #f44336;">Stop Listening</button>
+        </div>
+        <div id="listen-status">Not listening</div>
+    </div>
+
+    <div class="card">
+        <h2>4. Send Test Notification</h2>
+        <div>
+            <label for="target-user-id">Target User ID:</label>
+            <input type="number" id="target-user-id" placeholder="Enter target user ID">
+            <select id="notification-type">
+                <option value="test">Test</option>
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="success">Success</option>
+                <option value="error">Error</option>
+            </select>
+            <button onclick="sendTestNotification()">Send Notification</button>
+        </div>
+        <pre id="send-result">No data yet</pre>
+    </div>
+
+    <div class="card">
+        <h2>5. Test Dashboard User Notification</h2>
+        <div>
+            <label for="dashboard-user-id">Dashboard User ID:</label>
+            <input type="number" id="dashboard-user-id" placeholder="Enter dashboard user ID">
+            <button onclick="testDashboardNotification()">Send Dashboard Notification</button>
+        </div>
+        <pre id="dashboard-result">No data yet</pre>
+    </div>
+
+    <div class="card">
+        <h2>Debug Log</h2>
+        <button onclick="clearLog()" style="background-color: #f44336;">Clear Log</button>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let pusherInstance = null;
+        let channel = null;
+
+        // Helper functions
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `<div class="${type}">[${time}] ${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            addLog('Log cleared', 'info');
+        }
+
+        // Step 1: Check Pusher Configuration
+        async function checkPusherConfig() {
+            addLog('Checking Pusher configuration...', 'info');
+
+            try {
+                const response = await fetch('/test-pusher-connection.php');
+                const data = await response.json();
+
+                document.getElementById('pusher-config').textContent = JSON.stringify(data, null, 2);
+
+                if (data.success) {
+                    addLog('Pusher configuration looks good', 'success');
+                } else {
+                    addLog(`Pusher configuration error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`Error checking Pusher configuration: ${error.message}`, 'error');
+                document.getElementById('pusher-config').textContent = error.message;
+            }
+        }
+
+        // Step 2: Test Pusher Connection
+        function testPusherConnection() {
+            addLog('Testing Pusher connection...', 'info');
+
+            try {
+                // Clean up previous connection if exists
+                if (pusherInstance) {
+                    pusherInstance.disconnect();
+                    addLog('Disconnected previous Pusher instance', 'info');
+                }
+
+                // Enable Pusher logging
+                Pusher.logToConsole = true;
+
+                // Get configuration from the page
+                const configElement = document.getElementById('pusher-config');
+                let config = {
+                    key: '55f75e5b9765246430ba',
+                    cluster: 'ap1'
+                };
+
+                if (configElement.textContent !== 'No data yet') {
+                    try {
+                        const configData = JSON.parse(configElement.textContent);
+                        if (configData.config) {
+                            config.key = configData.config.key;
+                            config.cluster = configData.config.cluster;
+                        }
+                    } catch (e) {
+                        addLog(`Error parsing config: ${e.message}`, 'warning');
+                    }
+                }
+
+                addLog(`Using Pusher config: ${JSON.stringify(config)}`, 'info');
+
+                // Initialize Pusher
+                pusherInstance = new Pusher(config.key, {
+                    cluster: config.cluster,
+                    forceTLS: true
+                });
+
+                // Set up connection event handlers
+                pusherInstance.connection.bind('connected', () => {
+                    addLog('Pusher connected successfully!', 'success');
+                    document.getElementById('pusher-connection').textContent = 'Connected successfully';
+                });
+
+                pusherInstance.connection.bind('connecting', () => {
+                    addLog('Pusher connecting...', 'info');
+                    document.getElementById('pusher-connection').textContent = 'Connecting...';
+                });
+
+                pusherInstance.connection.bind('disconnected', () => {
+                    addLog('Pusher disconnected', 'warning');
+                    document.getElementById('pusher-connection').textContent = 'Disconnected';
+                });
+
+                pusherInstance.connection.bind('failed', () => {
+                    addLog('Pusher connection failed', 'error');
+                    document.getElementById('pusher-connection').textContent = 'Connection failed';
+                });
+
+                pusherInstance.connection.bind('error', (err) => {
+                    addLog(`Pusher connection error: ${JSON.stringify(err)}`, 'error');
+                    document.getElementById('pusher-connection').textContent = `Error: ${JSON.stringify(err)}`;
+                });
+
+                addLog('Pusher test initialized', 'info');
+            } catch (error) {
+                addLog(`Error testing Pusher connection: ${error.message}`, 'error');
+                document.getElementById('pusher-connection').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Step 3: Listen for Notifications
+        function listenForNotifications() {
+            const userId = document.getElementById('user-id').value;
+
+            if (!userId) {
+                addLog('Error: User ID is required', 'error');
+                document.getElementById('listen-status').textContent = 'Error: User ID is required';
+                return;
+            }
+
+            if (!pusherInstance) {
+                addLog('Error: Pusher not initialized. Run Test Connection first.', 'error');
+                document.getElementById('listen-status').textContent = 'Error: Pusher not initialized';
+                return;
+            }
+
+            // Clean up previous channel if exists
+            if (channel) {
+                pusherInstance.unsubscribe(`notifications.${userId}`);
+                addLog(`Unsubscribed from previous channel: notifications.${userId}`, 'info');
+            }
+
+            addLog(`Subscribing to channel: notifications.${userId}`, 'info');
+
+            try {
+                // Subscribe to the channel
+                channel = pusherInstance.subscribe(`notifications.${userId}`);
+
+                // Set up channel event handlers
+                channel.bind('pusher:subscription_succeeded', () => {
+                    addLog(`Successfully subscribed to notifications.${userId}`, 'success');
+                    document.getElementById('listen-status').textContent = `Listening for notifications for user ${userId}`;
+                });
+
+                channel.bind('pusher:subscription_error', (error) => {
+                    addLog(`Error subscribing to notifications.${userId}: ${JSON.stringify(error)}`, 'error');
+                    document.getElementById('listen-status').textContent = `Error subscribing: ${JSON.stringify(error)}`;
+                });
+
+                // Listen for notification events
+                channel.bind('notification.new', (data) => {
+                    addLog(`Received notification: ${JSON.stringify(data)}`, 'success');
+                    // Play a sound
+                    try {
+                        const audio = new Audio('/notification.mp3');
+                        audio.play();
+                    } catch (e) {
+                        addLog(`Error playing notification sound: ${e.message}`, 'warning');
+                    }
+                });
+
+                addLog('Notification listener set up', 'info');
+            } catch (error) {
+                addLog(`Error setting up notification listener: ${error.message}`, 'error');
+                document.getElementById('listen-status').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function stopListening() {
+            const userId = document.getElementById('user-id').value;
+
+            if (!channel || !pusherInstance) {
+                addLog('Not currently listening', 'warning');
+                document.getElementById('listen-status').textContent = 'Not listening';
+                return;
+            }
+
+            try {
+                pusherInstance.unsubscribe(`notifications.${userId}`);
+                addLog(`Stopped listening for notifications for user ${userId}`, 'info');
+                document.getElementById('listen-status').textContent = 'Not listening';
+                channel = null;
+            } catch (error) {
+                addLog(`Error stopping listener: ${error.message}`, 'error');
+            }
+        }
+
+        // Step 4: Send Test Notification
+        async function sendTestNotification() {
+            const userId = document.getElementById('target-user-id').value;
+            const type = document.getElementById('notification-type').value;
+
+            if (!userId) {
+                addLog('Error: Target User ID is required', 'error');
+                document.getElementById('send-result').textContent = 'Error: Target User ID is required';
+                return;
+            }
+
+            addLog(`Sending ${type} notification to user ${userId}...`, 'info');
+
+            try {
+                const response = await fetch(`/test-notification/${userId}?type=${type}`);
+                const data = await response.json();
+
+                document.getElementById('send-result').textContent = JSON.stringify(data, null, 2);
+
+                if (data.success) {
+                    addLog(`Successfully sent notification to user ${userId}`, 'success');
+                } else {
+                    addLog(`Error sending notification: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                addLog(`Error sending notification: ${error.message}`, 'error');
+                document.getElementById('send-result').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Step 5: Test Dashboard User Notification
+        async function testDashboardNotification() {
+            const userId = document.getElementById('dashboard-user-id').value;
+
+            if (!userId) {
+                addLog('Error: Dashboard User ID is required', 'error');
+                document.getElementById('dashboard-result').textContent = 'Error: Dashboard User ID is required';
+                return;
+            }
+
+            addLog(`Testing dashboard notification for user ${userId}...`, 'info');
+
+            try {
+                const response = await fetch(`/test-dashboard-notification.php?user_id=${userId}`);
+                const data = await response.json();
+
+                document.getElementById('dashboard-result').textContent = JSON.stringify(data, null, 2);
+
+                if (data.success) {
+                    addLog(`Successfully sent dashboard notification to user ${userId}`, 'success');
+                } else {
+                    addLog(`Error sending dashboard notification: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                addLog(`Error sending dashboard notification: ${error.message}`, 'error');
+                document.getElementById('dashboard-result').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            addLog('Notification debug tool loaded', 'info');
+
+            // Try to get CSRF token
+            const token = document.querySelector('meta[name="csrf-token"]');
+            if (token) {
+                addLog('CSRF token found', 'info');
+            } else {
+                addLog('CSRF token not found. Authentication might fail.', 'warning');
+            }
+        });
+    </script>
+</body>
+</html>

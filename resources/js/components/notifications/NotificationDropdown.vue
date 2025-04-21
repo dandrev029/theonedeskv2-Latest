@@ -124,7 +124,59 @@ export default {
     async fetchNotifications() {
       try {
         const response = await this.$store.dispatch("fetchNotifications");
-        this.notifications = response.notifications.data;
+
+        // Process notifications from both sources
+        let allNotifications = [];
+        let seenNotifications = new Map(); // Track notifications by content to prevent duplicates
+
+        // Process app_notifications
+        if (response.notifications && response.notifications.data) {
+          // Add each app notification to the map with a content-based key
+          response.notifications.data.forEach(notification => {
+            const contentKey = `${notification.title}|${notification.message}`;
+            // Only add if we haven't seen this content before
+            if (!seenNotifications.has(contentKey)) {
+              seenNotifications.set(contentKey, notification);
+              allNotifications.push(notification);
+            }
+          });
+        }
+
+        // Process Laravel notifications
+        if (response.laravel_notifications && response.laravel_notifications.data) {
+          // Convert Laravel notifications to the same format as app_notifications
+          response.laravel_notifications.data.forEach(notification => {
+            // Extract data from the notification
+            const data = notification.data || {};
+            const formattedNotification = {
+              id: notification.id,
+              title: notification.title || data.title || 'Notification',
+              message: notification.message || data.message || '',
+              type: notification.type || data.type || 'general',
+              icon: notification.icon || data.icon || 'font-awesome.bell-solid',
+              link: notification.link || data.link || null,
+              created_at: notification.created_at,
+              is_read: notification.is_read || notification.read_at !== null,
+              _source: 'laravel' // Mark the source for internal tracking
+            };
+
+            // Check if we've already seen this content
+            const contentKey = `${formattedNotification.title}|${formattedNotification.message}`;
+            if (!seenNotifications.has(contentKey)) {
+              seenNotifications.set(contentKey, formattedNotification);
+              allNotifications.push(formattedNotification);
+            }
+          });
+        }
+
+        // Sort notifications by created_at (newest first)
+        allNotifications.sort((a, b) => {
+          const dateA = new Date(a.created_at);
+          const dateB = new Date(b.created_at);
+          return dateB - dateA;
+        });
+
+        this.notifications = allNotifications;
         this.unreadCount = response.unread_count;
       } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -134,12 +186,36 @@ export default {
       if (this.$store.state.user) {
         console.log('Setting up Pusher listener for user ID:', this.$store.state.user.id);
         try {
+          // First, remove any existing listeners to prevent duplicates
+          if (window.Echo) {
+            try {
+              window.Echo.leave(`notifications.${this.$store.state.user.id}`);
+              console.log('Removed existing Pusher listener');
+            } catch (leaveError) {
+              console.warn('Error removing existing listener:', leaveError);
+            }
+          }
+
+          // Set up the new listener
           window.Echo.private(`notifications.${this.$store.state.user.id}`)
             .listen(".notification.new", (e) => {
               console.log('Received notification:', e);
               this.addNotification(e);
+            })
+            .error((err) => {
+              console.error('Pusher channel error:', err);
             });
+
           console.log('Pusher listener setup complete');
+
+          // Test the connection
+          window.Echo.connector.pusher.connection.bind('connected', () => {
+            console.log('Pusher connected successfully');
+          });
+
+          window.Echo.connector.pusher.connection.bind('error', (err) => {
+            console.error('Pusher connection error:', err);
+          });
         } catch (error) {
           console.error('Error setting up Pusher listener:', error);
         }
@@ -149,8 +225,46 @@ export default {
     },
     addNotification(notification) {
       console.log('Adding notification to UI:', notification);
+
+      // Validate notification data
+      if (!notification || !notification.id || !notification.title) {
+        console.error('Invalid notification data:', notification);
+        return;
+      }
+
+      // Generate a unique ID for the notification if it doesn't have one
+      // This helps prevent duplicates when receiving notifications from different sources
+      const notificationId = notification.id + '-' + (notification.timestamp || Date.now());
+
+      // Check if notification already exists to prevent duplicates
+      const contentKey = `${notification.title}|${notification.message}`;
+      const timeThreshold = Date.now() - (5 * 60 * 1000); // 5 minutes ago
+
+      // Check for duplicates by content and time
+      const exists = this.notifications.some(n => {
+        // Check by ID
+        if (n.id === notification.id) return true;
+
+        // Check by content if received within the last 5 minutes
+        if (n.title === notification.title && n.message === notification.message) {
+          const notificationTime = new Date(n.created_at).getTime();
+          if (notificationTime > timeThreshold) {
+            return true;
+          }
+        }
+        return false;
+      });
+
+      if (exists) {
+        console.warn('Notification already exists, not adding duplicate:', notification.id);
+        return;
+      }
+
       // Add to local state
-      this.notifications.unshift(notification);
+      this.notifications.unshift({
+        ...notification,
+        _uniqueId: notificationId // Add a unique ID for internal tracking
+      });
       this.unreadCount++;
 
       // Show toast notification
@@ -163,8 +277,23 @@ export default {
           type: "info"
         });
         console.log('Toast notification displayed');
+
+        // Play notification sound if available
+        try {
+          const audio = new Audio('/notification.mp3');
+          audio.play();
+        } catch (soundError) {
+          console.warn('Could not play notification sound:', soundError);
+        }
       } catch (error) {
         console.error('Error displaying toast notification:', error);
+      }
+
+      // Update the store
+      try {
+        this.$store.commit('addNotification', notification);
+      } catch (storeError) {
+        console.error('Error updating store with notification:', storeError);
       }
     },
     async openNotification(notification) {

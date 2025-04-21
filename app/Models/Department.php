@@ -45,14 +45,49 @@ class Department extends Model
         return $this->belongsToMany(User::class, 'user_departments', 'department_id', 'user_id');
     }
 
+    /**
+     * Get all agents for this department
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
     public function agents()
     {
-        if (!$this->all_agents) {
-            return $this->agent->all();
+        try {
+            if (!$this->all_agents) {
+                // Get only agents assigned to this department
+                $agents = $this->agent()->where('status', true)->get();
+                \Log::info('Department agents (specific)', [
+                    'department_id' => $this->id,
+                    'department_name' => $this->name,
+                    'agent_count' => $agents->count(),
+                    'agent_ids' => $agents->pluck('id')->toArray()
+                ]);
+                return $agents;
+            }
+
+            // Get all agents with dashboard access
+            $agents = User::whereIn('role_id', UserRole::where('dashboard_access', true)->pluck('id'))
+                ->where('status', true)
+                ->get();
+
+            \Log::info('Department agents (all)', [
+                'department_id' => $this->id,
+                'department_name' => $this->name,
+                'agent_count' => $agents->count(),
+                'agent_ids' => $agents->pluck('id')->toArray()
+            ]);
+
+            return $agents;
+        } catch (\Exception $e) {
+            \Log::error('Error retrieving department agents: ' . $e->getMessage(), [
+                'department_id' => $this->id,
+                'department_name' => $this->name,
+                'exception' => $e
+            ]);
+
+            // Return empty collection as fallback
+            return collect([]);
         }
-        return User::whereIn('role_id', UserRole::where('dashboard_access', true)->pluck('id'))
-            ->where('status', true)
-            ->get();
     }
 
     /**

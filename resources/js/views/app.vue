@@ -4,7 +4,7 @@
             <template slot="body" slot-scope="props">
                 <div class="inset-0 flex items-end justify-center pointer-events-none sm:items-start sm:justify-end">
                     <div class="w-full mx-4 mb-4 rounded-lg pointer-events-auto" :class="bgPrimary">
-                        <div class="rounded-lg shadow-md border overflow-hidden" :class="borderPrimary">
+                        <div class="rounded-lg shadow-md border overflow-hidden" :class="borderColor">
                             <div class="p-4" @click="props.close">
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0">
@@ -36,7 +36,10 @@
 </template>
 
 <script>
+import DarkModeMixin from "@/mixins/dark-mode-mixin";
+
 export default {
-    name: "App"
+    name: "App",
+    mixins: [DarkModeMixin]
 }
 </script>

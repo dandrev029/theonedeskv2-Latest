@@ -318,9 +318,36 @@ export default {
         },
         getConcernsByDepartment(departmentId) {
             const self = this;
-            axios.get('api/tickets/departments/' + departmentId + '/concerns').then(function (response) {
-                self.$set(self.departmentConcerns, departmentId, response.data);
-            })
+
+            // Validate department ID
+            if (!departmentId || isNaN(parseInt(departmentId))) {
+                console.error('Invalid department ID:', departmentId);
+                self.$notify({
+                    title: self.$i18n.t('Error').toString(),
+                    text: self.$i18n.t('Invalid department selected').toString(),
+                    type: 'error'
+                });
+                return;
+            }
+
+            axios.get('api/tickets/departments/' + departmentId + '/concerns')
+                .then(function (response) {
+                    self.$set(self.departmentConcerns, departmentId, response.data);
+                })
+                .catch(function (error) {
+                    console.error('Error loading concerns for department ' + departmentId + ':', error);
+                    // Initialize with empty array to prevent future errors
+                    self.$set(self.departmentConcerns, departmentId, []);
+
+                    // Show error notification
+                    self.$notify({
+                        title: self.$i18n.t('Error').toString(),
+                        text: error.response && error.response.data.message
+                            ? error.response.data.message
+                            : self.$i18n.t('Failed to load concerns for this department').toString(),
+                        type: 'warning'
+                    });
+                })
         },
         getCannedReplies() {
             const self = this;

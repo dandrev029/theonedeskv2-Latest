@@ -116,11 +116,55 @@ class TicketController extends Controller
                     return $attachment['id'];
                 }));
             }
-            $ticket->user->notify((new NewTicketRequest($ticket))->locale(Setting::getDecoded('app_locale')));
-            if ($ticket->department_id !== null) {
-                foreach ($ticket->department->agents() as $agent) {
-                    $agent->notify(new AssignTicketToDepartment($ticket, $agent));
+            try {
+                // Send notification to the ticket creator
+                $ticket->user->notify((new NewTicketRequest($ticket))->locale(Setting::getDecoded('app_locale')));
+                \Log::info('Sent ticket creation notification to user', [
+                    'user_id' => $ticket->user->id,
+                    'ticket_id' => $ticket->id,
+                    'ticket_uuid' => $ticket->uuid
+                ]);
+
+                // Send notifications to department agents if applicable
+                if ($ticket->department_id !== null) {
+                    $department = $ticket->department;
+                    \Log::info('Processing department notifications', [
+                        'department_id' => $department->id,
+                        'department_name' => $department->name,
+                        'all_agents' => (bool)$department->all_agents
+                    ]);
+
+                    $agents = $department->agents();
+                    \Log::info('Found agents for department', [
+                        'department_id' => $department->id,
+                        'agent_count' => $agents->count()
+                    ]);
+
+                    foreach ($agents as $agent) {
+                        try {
+                            \Log::info('Sending notification to agent', [
+                                'agent_id' => $agent->id,
+                                'agent_name' => $agent->name,
+                                'agent_email' => $agent->email,
+                                'ticket_id' => $ticket->id
+                            ]);
+
+                            $agent->notify(new AssignTicketToDepartment($ticket, $agent));
+                        } catch (\Exception $innerEx) {
+                            \Log::error('Error sending notification to specific agent: ' . $innerEx->getMessage(), [
+                                'agent_id' => $agent->id,
+                                'ticket_id' => $ticket->id,
+                                'exception' => $innerEx
+                            ]);
+                        }
+                    }
                 }
+            } catch (\Exception $e) {
+                // Log the error but don't fail the ticket creation
+                \Log::error('Error sending ticket notifications: ' . $e->getMessage(), [
+                    'ticket_id' => $ticket->id,
+                    'exception' => $e
+                ]);
             }
             return response()->json(['message' => __('Data saved correctly'), 'ticket' => new TicketManageResource($ticket)]);
         }
@@ -288,17 +332,40 @@ class TicketController extends Controller
     /**
      * Get concerns by department.
      *
-     * @param Department $department
+     * @param mixed $department
      * @return JsonResponse
      */
-    public function concernsByDepartment(Department $department): JsonResponse
+    public function concernsByDepartment($department): JsonResponse
     {
-        return response()->json(TicketConcernSelectResource::collection(
-            TicketConcern::where('department_id', $department->id)
+        try {
+            // Check if department exists
+            if (!$department instanceof Department) {
+                // Try to find the department by ID
+                $departmentId = is_numeric($department) ? $department : 0;
+                $department = Department::find($departmentId);
+
+                if (!$department) {
+                    \Log::warning("Department with ID {$departmentId} not found");
+                    return response()->json([
+                        'message' => __('Department not found'),
+                        'data' => []
+                    ], 404);
+                }
+            }
+
+            $concerns = TicketConcern::where('department_id', $department->id)
                 ->where('status', true)
                 ->orderBy('name')
-                ->get()
-        ));
+                ->get();
+
+            return response()->json(TicketConcernSelectResource::collection($concerns));
+        } catch (\Exception $e) {
+            \Log::error("Error fetching concerns for department: " . $e->getMessage());
+            return response()->json([
+                'message' => __('Error fetching concerns'),
+                'data' => []
+            ], 500);
+        }
     }
 
     public function priorities(): JsonResponse

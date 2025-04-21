@@ -262,15 +262,35 @@ class TicketConcernController extends Controller
      * Get concerns by department.
      *
      * @param int $departmentId
-     * @return AnonymousResourceCollection
+     * @return JsonResponse|AnonymousResourceCollection
      */
-    public function concernsByDepartment(int $departmentId): AnonymousResourceCollection
+    public function concernsByDepartment(int $departmentId)
     {
-        $concerns = TicketConcern::where('department_id', $departmentId)
-            ->where('status', true)
-            ->orderBy('name')
-            ->get();
-        return TicketConcernSelectResource::collection($concerns);
+        try {
+            // First check if the department exists
+            $department = Department::find($departmentId);
+
+            if (!$department) {
+                \Log::warning("Department with ID {$departmentId} not found");
+                return response()->json([
+                    'message' => __('Department not found'),
+                    'concerns' => []
+                ], 404);
+            }
+
+            $concerns = TicketConcern::where('department_id', $departmentId)
+                ->where('status', true)
+                ->orderBy('name')
+                ->get();
+
+            return TicketConcernSelectResource::collection($concerns);
+        } catch (\Exception $e) {
+            \Log::error("Error fetching concerns for department {$departmentId}: " . $e->getMessage());
+            return response()->json([
+                'message' => __('Error fetching concerns'),
+                'concerns' => []
+            ], 500);
+        }
     }
 
     /**

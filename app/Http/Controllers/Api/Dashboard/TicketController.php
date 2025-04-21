@@ -140,7 +140,12 @@ class TicketController extends Controller
                     return $attachment['id'];
                 }));
             }
-            $ticket->user->notify((new NewTicketFromAgent($ticket))->locale(Setting::getDecoded('app_locale')));
+            try {
+                $ticket->user->notify((new NewTicketFromAgent($ticket))->locale(Setting::getDecoded('app_locale')));
+            } catch (\Exception $e) {
+                // Log the error but don't fail the ticket creation
+                \Log::error('Error sending ticket notification: ' . $e->getMessage());
+            }
             return response()->json(['message' => __('Data saved correctly'), 'ticket' => new TicketManageResource($ticket)]);
         }
         return response()->json(['message' => __('An error occurred while saving data')], 500);

@@ -64,15 +64,41 @@ class AssignTicketToDepartment extends Notification
      */
     public function toArray($notifiable)
     {
-        // Create an in-app notification
-        $this->createAppNotification(
-            $notifiable->id,
-            __('New ticket assigned to your department'),
-            __('Ticket assigned to your department: ') . $this->ticket->subject,
-            'ticket_assigned',
-            'font-awesome.user-tag-solid',
-            '/dashboard/tickets/' . $this->ticket->uuid . '/manage'
-        );
+        try {
+            // Ensure notifiable has an ID
+            if ($notifiable && $notifiable->id) {
+                // Create an in-app notification
+                $this->createAppNotification(
+                    $notifiable->id,
+                    __('New ticket assigned to your department'),
+                    __('Ticket assigned to your department: ') . $this->ticket->subject,
+                    'ticket_assigned',
+                    'font-awesome.user-tag-solid',
+                    '/dashboard/tickets/' . $this->ticket->uuid . '/manage'
+                );
+
+                // Log successful notification creation
+                \Log::info('Created department ticket notification for user', [
+                    'user_id' => $notifiable->id,
+                    'ticket_id' => $this->ticket->id,
+                    'ticket_uuid' => $this->ticket->uuid,
+                    'department_id' => $this->ticket->department_id
+                ]);
+            } else {
+                \Log::warning('Cannot create notification: notifiable has no ID', [
+                    'ticket_id' => $this->ticket->id,
+                    'ticket_uuid' => $this->ticket->uuid,
+                    'department_id' => $this->ticket->department_id
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error creating department ticket notification: ' . $e->getMessage(), [
+                'ticket_id' => $this->ticket->id,
+                'ticket_uuid' => $this->ticket->uuid,
+                'department_id' => $this->ticket->department_id,
+                'exception' => $e
+            ]);
+        }
 
         return [
             'id' => $this->ticket->id,

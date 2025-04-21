@@ -145,4 +145,14 @@ class User extends Authenticatable
             'email_verified_at' => $this->freshTimestamp(),
         ])->save();
     }
+
+    /**
+     * Get the condo location ID for notifications.
+     *
+     * @return int|null
+     */
+    public function getCondoLocationId()
+    {
+        return $this->condo_location_id;
+    }
 }

@@ -1,5 +1,5 @@
 <template>
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen" :class="{'bg-gray-100': !$store.state.darkMode, 'bg-gray-900': $store.state.darkMode}">
         <navbar/>
         <router-view></router-view>
     </div>

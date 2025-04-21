@@ -48,19 +48,19 @@
 </head>
 <body>
     <h1>Notification System Test</h1>
-    
+
     <div class="section">
         <h2>1. Test Pusher Connection</h2>
         <p>This test checks if Pusher is properly configured and can establish a connection.</p>
         <a href="test-pusher.html" target="_blank" class="button">Run Pusher Test</a>
     </div>
-    
+
     <div class="section">
         <h2>2. Test Notification Listener</h2>
         <p>This test checks if the notification listener is working properly.</p>
         <a href="test-notification.html" target="_blank" class="button">Run Notification Listener Test</a>
     </div>
-    
+
     <div class="section">
         <h2>3. Send Test Notification</h2>
         <p>This test sends a notification to a specific user.</p>
@@ -71,38 +71,38 @@
         </form>
         <div id="notification-result"></div>
     </div>
-    
+
     <div class="section">
         <h2>Debugging Information</h2>
         <p>Here's some information that might help with debugging:</p>
-        
+
         <h3>Pusher Configuration</h3>
         <pre><code>
 PUSHER_APP_ID="1965908"
 PUSHER_APP_KEY="55f75e5b9765246430ba"
 PUSHER_APP_CLUSTER="ap1"
         </code></pre>
-        
+
         <h3>Channel Format</h3>
         <pre><code>private-notifications.{userId}</code></pre>
-        
+
         <h3>Event Name</h3>
         <pre><code>.notification.new</code></pre>
     </div>
-    
+
     <script>
         document.getElementById('notification-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const userId = document.getElementById('user-id').value;
             if (!userId) {
                 document.getElementById('notification-result').textContent = 'Please enter a user ID';
                 return;
             }
-            
+
             document.getElementById('notification-result').textContent = 'Sending notification...';
-            
-            fetch(`/test-notification.php?user_id=${userId}`)
+
+            fetch(`/test-notification-trigger.php?user_id=${userId}`)
                 .then(response => response.text())
                 .then(data => {
                     document.getElementById('notification-result').innerHTML = `<pre>${data}</pre>`;

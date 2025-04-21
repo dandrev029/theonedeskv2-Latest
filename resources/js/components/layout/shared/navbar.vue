@@ -1,14 +1,20 @@
 <template>
-    <nav class="bg-white shadow-sm">
+    <nav :class="[bgPrimary, 'shadow-sm border-b', borderColor]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <router-link class="flex" to="/">
-                    <logo div-padding text-class="text-gray-800"></logo>
+                    <logo div-padding :text-class="$store.state.darkMode ? 'text-white' : 'text-gray-800'"></logo>
                 </router-link>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
                     <!-- Notification Dropdown Component -->
                     <notification-dropdown ref="notificationDropdown" v-on-clickaway="closeNotificationDropdown" />
-                    
+
+                    <!-- Dark Mode Toggle -->
+                    <div class="flex items-center ml-2 mr-1">
+                        <span class="text-xs mr-2 hidden sm:inline" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'">{{ $store.state.darkMode ? $t('Light') : $t('Dark') }}</span>
+                        <dark-mode-toggle />
+                    </div>
+
                     <div class="ml-3 relative">
                         <template v-if="$store.state.user">
                             <div v-on-clickaway="closeDropdown" class="ml-3 relative">
@@ -111,13 +117,19 @@
             </div>
         </div>
         <div v-show="menuOpen" class="sm:hidden">
-            <div class="py-3 border-t border-gray-200">
+            <div class="py-3 border-t" :class="[bgPrimary, borderColor]">
                 <!-- Mobile notifications -->
-                <div v-if="$store.state.user" class="flex items-center px-4 py-3 border-b border-gray-200">
+                <div v-if="$store.state.user" class="flex items-center px-4 py-3 border-b" :class="borderColor">
                     <notification-dropdown />
-                    <span class="ml-3 text-sm font-medium text-gray-700">{{ $t('Notifications') }}</span>
+                    <span class="ml-3 text-sm font-medium" :class="textSecondary">{{ $t('Notifications') }}</span>
                 </div>
-                
+
+                <!-- Dark Mode Toggle for Mobile -->
+                <div class="flex items-center justify-between px-4 py-3 border-t" :class="borderColor">
+                    <span class="text-sm font-medium" :class="textSecondary">{{ $t('Dark Mode') }}</span>
+                    <dark-mode-toggle />
+                </div>
+
                 <template v-if="$store.state.user">
                     <div class="flex items-center px-4">
                         <div class="flex-shrink-0">
@@ -128,14 +140,15 @@
                             />
                         </div>
                         <div class="ml-3">
-                            <div class="text-base font-medium leading-6 text-gray-800">{{ $store.state.user.name }}</div>
-                            <div class="text-sm font-medium leading-5 text-gray-500">{{ $store.state.user.email }}</div>
+                            <div class="text-base font-medium leading-6" :class="$store.state.darkMode ? 'text-white' : 'text-gray-800'">{{ $store.state.user.name }}</div>
+                            <div class="text-sm font-medium leading-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'">{{ $store.state.user.email }}</div>
                         </div>
                     </div>
                     <div aria-labelledby="user-menu" aria-orientation="vertical" class="mt-3" role="menu">
                         <router-link
                             v-if="$store.state.user.role.dashboard_access"
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                            class="block px-4 py-2 text-sm transition ease-in-out duration-150"
+                            :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                             role="menuitem"
                             to="/dashboard/home"
                             @click.native="menuOpen = false"
@@ -143,7 +156,8 @@
                             {{ $t('Dashboard') }}
                         </router-link>
                         <router-link
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                            class="block px-4 py-2 text-sm transition ease-in-out duration-150"
+                            :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                             role="menuitem"
                             to="/tickets/list"
                             @click.native="menuOpen = false"
@@ -151,7 +165,8 @@
                             {{ $t('My tickets') }}
                         </router-link>
                         <router-link
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                            class="block px-4 py-2 text-sm transition ease-in-out duration-150"
+                            :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                             role="menuitem"
                             to="/account"
                             @click.native="menuOpen = false"
@@ -159,7 +174,8 @@
                             {{ $t('Account settings') }}
                         </router-link>
                         <a
-                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                            class="block px-4 py-2 text-sm transition ease-in-out duration-150"
+                            :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                             href="/auth/logout"
                             role="menuitem"
                             @click.prevent="signOut"
@@ -170,7 +186,8 @@
                 </template>
                 <template v-else>
                     <router-link
-                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                        class="block px-4 py-2 text-sm transition ease-in-out duration-150"
+                        :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
                         role="menuitem"
                         to="/auth/login"
                     >
@@ -186,11 +203,13 @@
 import {mixin as clickaway} from '../../../utilities/vue-clickaway-compat';
 import Logo from "@/components/layout/shared/logo";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
+import DarkModeToggle from "@/components/elements/dark-mode-toggle";
+import DarkModeMixin from "@/mixins/dark-mode-mixin";
 
 export default {
     name: "navbar",
-    components: {Logo, NotificationDropdown},
-    mixins: [clickaway],
+    components: {Logo, NotificationDropdown, DarkModeToggle},
+    mixins: [clickaway, DarkModeMixin],
     data() {
         return {
             menuOpen: false,

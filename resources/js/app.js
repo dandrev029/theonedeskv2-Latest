@@ -11,12 +11,31 @@ import Pusher from 'pusher-js';
 
 window.Pusher = Pusher;
 
+// Enable Pusher logging in development
+Pusher.logToConsole = process.env.NODE_ENV !== 'production';
+
 // Initialize Laravel Echo
 window.Echo = new Echo({
     broadcaster: 'pusher',
     key: window.app && window.app.pusher_key ? window.app.pusher_key : process.env.MIX_PUSHER_APP_KEY,
     cluster: window.app && window.app.pusher_cluster ? window.app.pusher_cluster : process.env.MIX_PUSHER_APP_CLUSTER,
-    forceTLS: true
+    forceTLS: true,
+    authEndpoint: '/broadcasting/auth',
+    auth: {
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }
+});
+
+// Log connection status
+window.Echo.connector.pusher.connection.bind('connected', () => {
+    console.log('Pusher connected successfully');
+});
+
+window.Echo.connector.pusher.connection.bind('error', (err) => {
+    console.error('Pusher connection error:', err);
 });
 
 // Log Pusher configuration for debugging

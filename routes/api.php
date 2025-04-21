@@ -69,7 +69,7 @@ Route::get('tickets/statuses', [UserTicketController::class, 'statuses'])->name(
 Route::get('tickets/departments', [UserTicketController::class, 'departments'])->name('tickets.departments');
 Route::get('tickets/user-departments-by-location', [UserTicketController::class, 'userDepartmentsByCondoLocation'])->name('tickets.user-departments-by-location');
 Route::get('tickets/concerns', [UserTicketController::class, 'concerns'])->name('tickets.concerns');
-Route::get('tickets/departments/{department}/concerns', [UserTicketController::class, 'concernsByDepartment'])->name('tickets.departments.concerns');
+Route::get('tickets/departments/{department}/concerns', [UserTicketController::class, 'concernsByDepartment'])->name('tickets.departments.concerns')->where('department', '[0-9]+');
 Route::get('tickets/priorities', [UserTicketController::class, 'priorities'])->name('tickets.priorities');
 Route::post('tickets/attachments', [FileFileController::class, 'uploadAttachment'])->name('tickets.upload-attachment');
 Route::post('tickets/{ticket}/reply', [UserTicketController::class, 'reply'])->name('tickets.reply');
@@ -87,6 +87,10 @@ Route::group(['prefix' => 'notifications'], static function () {
     Route::post('/multiple', [NotificationController::class, 'createForMultipleUsers'])->name('notifications.create-for-multiple-users');
     Route::post('/role', [NotificationController::class, 'createForRole'])->name('notifications.create-for-role');
     Route::post('/all', [NotificationController::class, 'createForAllUsers'])->name('notifications.create-for-all-users');
+
+    // Test notification endpoints
+    Route::get('/test/department', [\App\Http\Controllers\Api\TestNotificationController::class, 'testDepartmentNotifications'])->name('notifications.test.department');
+    Route::get('/test/recent', [\App\Http\Controllers\Api\TestNotificationController::class, 'getRecentNotifications'])->name('notifications.test.recent');
 });
 
 Route::group(['prefix' => 'dashboard'], static function () {
@@ -132,7 +136,7 @@ Route::group(['prefix' => 'dashboard'], static function () {
         Route::apiResource('ticket-concerns', DashboardAdminTicketConcernController::class);
         Route::get('ticket-concerns/users/dashboard', [DashboardAdminTicketConcernController::class, 'dashboardUsers'])->name('ticket-concerns.dashboard-users');
         Route::get('ticket-concerns/departments', [DashboardAdminTicketConcernController::class, 'departments'])->name('ticket-concerns.departments');
-        Route::get('ticket-concerns/departments/{department}/concerns', [DashboardAdminTicketConcernController::class, 'concernsByDepartment'])->name('ticket-concerns.departments.concerns');
+        Route::get('ticket-concerns/departments/{department}/concerns', [DashboardAdminTicketConcernController::class, 'concernsByDepartment'])->name('ticket-concerns.departments.concerns')->where('department', '[0-9]+');
 
         Route::get('settings/user-roles', [DashboardAdminSettingController::class, 'userRoles'])->name('settings.user-roles');
         Route::get('settings/languages', [DashboardAdminSettingController::class, 'languages'])->name('settings.languages');
