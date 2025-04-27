@@ -80,7 +80,7 @@
                                         id="sortBy-desktop"
                                         v-model="sort.column"
                                         aria-label="Sort by"
-                                        class="-ml-px block form-select w-full pl-3 pr-9 py-2 rounded-l-none rounded-r-md border text-sm leading-5 font-medium transition ease-in-out duration-150"
+                                        class="block form-select w-full pl-3 pr-9 py-2 rounded-l-none rounded-r-md border text-sm leading-5 font-medium transition ease-in-out duration-150"
                                         :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})"
                                         @change="changeSort"
                                     >

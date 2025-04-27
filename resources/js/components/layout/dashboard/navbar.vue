@@ -49,7 +49,7 @@
                             leave-class="transform opacity-100 scale-100"
                             leave-to-class="transform opacity-0 scale-95"
                         >
-                            <div v-show="dropdownOpen" class="origin-top-right z-10 absolute right-0 mt-2 w-56 rounded-md shadow-lg">
+                            <div v-show="dropdownOpen" class="origin-top-right z-50 absolute right-0 mt-2 w-56 rounded-md shadow-lg">
                                 <div aria-labelledby="user-menu" aria-orientation="vertical" class="py-1 rounded-md shadow-xs" :class="bgPrimary" role="menu">
                                     <div class="flex items-center px-4 ce py-2 border-b" :class="borderPrimary">
                                         <img

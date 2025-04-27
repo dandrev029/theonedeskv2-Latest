@@ -33,13 +33,13 @@ class NotificationController extends Controller
         // Get app notifications
         $appNotifications = AppNotification::where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(100);
 
         // Get Laravel notifications
         $user = Auth::user();
         $laravelNotifications = $user->notifications()
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(100);
 
         // Count unread notifications from both sources
         $appUnreadCount = AppNotification::where('user_id', Auth::id())

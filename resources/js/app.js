@@ -53,6 +53,7 @@ import {VueReCaptcha} from "vue-recaptcha-v3";
 import VueElementLoading from 'vue-element-loading';
 import TextareaAutosize from 'vue-textarea-autosize';
 import vueFilterPrettyBytes from 'vue-filter-pretty-bytes';
+import { mixin as clickaway } from 'vue-clickaway';
 
 // Custom directives
 import IntersectDirective from '@/directives/intersect';
@@ -73,6 +74,7 @@ Vue.component('VueElementLoading', VueElementLoading);
 
 // Register custom directives
 Vue.directive('intersect', IntersectDirective);
+Vue.directive('on-clickaway', clickaway);
 if (window.app.recaptcha_enabled) {
     Vue.use(VueReCaptcha, {siteKey: window.app.recaptcha_public});
 }

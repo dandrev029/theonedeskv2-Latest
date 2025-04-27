@@ -2,7 +2,7 @@
     <div class="flex flex-col rounded-lg shadow-sm border" :class="{'bg-white border-secondary-200': !$store.state.darkMode, 'bg-gray-800 border-gray-700': $store.state.darkMode}">
         <div class="p-4 border-b" :class="{'border-secondary-200': !$store.state.darkMode, 'border-gray-700': $store.state.darkMode}">
             <div class="font-semibold flex items-center" :class="{'text-secondary-800': !$store.state.darkMode, 'text-white': $store.state.darkMode}">
-                <svg-vue class="h-5 w-5 text-primary-600 mr-2" icon="font-awesome.chart-line-regular"></svg-vue>
+                <svg class="h-5 w-5 text-primary-600 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M500 384c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12V76c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v308h436zM309.9 141.1L441 233.6c4.7 3.4 5.6 9.8 2.2 14.5l-19.7 27.1c-3.4 4.7-9.8 5.6-14.5 2.2L320 211.8l-86.6 67.2c-4.7 3.6-11 3.6-15.7 0L128 211.8l-53.8 39.8c-5 3.7-11.8 2.8-15.5-2.2L32.7 217c-3.7-5-2.8-11.8 2.2-15.5l112-81.5c4.7-3.4 11-3.4 15.7 0L256 188.2l53.9-47.1z"/></svg>
                 {{ $t('Tickets this month') }} ({{ monthName }} {{ year }})
             </div>
         </div>

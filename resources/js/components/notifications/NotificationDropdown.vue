@@ -58,7 +58,7 @@
             >
               <div class="flex-shrink-0 mr-3">
                 <div class="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center">
-                  <svg-vue v-if="notification.icon" class="h-4 w-4" :icon="notification.icon"></svg-vue>
+                  <svg-vue v-if="notification.icon" class="h-4 w-4" :icon="mapIconName(notification.icon)"></svg-vue>
                   <svg-vue v-else class="h-4 w-4" icon="font-awesome.bell-regular"></svg-vue>
                 </div>
               </div>
@@ -127,6 +127,15 @@ export default {
     }
   },
   methods: {
+    mapIconName(iconName) {
+      // Map missing solid icons to available regular ones
+      const iconMap = {
+        'font-awesome.user-tag-solid': 'font-awesome.user-tag-regular',
+        'font-awesome.comment-alt-solid': 'font-awesome.comments-alt-regular', // Corrected based on list_dir output
+        'font-awesome.bell-solid': 'font-awesome.bell-regular' // Add mapping for the default replacement too
+      };
+      return iconMap[iconName] || iconName;
+    },
     async fetchNotifications() {
       try {
         const response = await this.$store.dispatch("fetchNotifications");
@@ -154,12 +163,24 @@ export default {
           response.laravel_notifications.data.forEach(notification => {
             // Extract data from the notification
             const data = notification.data || {};
+            let iconName = notification.icon || data.icon || 'font-awesome.bell-regular'; // Default to regular bell
+            // Map missing solid icons to available regular ones
+            if (iconName === 'font-awesome.user-tag-solid') {
+              iconName = 'font-awesome.user-tag-regular';
+            }
+            if (iconName === 'font-awesome.comment-alt-solid') {
+              iconName = 'font-awesome.comments-alt-regular'; // Corrected based on list_dir output
+            }
+            // Ensure the default bell is also regular if it was solid
+            if (iconName === 'font-awesome.bell-solid') {
+                 iconName = 'font-awesome.bell-regular';
+            }
             const formattedNotification = {
               id: notification.id,
               title: notification.title || data.title || 'Notification',
               message: notification.message || data.message || '',
               type: notification.type || data.type || 'general',
-              icon: notification.icon || data.icon || 'font-awesome.bell-solid',
+              icon: iconName, // Use the potentially replaced icon name
               link: notification.link || data.link || null,
               created_at: notification.created_at,
               is_read: notification.is_read || notification.read_at !== null,
@@ -266,8 +287,19 @@ export default {
         return;
       }
 
+      // Apply icon replacement logic for Pusher notifications
+      let iconName = notification.icon || notification.data?.icon || 'font-awesome.bell-solid';
+      if (iconName === 'font-awesome.user-tag-solid') {
+        iconName = 'font-awesome.user-tag-regular'; // Map to available regular icon
+      }
+      if (iconName === 'font-awesome.comment-alt-solid') {
+        iconName = 'font-awesome.comments-alt-regular'; // Map to available regular icon (corrected name)
+      }
+
       // Add to local state
       this.notifications.unshift({
+        ...notification,
+        icon: iconName, // Use the potentially replaced icon name
         ...notification,
         _uniqueId: notificationId // Add a unique ID for internal tracking
       });
