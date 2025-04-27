@@ -101,7 +101,22 @@
                         </template>
                     </div>
                 </div>
-                <div class="-mr-2 flex items-center sm:hidden">
+
+                <!-- Mobile right-side controls container -->
+                <div class="sm:hidden flex items-center">
+                    <!-- Mobile Icons for Tenant View -->
+                    <div class="flex items-center mobile-controls-group">
+                        <!-- Mobile Notification Dropdown -->
+                        <notification-dropdown v-if="$store.state.user && !isDashboardRoute" ref="notificationDropdownMobile" class="flex items-center mobile-notification-icon" />
+
+                        <!-- Mobile Dark Mode Toggle -->
+                        <div class="flex items-center mobile-dark-mode-toggle">
+                            <dark-mode-toggle />
+                        </div>
+                    </div>
+
+                    <!-- Burger Menu Button -->
+                    <div class="flex items-center">
                     <button
                         class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
                         @click="menuOpen = !menuOpen"
@@ -113,32 +128,13 @@
                             <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
                         </svg>
                     </button>
+                    </div>
                 </div>
             </div>
         </div>
         <div v-show="menuOpen" class="sm:hidden">
             <div class="py-3 border-t" :class="[bgPrimary, borderColor]">
-                <!-- Mobile notifications -->
-                <div v-if="$store.state.user" class="flex items-center px-4 py-3 border-b" :class="borderColor">
-                    <button
-                        class="flex items-center w-full focus:outline-none"
-                        @click="openMobileNotifications"
-                    >
-                        <div class="relative">
-                            <svg-vue class="h-6 w-6 p-px text-gray-400" icon="font-awesome.bell-regular"></svg-vue>
-                            <span v-if="unreadNotificationCount > 0" class="absolute top-0 right-0 -mt-1 -mr-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                                {{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}
-                            </span>
-                        </div>
-                        <span class="ml-3 text-sm font-medium" :class="textSecondary">{{ $t('Notifications') }}</span>
-                    </button>
-                </div>
-
-                <!-- Dark Mode Toggle for Mobile -->
-                <div class="flex items-center justify-between px-4 py-3 border-t" :class="borderColor">
-                    <span class="text-sm font-medium" :class="textSecondary">{{ $t('Dark Mode') }}</span>
-                    <dark-mode-toggle />
-                </div>
+                <!-- Mobile notifications and Dark Mode Toggle (REMOVED - Now outside menu) -->
 
                 <template v-if="$store.state.user">
                     <div class="flex items-center px-4">
@@ -229,6 +225,12 @@ export default {
             mobileNotificationsOpen: false
         }
     },
+    computed: {
+        isDashboardRoute() {
+            // Check if the current route is in the dashboard
+            return this.$route.path.includes('/dashboard');
+        }
+    },
     created() {
         // Listen for notification updates
         this.$root.$on('notification-count-updated', (count) => {
@@ -298,3 +300,56 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+/* Mobile controls group styling */
+.mobile-controls-group {
+  display: flex;
+  align-items: center;
+  margin-right: 0.25rem;
+}
+
+/* Mobile notification icon styling */
+.mobile-notification-icon {
+  margin-right: 0.25rem;
+}
+
+.mobile-notification-icon button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  padding: 0;
+}
+
+/* Add touch feedback */
+.mobile-notification-icon button:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode support */
+.dark .mobile-notification-icon button:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile dark mode toggle styling */
+.mobile-dark-mode-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.25rem;
+}
+
+.mobile-dark-mode-toggle .dark-mode-toggle-container {
+  margin: 0;
+  transform: scale(0.9);
+}
+
+.mobile-dark-mode-toggle .toggle-track {
+  width: 2.5rem;
+  height: 1.3rem;
+}
+</style>

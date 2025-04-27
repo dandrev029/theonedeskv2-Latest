@@ -16,16 +16,19 @@
     </button>
 
     <transition
-      enter-active-class="transition ease-out duration-100"
-      enter-class="transform opacity-0 scale-95"
-      enter-to-class="transform opacity-100 scale-100"
-      leave-active-class="transition ease-in duration-75"
-      leave-class="transform opacity-100 scale-100"
-      leave-to-class="transform opacity-0 scale-95"
+      enter-active-class="transition ease-out duration-200"
+      enter-class="transform opacity-0 scale-95 sm:scale-95 sm:translate-y-0 translate-y-full"
+      enter-to-class="transform opacity-100 scale-100 sm:scale-100 sm:translate-y-0 translate-y-0"
+      leave-active-class="transition ease-in duration-150"
+      leave-class="transform opacity-100 scale-100 sm:scale-100 sm:translate-y-0 translate-y-0"
+      leave-to-class="transform opacity-0 scale-95 sm:scale-95 sm:translate-y-0 translate-y-full"
     >
       <div
         v-show="isOpen"
         class="origin-top-right absolute right-0 mt-2 w-80 md:w-96 rounded-md shadow-lg z-50 mobile-notification-dropdown" :class="bgPrimary"
+        @touchstart="handleTouchStart"
+        @touchmove="handleTouchMove"
+        @touchend="handleTouchEnd"
       >
         <div class="py-1 rounded-md shadow-xs" :class="bgPrimary">
           <!-- Notification Header -->
@@ -110,7 +113,11 @@ export default {
     return {
       isOpen: false,
       notifications: this.initialNotifications || [],
-      unreadCount: 0
+      unreadCount: 0,
+      touchStartY: 0,
+      touchMoveY: 0,
+      isSwiping: false,
+      swipeThreshold: 50 // Minimum distance to consider a swipe
     };
   },
   created() {
@@ -370,18 +377,29 @@ export default {
         // Check if backdrop already exists
         if (!document.getElementById('notification-backdrop-inline')) {
           const backdrop = document.createElement('div');
-          backdrop.className = 'fixed inset-0 bg-black bg-opacity-50 z-40';
+          backdrop.className = 'fixed inset-0 bg-black bg-opacity-50 z-150';
           backdrop.id = 'notification-backdrop-inline';
           backdrop.addEventListener('click', () => {
             this.closeDropdown();
           });
           document.body.appendChild(backdrop);
+
+          // Prevent body scrolling
+          document.body.classList.add('notification-dropdown-open');
+
+          // Add touch event listener to the backdrop for better mobile experience
+          backdrop.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent scrolling on the backdrop
+          }, { passive: false });
         }
       } else {
         // Remove backdrop when closing
         const backdrop = document.getElementById('notification-backdrop-inline');
         if (backdrop) {
           document.body.removeChild(backdrop);
+
+          // Re-enable body scrolling
+          document.body.classList.remove('notification-dropdown-open');
         }
       }
     },
@@ -392,12 +410,55 @@ export default {
       const backdrop = document.getElementById('notification-backdrop-inline');
       if (backdrop) {
         document.body.removeChild(backdrop);
+
+        // Re-enable body scrolling
+        document.body.classList.remove('notification-dropdown-open');
       }
 
       this.$emit('closed');
     },
     formatTime(timestamp) {
       return moment(timestamp).fromNow();
+    },
+    // Touch event handlers for mobile swipe
+    handleTouchStart(event) {
+      if (window.innerWidth >= 640) return; // Only handle touch events on mobile
+      this.touchStartY = event.touches[0].clientY;
+      this.isSwiping = false;
+    },
+    handleTouchMove(event) {
+      if (window.innerWidth >= 640) return; // Only handle touch events on mobile
+      this.touchMoveY = event.touches[0].clientY;
+
+      // Calculate the distance moved
+      const deltaY = this.touchMoveY - this.touchStartY;
+
+      // If swiping down, prevent default to avoid page scrolling
+      if (deltaY > 0) {
+        this.isSwiping = true;
+        event.preventDefault();
+
+        // Apply a transform to follow the finger
+        const dropdown = event.currentTarget;
+        const translateY = Math.min(deltaY * 0.5, 200); // Limit the movement
+        dropdown.style.transform = `translateY(${translateY}px)`;
+      }
+    },
+    handleTouchEnd(event) {
+      if (window.innerWidth >= 640) return; // Only handle touch events on mobile
+
+      const dropdown = event.currentTarget;
+      dropdown.style.transform = ''; // Reset the transform
+
+      // Calculate the distance moved
+      const deltaY = this.touchMoveY - this.touchStartY;
+
+      // If swiped down far enough, close the dropdown
+      if (deltaY > this.swipeThreshold && this.isSwiping) {
+        this.closeDropdown();
+      }
+
+      this.isSwiping = false;
     }
   }
 };
@@ -413,34 +474,56 @@ export default {
     right: 0;
     bottom: 0;
     width: 100% !important;
-    max-height: 80vh;
+    max-height: 85vh;
     margin-top: 0;
-    border-radius: 12px 12px 0 0;
-    z-index: 100;
+    border-radius: 16px 16px 0 0;
+    z-index: 200; /* Increased z-index to ensure it appears above other elements */
+    transform: translateZ(0); /* Force hardware acceleration */
+    will-change: transform; /* Optimize for animations */
+    transition: transform 0.3s ease-out;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
   .mobile-notification-dropdown .max-h-80 {
-    max-height: 60vh;
+    max-height: 65vh;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    overscroll-behavior: contain; /* Prevent scroll chaining */
   }
 
   /* Fix for mobile menu overlap */
   .mobile-notification-dropdown .py-1 {
-    padding-bottom: env(safe-area-inset-bottom, 16px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 8px);
   }
 
   /* Add a handle for better UX */
   .mobile-notification-dropdown::before {
     content: '';
     display: block;
-    width: 36px;
-    height: 4px;
+    width: 40px;
+    height: 5px;
     background-color: #e2e8f0;
-    border-radius: 2px;
+    border-radius: 2.5px;
     margin: 8px auto;
     position: absolute;
     top: -12px;
     left: 50%;
     transform: translateX(-50%);
+    transition: background-color 0.2s ease;
+  }
+
+  /* Dark mode support for the handle */
+  .dark .mobile-notification-dropdown::before {
+    background-color: #4a5568;
+  }
+
+  /* Add touch feedback to notification items */
+  .mobile-notification-dropdown .px-4.py-3.flex.items-start.cursor-pointer {
+    transition: background-color 0.15s ease;
+  }
+
+  /* Add active state for touch feedback */
+  .mobile-notification-dropdown .px-4.py-3.flex.items-start.cursor-pointer:active {
+    opacity: 0.8;
   }
 }
 
@@ -451,5 +534,29 @@ export default {
 
 .sm\:hidden .notification-dropdown button {
   padding: 0;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure the notification bell is properly sized and positioned in mobile view */
+.sm\:hidden .notification-dropdown .h-6.w-6 {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+/* Fix for notification badge in mobile view */
+.sm\:hidden .notification-dropdown .absolute.top-0.right-0 {
+  top: -2px;
+  right: -2px;
+}
+
+/* Prevent body scrolling when dropdown is open */
+body.notification-dropdown-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
 }
 </style>
