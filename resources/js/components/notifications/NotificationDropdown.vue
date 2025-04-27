@@ -1,5 +1,5 @@
 <template>
-  <div class="relative">
+  <div class="relative notification-dropdown">
     <button
       :class="getDarkModeClasses({
         lightHover: 'hover:bg-gray-100 hover:text-gray-500',
@@ -25,7 +25,7 @@
     >
       <div
         v-show="isOpen"
-        class="origin-top-right absolute right-0 mt-2 w-80 md:w-96 rounded-md shadow-lg z-50" :class="bgPrimary"
+        class="origin-top-right absolute right-0 mt-2 w-80 md:w-96 rounded-md shadow-lg z-50 mobile-notification-dropdown" :class="bgPrimary"
       >
         <div class="py-1 rounded-md shadow-xs" :class="bgPrimary">
           <!-- Notification Header -->
@@ -119,6 +119,12 @@ export default {
     setTimeout(() => {
       this.setupPusherListener();
     }, 1000);
+  },
+  watch: {
+    unreadCount(newCount) {
+      // Emit the unread count to the root component
+      this.$root.$emit('notification-count-updated', newCount);
+    }
   },
   methods: {
     async fetchNotifications() {
@@ -326,9 +332,37 @@ export default {
     },
     toggleDropdown() {
       this.isOpen = !this.isOpen;
+
+      // Add a backdrop for mobile view when opening
+      if (this.isOpen && window.innerWidth < 640) {
+        // Check if backdrop already exists
+        if (!document.getElementById('notification-backdrop-inline')) {
+          const backdrop = document.createElement('div');
+          backdrop.className = 'fixed inset-0 bg-black bg-opacity-50 z-40';
+          backdrop.id = 'notification-backdrop-inline';
+          backdrop.addEventListener('click', () => {
+            this.closeDropdown();
+          });
+          document.body.appendChild(backdrop);
+        }
+      } else {
+        // Remove backdrop when closing
+        const backdrop = document.getElementById('notification-backdrop-inline');
+        if (backdrop) {
+          document.body.removeChild(backdrop);
+        }
+      }
     },
     closeDropdown() {
       this.isOpen = false;
+
+      // Remove backdrop when closing
+      const backdrop = document.getElementById('notification-backdrop-inline');
+      if (backdrop) {
+        document.body.removeChild(backdrop);
+      }
+
+      this.$emit('closed');
     },
     formatTime(timestamp) {
       return moment(timestamp).fromNow();
@@ -336,3 +370,54 @@ export default {
   }
 };
 </script>
+
+<style>
+/* Mobile notification dropdown positioning */
+@media (max-width: 640px) {
+  .mobile-notification-dropdown {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    max-height: 80vh;
+    margin-top: 0;
+    border-radius: 12px 12px 0 0;
+    z-index: 100;
+  }
+
+  .mobile-notification-dropdown .max-h-80 {
+    max-height: 60vh;
+  }
+
+  /* Fix for mobile menu overlap */
+  .mobile-notification-dropdown .py-1 {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  /* Add a handle for better UX */
+  .mobile-notification-dropdown::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background-color: #e2e8f0;
+    border-radius: 2px;
+    margin: 8px auto;
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Fix for notification dropdown in mobile menu */
+.sm\:hidden .notification-dropdown {
+  position: static;
+}
+
+.sm\:hidden .notification-dropdown button {
+  padding: 0;
+}
+</style>

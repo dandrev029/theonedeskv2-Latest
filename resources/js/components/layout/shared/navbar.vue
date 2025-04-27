@@ -120,8 +120,18 @@
             <div class="py-3 border-t" :class="[bgPrimary, borderColor]">
                 <!-- Mobile notifications -->
                 <div v-if="$store.state.user" class="flex items-center px-4 py-3 border-b" :class="borderColor">
-                    <notification-dropdown />
-                    <span class="ml-3 text-sm font-medium" :class="textSecondary">{{ $t('Notifications') }}</span>
+                    <button
+                        class="flex items-center w-full focus:outline-none"
+                        @click="openMobileNotifications"
+                    >
+                        <div class="relative">
+                            <svg-vue class="h-6 w-6 p-px text-gray-400" icon="font-awesome.bell-regular"></svg-vue>
+                            <span v-if="unreadNotificationCount > 0" class="absolute top-0 right-0 -mt-1 -mr-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                                {{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}
+                            </span>
+                        </div>
+                        <span class="ml-3 text-sm font-medium" :class="textSecondary">{{ $t('Notifications') }}</span>
+                    </button>
                 </div>
 
                 <!-- Dark Mode Toggle for Mobile -->
@@ -200,6 +210,7 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import {mixin as clickaway} from '../../../utilities/vue-clickaway-compat';
 import Logo from "@/components/layout/shared/logo";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
@@ -214,7 +225,15 @@ export default {
         return {
             menuOpen: false,
             dropdownOpen: false,
+            unreadNotificationCount: 0,
+            mobileNotificationsOpen: false
         }
+    },
+    created() {
+        // Listen for notification updates
+        this.$root.$on('notification-count-updated', (count) => {
+            this.unreadNotificationCount = count;
+        });
     },
     methods: {
         signOut() {
@@ -230,6 +249,51 @@ export default {
             if (this.$refs.notificationDropdown) {
                 this.$refs.notificationDropdown.closeDropdown();
             }
+        },
+        openMobileNotifications() {
+            // Close the mobile menu
+            this.menuOpen = false;
+
+            // Create a standalone notification dropdown
+            const NotificationDropdownComponent = Vue.extend(NotificationDropdown);
+            const instance = new NotificationDropdownComponent({
+                propsData: {},
+                store: this.$store,
+                i18n: this.$i18n,
+                router: this.$router
+            });
+
+            // Mount the component
+            instance.$mount();
+            document.body.appendChild(instance.$el);
+
+            // Open the dropdown
+            instance.toggleDropdown();
+
+            // Add a backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'fixed inset-0 bg-black bg-opacity-50 z-40';
+            backdrop.id = 'notification-backdrop';
+            backdrop.addEventListener('click', () => {
+                instance.closeDropdown();
+                document.body.removeChild(backdrop);
+                setTimeout(() => {
+                    document.body.removeChild(instance.$el);
+                    instance.$destroy();
+                }, 300);
+            });
+            document.body.appendChild(backdrop);
+
+            // Listen for close event
+            instance.$on('closed', () => {
+                if (document.getElementById('notification-backdrop')) {
+                    document.body.removeChild(backdrop);
+                }
+                setTimeout(() => {
+                    document.body.removeChild(instance.$el);
+                    instance.$destroy();
+                }, 300);
+            });
         }
     }
 }

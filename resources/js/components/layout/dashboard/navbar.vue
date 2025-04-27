@@ -3,6 +3,17 @@
         <button aria-label="Open sidebar" class="px-4 text-primary-600 focus:outline-none focus:bg-primary-50 focus:text-primary-700 md:hidden" @click="$emit('toggleSidebar')">
             <svg-vue class="h-6 w-6" icon="font-awesome.bars-regular"></svg-vue>
         </button>
+        <!-- Mobile Notification Button -->
+        <button
+            aria-label="Notifications"
+            class="px-4 text-primary-600 focus:outline-none focus:bg-primary-50 focus:text-primary-700 md:hidden relative"
+            @click="openMobileNotifications"
+        >
+            <svg-vue class="h-6 w-6" icon="font-awesome.bell-regular"></svg-vue>
+            <span v-if="unreadNotificationCount > 0" class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                {{ unreadNotificationCount > 9 ? '9+' : unreadNotificationCount }}
+            </span>
+        </button>
         <div class="w-full px-4 flex justify-end">
             <div class="flex">
                 <div class="ml-4 flex-1 flex items-center md:ml-6">
@@ -95,15 +106,28 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import {mixin as clickaway} from "../../../utilities/vue-clickaway-compat";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
+import DarkModeToggle from "@/components/elements/dark-mode-toggle";
+import DarkModeMixin from "@/mixins/dark-mode-mixin";
 
 export default {
     name: "navbar",
-    mixins: [clickaway],
+    components: {NotificationDropdown, DarkModeToggle},
+    mixins: [clickaway, DarkModeMixin],
     data() {
         return {
-            dropdownOpen: false
+            dropdownOpen: false,
+            unreadNotificationCount: 0,
+            mobileNotificationsOpen: false
         }
+    },
+    created() {
+        // Listen for notification updates
+        this.$root.$on('notification-count-updated', (count) => {
+            this.unreadNotificationCount = count;
+        });
     },
     methods: {
         signOut() {
@@ -118,6 +142,48 @@ export default {
             if (this.$refs.notificationDropdown) {
                 this.$refs.notificationDropdown.closeDropdown();
             }
+        },
+        openMobileNotifications() {
+            // Create a standalone notification dropdown
+            const NotificationDropdownComponent = Vue.extend(NotificationDropdown);
+            const instance = new NotificationDropdownComponent({
+                propsData: {},
+                store: this.$store,
+                i18n: this.$i18n,
+                router: this.$router
+            });
+
+            // Mount the component
+            instance.$mount();
+            document.body.appendChild(instance.$el);
+
+            // Open the dropdown
+            instance.toggleDropdown();
+
+            // Add a backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'fixed inset-0 bg-black bg-opacity-50 z-40';
+            backdrop.id = 'notification-backdrop';
+            backdrop.addEventListener('click', () => {
+                instance.closeDropdown();
+                document.body.removeChild(backdrop);
+                setTimeout(() => {
+                    document.body.removeChild(instance.$el);
+                    instance.$destroy();
+                }, 300);
+            });
+            document.body.appendChild(backdrop);
+
+            // Listen for close event
+            instance.$on('closed', () => {
+                if (document.getElementById('notification-backdrop')) {
+                    document.body.removeChild(backdrop);
+                }
+                setTimeout(() => {
+                    document.body.removeChild(instance.$el);
+                    instance.$destroy();
+                }, 300);
+            });
         }
     }
 }
