@@ -1,17 +1,16 @@
 <template>
     <main class="flex-1 relative overflow-y-auto py-6 focus:outline-none" tabindex="0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <h1 class="py-0.5 text-2xl font-semibold flex items-center" :class="{'text-secondary-900': !$store.state.darkMode, 'text-white': $store.state.darkMode}">
-                <svg-vue class="h-6 w-6 text-primary-600 mr-2" icon="font-awesome.ticket-alt-regular"></svg-vue>
-                {{ $t('My tickets') }}
-            </h1>
-        </div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="flex justify-between items-center py-4">
-                <div></div>
+            <!-- Page Header with Actions -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6">
+                <div class="flex items-center mb-4 sm:mb-0">
+                    <h1 class="text-2xl font-semibold" :class="textPrimary">
+                        {{ $t('My tickets') }}
+                    </h1>
+                </div>
                 <div>
                     <router-link
-                        class="btn btn-primary shadow-sm rounded-md"
+                        class="btn btn-primary shadow-sm rounded-md inline-flex items-center"
                         to="/tickets/new"
                     >
                         {{ $t('New ticket') }}
@@ -22,31 +21,33 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <div class="overflow-hidden shadow-sm rounded-lg border" :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightBorder: 'border-secondary-200', darkBorder: 'border-gray-700'})">
                 <loading :status="loading"/>
-                <div class="px-4 py-3 border-b" :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightBorder: 'border-secondary-200', darkBorder: 'border-gray-700'})">
+                <div class="px-5 py-4 border-b" :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightBorder: 'border-secondary-200', darkBorder: 'border-gray-700'})">
                         <!-- Desktop Search and Filter UI -->
                         <div class="hidden sm:block">
-                            <label class="sr-only" for="search-desktop">{{ $t('Search') }}</label>
-                            <div class="flex rounded-md shadow-sm">
-                                <div class="relative flex-grow focus-within:z-10">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <!-- Search Input -->
+                                <div class="relative flex-grow max-w-md">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <svg-vue class="h-5 w-5" :class="textTertiary" icon="font-awesome.search-regular"></svg-vue>
                                     </div>
                                     <input
                                         id="search-desktop"
                                         v-model.lazy="filters.search"
-                                        :placeholder="$t('Search')"
-                                        class="form-input block w-full rounded-none rounded-l-md pl-10 text-sm transition ease-in-out duration-150"
-                                        :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600'})"
+                                        :placeholder="$t('Search tickets...')"
+                                        class="form-input block w-full rounded-lg pl-10 pr-3 py-2 text-sm shadow-sm transition ease-in-out duration-150 border-0 ring-1 ring-inset focus:ring-2 focus:ring-primary-500"
+                                        :class="getDarkModeClasses({lightBg: 'bg-white ring-gray-300', darkBg: 'bg-gray-700 ring-gray-600', lightText: 'text-gray-900', darkText: 'text-white'})"
                                         @change="getTickets"
                                     >
                                 </div>
-                                <div class="relative inline-flex rounded-none">
+
+                                <!-- Status Filter -->
+                                <div class="relative">
                                     <select
                                         id="status-desktop"
                                         v-model="filters.status"
                                         aria-label="Filter by status"
-                                        class="-mx-px block form-select w-full pl-3 pr-9 py-2 rounded-none border border-r-0 text-sm leading-5 font-medium transition ease-in-out duration-150"
-                                        :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})"
+                                        class="form-select rounded-lg py-2 pl-3 pr-10 text-sm shadow-sm border-0 ring-1 ring-inset focus:ring-2 focus:ring-primary-500"
+                                        :class="getDarkModeClasses({lightBg: 'bg-white ring-gray-300', darkBg: 'bg-gray-700 ring-gray-600', lightText: 'text-gray-900', darkText: 'text-white'})"
                                         @change="getTickets"
                                     >
                                         <option :value="null">{{ $t('All requests') }}</option>
@@ -55,12 +56,30 @@
                                         </template>
                                     </select>
                                 </div>
-                                <div class="relative inline-flex rounded-r-md">
+
+                                <!-- Sort Controls -->
+                                <div class="flex items-center">
+                                    <label class="mr-2 text-sm font-medium" :class="textSecondary">{{ $t('Sort by:') }}</label>
+                                    <select
+                                        id="sortBy-desktop"
+                                        v-model="sort.column"
+                                        aria-label="Sort by"
+                                        class="form-select rounded-lg py-2 pl-3 pr-10 text-sm shadow-sm border-0 ring-1 ring-inset focus:ring-2 focus:ring-primary-500"
+                                        :class="getDarkModeClasses({lightBg: 'bg-white ring-gray-300', darkBg: 'bg-gray-700 ring-gray-600', lightText: 'text-gray-900', darkText: 'text-white'})"
+                                        @change="changeSort"
+                                    >
+                                        <option value="subject">{{ $t('Subject') }}</option>
+                                        <option value="status_id">{{ $t('Status') }}</option>
+                                        <option value="created_at">{{ $t('Created at') }}</option>
+                                        <option value="updated_at">{{ $t('Updated at') }}</option>
+                                    </select>
+
                                     <button
-                                        class="relative -ml-px inline-flex items-center px-4 py-2 border text-sm leading-5 font-medium transition ease-in-out duration-150"
-                                        :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})"
+                                        class="ml-2 p-2 rounded-lg shadow-sm border-0 ring-1 ring-inset transition ease-in-out duration-150"
+                                        :class="getDarkModeClasses({lightBg: 'bg-white ring-gray-300', darkBg: 'bg-gray-700 ring-gray-600', lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-50', darkHover: 'hover:bg-gray-600'})"
                                         type="button"
                                         @click="changeSort"
+                                        :title="sort.order === 'asc' ? $t('Sort Descending') : $t('Sort Ascending')"
                                     >
                                         <svg-vue
                                             v-show="sort.order === 'asc'"
@@ -74,51 +93,38 @@
                                             :class="textTertiary"
                                             icon="font-awesome.sort-amount-up-alt-regular"
                                         ></svg-vue>
-                                        <span class="ml-2">{{ $t('Sort') }}</span>
                                     </button>
-                                    <select
-                                        id="sortBy-desktop"
-                                        v-model="sort.column"
-                                        aria-label="Sort by"
-                                        class="block form-select w-full pl-3 pr-9 py-2 rounded-l-none rounded-r-md border text-sm leading-5 font-medium transition ease-in-out duration-150"
-                                        :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})"
-                                        @change="changeSort"
-                                    >
-                                        <option value="subject">{{ $t('Subject') }}</option>
-                                        <option value="status_id">{{ $t('Status') }}</option>
-                                        <option value="created_at">{{ $t('Created at') }}</option>
-                                        <option value="updated_at">{{ $t('Updated at') }}</option>
-                                    </select>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Mobile Search and Filter UI -->
-                        <div class="sm:hidden">
-                            <div class="mb-3">
-                                <label class="sr-only" for="search-mobile">{{ $t('Search') }}</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg-vue class="h-5 w-5" :class="textTertiary" icon="font-awesome.search-regular"></svg-vue>
-                                    </div>
-                                    <input
-                                        id="search-mobile"
-                                        v-model.lazy="filters.search"
-                                        :placeholder="$t('Search')"
-                                        class="form-input block w-full rounded-md pl-10 text-sm transition ease-in-out duration-150"
-                                        :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600'})"
-                                        @change="getTickets"
-                                    >
+                        <div class="sm:hidden space-y-3">
+                            <!-- Search Input -->
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg-vue class="h-5 w-5" :class="textTertiary" icon="font-awesome.search-regular"></svg-vue>
                                 </div>
+                                <input
+                                    id="search-mobile"
+                                    v-model.lazy="filters.search"
+                                    :placeholder="$t('Search tickets...')"
+                                    class="form-input block w-full rounded-lg pl-10 pr-3 py-2 text-sm shadow-sm transition ease-in-out duration-150 border-0 ring-1 ring-inset focus:ring-2 focus:ring-primary-500"
+                                    :class="getDarkModeClasses({lightBg: 'bg-white ring-gray-300', darkBg: 'bg-gray-700 ring-gray-600', lightText: 'text-gray-900', darkText: 'text-white'})"
+                                    @change="getTickets"
+                                >
                             </div>
+
+                            <!-- Filter and Sort Controls -->
                             <div class="flex space-x-2">
+                                <!-- Status Filter -->
                                 <div class="flex-1">
                                     <select
                                         id="status-mobile"
                                         v-model="filters.status"
                                         aria-label="Filter by status"
-                                        class="block form-select w-full pl-3 pr-9 py-2 rounded-md border text-sm leading-5 font-medium transition ease-in-out duration-150"
-                                        :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})"
+                                        class="form-select w-full rounded-lg py-2 pl-3 pr-10 text-sm shadow-sm border-0 ring-1 ring-inset focus:ring-2 focus:ring-primary-500"
+                                        :class="getDarkModeClasses({lightBg: 'bg-white ring-gray-300', darkBg: 'bg-gray-700 ring-gray-600', lightText: 'text-gray-900', darkText: 'text-white'})"
                                         @change="getTickets"
                                     >
                                         <option :value="null">{{ $t('All requests') }}</option>
@@ -127,13 +133,15 @@
                                         </template>
                                     </select>
                                 </div>
+
+                                <!-- Sort By -->
                                 <div class="flex-1">
                                     <select
                                         id="sortBy-mobile"
                                         v-model="sort.column"
                                         aria-label="Sort by"
-                                        class="block form-select w-full pl-3 pr-9 py-2 rounded-md border text-sm leading-5 font-medium transition ease-in-out duration-150"
-                                        :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})"
+                                        class="form-select w-full rounded-lg py-2 pl-3 pr-10 text-sm shadow-sm border-0 ring-1 ring-inset focus:ring-2 focus:ring-primary-500"
+                                        :class="getDarkModeClasses({lightBg: 'bg-white ring-gray-300', darkBg: 'bg-gray-700 ring-gray-600', lightText: 'text-gray-900', darkText: 'text-white'})"
                                         @change="changeSort"
                                     >
                                         <option value="subject">{{ $t('Subject') }}</option>
@@ -142,11 +150,14 @@
                                         <option value="updated_at">{{ $t('Updated at') }}</option>
                                     </select>
                                 </div>
+
+                                <!-- Sort Order Button -->
                                 <button
-                                    class="inline-flex items-center px-3 py-2 border rounded-md text-sm leading-5 font-medium transition ease-in-out duration-150"
-                                    :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})"
+                                    class="p-2 rounded-lg shadow-sm border-0 ring-1 ring-inset transition ease-in-out duration-150"
+                                    :class="getDarkModeClasses({lightBg: 'bg-white ring-gray-300', darkBg: 'bg-gray-700 ring-gray-600', lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-50', darkHover: 'hover:bg-gray-600'})"
                                     type="button"
                                     @click="changeSort"
+                                    :title="sort.order === 'asc' ? $t('Sort Descending') : $t('Sort Ascending')"
                                 >
                                     <svg-vue
                                         v-show="sort.order === 'asc'"
@@ -166,61 +177,67 @@
                     </div>
                     <template v-if="ticketList.length > 0">
                         <!-- Desktop Table View -->
-                        <div class="hidden sm:block -my-2 sm:-mx-6 lg:-mx-8">
-                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                                <table class="min-w-full divide-y" :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightBorder: 'divide-secondary-200', darkBorder: 'divide-gray-700'})">
+                        <div class="hidden sm:block px-5">
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y" :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightBorder: 'divide-gray-200', darkBorder: 'divide-gray-700'})">
                                     <thead>
-                                    <tr>
-                                        <th class="px-6 py-2 text-left text-xs leading-4 font-medium uppercase tracking-wider whitespace-no-wrap overflow-x-auto" :class="textTertiary">
-                                            {{ $t('Subject') }}
-                                        </th>
-                                        <th class="px-6 py-2 text-left text-xs leading-4 font-medium uppercase tracking-wider whitespace-no-wrap overflow-x-auto" :class="textTertiary">
-                                            {{ $t('Created at') }}
-                                        </th>
-                                        <th class="px-6 py-2 text-left text-xs leading-4 font-medium uppercase tracking-wider whitespace-no-wrap overflow-x-auto" :class="textTertiary">
-                                            {{ $t('Updated at') }}
-                                        </th>
-                                        <th class="px-6 py-2 text-left text-xs leading-4 font-medium uppercase tracking-wider whitespace-no-wrap overflow-x-auto" :class="textTertiary">
-                                            {{ $t('Status') }}
-                                        </th>
-                                    </tr>
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="textTertiary">
+                                                {{ $t('Subject') }}
+                                            </th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="textTertiary">
+                                                {{ $t('Created at') }}
+                                            </th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="textTertiary">
+                                                {{ $t('Updated at') }}
+                                            </th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="textTertiary">
+                                                {{ $t('Status') }}
+                                            </th>
+                                        </tr>
                                     </thead>
-                                    <tbody class="divide-y" :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightBorder: 'divide-secondary-200', darkBorder: 'divide-gray-700'})">
-                                    <template v-for="ticket in ticketList">
-                                        <router-link
-                                            :to="'/tickets/' + ticket.uuid"
-                                            :class="getDarkModeClasses({lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
-                                            class="cursor-pointer"
-                                            tag="tr"
-                                        >
-                                            <td class="px-6 py-4 max-w-0 w-full whitespace-no-wrap">
-                                                <div class="w-full truncate text-sm leading-5" :class="textPrimary">
-                                                    {{ ticket.subject }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-no-wrap leading-5">
-                                                <div class="text-sm" :class="textSecondary">
-                                                    {{ ticket.created_at | momentFormatDate }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-no-wrap leading-5">
-                                                <div class="text-sm" :class="textSecondary">
-                                                    {{ ticket.updated_at | momentFormatDateTimeAgo }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-no-wrap leading-5">
-                                                <div class="flex items-center">
-                                                    <div
-                                                        class="w-3 h-3 mr-2 rounded-full"
-                                                        :style="{ backgroundColor: ticket.status.color }"
-                                                    ></div>
-                                                    <div class="text-sm leading-5" :class="textSecondary">
-                                                        {{ ticket.status.name }}
+                                    <tbody :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800'})">
+                                        <template v-for="(ticket, index) in ticketList">
+                                            <router-link
+                                                :key="ticket.id"
+                                                :to="'/tickets/' + ticket.uuid"
+                                                :class="[
+                                                    index % 2 === 0 ? getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800'}) : getDarkModeClasses({lightBg: 'bg-gray-50', darkBg: 'bg-gray-750'}),
+                                                    getDarkModeClasses({lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'}),
+                                                    'cursor-pointer transition-colors duration-150'
+                                                ]"
+                                                tag="tr"
+                                            >
+                                                <td class="px-6 py-4 max-w-0 w-full">
+                                                    <div class="flex items-center">
+                                                        <div class="w-full truncate text-sm font-medium" :class="textPrimary">
+                                                            {{ ticket.subject }}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                        </router-link>
-                                    </template>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm" :class="textSecondary">
+                                                        {{ ticket.created_at | momentFormatDate }}
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm" :class="textSecondary">
+                                                        {{ ticket.updated_at | momentFormatDateTimeAgo }}
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                                                          :style="{
+                                                              backgroundColor: ticket.status.color + '20',
+                                                              color: ticket.status.color,
+                                                              borderColor: ticket.status.color + '40',
+                                                          }">
+                                                        <span class="w-2 h-2 mr-1.5 rounded-full" :style="{ backgroundColor: ticket.status.color }"></span>
+                                                        {{ ticket.status.name }}
+                                                    </span>
+                                                </td>
+                                            </router-link>
+                                        </template>
                                     </tbody>
                                 </table>
                             </div>
@@ -228,42 +245,52 @@
 
                         <!-- Mobile Card View -->
                         <div class="sm:hidden">
-                            <div class="space-y-4 px-2 py-3">
+                            <div class="space-y-4 px-4 py-4">
                                 <div
                                     v-for="ticket in ticketList"
                                     :key="ticket.id"
-                                    class="ticket-card cursor-pointer"
+                                    class="ticket-card cursor-pointer relative overflow-hidden"
                                     @click="$router.push('/tickets/' + ticket.uuid)"
                                 >
-                                    <div class="ticket-card-header">
+                                    <!-- Status Indicator Bar -->
+                                    <div
+                                        class="absolute top-0 left-0 h-1 w-full"
+                                        :style="{ backgroundColor: ticket.status.color }"
+                                    ></div>
+
+                                    <div class="ticket-card-header pt-5">
                                         <div class="flex justify-between items-start">
-                                            <div class="w-full truncate text-sm font-medium leading-5" :class="textPrimary">
+                                            <div class="w-full text-sm font-medium leading-5" :class="textPrimary">
                                                 {{ ticket.subject }}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="ticket-card-body">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <div class="text-xs" :class="textSecondary">
-                                                {{ ticket.created_at | momentFormatDate }}
-                                            </div>
-                                            <div class="text-xs" :class="textSecondary">
-                                                {{ ticket.updated_at | momentFormatDateTimeAgo }}
+                                        <div class="flex flex-col space-y-2">
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center text-xs" :class="textSecondary">
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="textTertiary" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                                    {{ ticket.created_at | momentFormatDate }}
+                                                </div>
+                                                <div class="flex items-center text-xs" :class="textSecondary">
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="textTertiary" icon="font-awesome.clock-regular"></svg-vue>
+                                                    {{ ticket.updated_at | momentFormatDateTimeAgo }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="ticket-card-footer">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="w-3 h-3 mr-2 rounded-full"
-                                                :style="{ backgroundColor: ticket.status.color }"
-                                            ></div>
-                                            <div class="text-sm leading-5" :class="textSecondary">
-                                                {{ ticket.status.name }}
-                                            </div>
-                                        </div>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                                              :style="{
+                                                  backgroundColor: ticket.status.color + '20',
+                                                  color: ticket.status.color,
+                                                  borderColor: ticket.status.color + '40',
+                                              }">
+                                            <span class="w-2 h-2 mr-1.5 rounded-full" :style="{ backgroundColor: ticket.status.color }"></span>
+                                            {{ ticket.status.name }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -272,12 +299,33 @@
                     <!-- Loading Skeletons -->
                     <template v-else-if="loading">
                         <!-- Desktop Loading Skeleton -->
-                        <div class="hidden sm:block -my-2 sm:-mx-6 lg:-mx-8">
-                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                        <div class="hidden sm:block px-5 py-4">
+                            <div class="overflow-x-auto">
                                 <div class="animate-pulse">
-                                    <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
-                                    <div class="space-y-3">
-                                        <div v-for="i in 5" :key="i" class="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                    <!-- Table Header Skeleton -->
+                                    <div :class="{'border-gray-200': !$store.state.darkMode, 'border-gray-700': $store.state.darkMode}" class="flex border-b pb-3">
+                                        <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="w-1/2 h-5 rounded mr-4"></div>
+                                        <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="w-1/6 h-5 rounded mr-4"></div>
+                                        <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="w-1/6 h-5 rounded mr-4"></div>
+                                        <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="w-1/6 h-5 rounded"></div>
+                                    </div>
+
+                                    <!-- Table Rows Skeleton -->
+                                    <div class="space-y-4 mt-4">
+                                        <div v-for="i in 5" :key="i" :class="{'border-gray-100': !$store.state.darkMode, 'border-gray-700': $store.state.darkMode}" class="flex py-4 border-b">
+                                            <div class="w-1/2 pr-4">
+                                                <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-5 rounded w-3/4 mb-2"></div>
+                                            </div>
+                                            <div class="w-1/6 pr-4">
+                                                <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-5 rounded"></div>
+                                            </div>
+                                            <div class="w-1/6 pr-4">
+                                                <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-5 rounded"></div>
+                                            </div>
+                                            <div class="w-1/6">
+                                                <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-5 rounded-full w-20"></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -285,23 +333,31 @@
 
                         <!-- Mobile Loading Skeleton -->
                         <div class="sm:hidden">
-                            <div class="space-y-4 px-2 py-3">
+                            <div class="space-y-4 px-4 py-4">
                                 <div v-for="i in 5" :key="i" class="animate-pulse">
-                                    <div class="ticket-card">
-                                        <div class="ticket-card-header">
-                                            <div class="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                                    <div class="ticket-card relative overflow-hidden">
+                                        <!-- Status Bar Skeleton -->
+                                        <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="absolute top-0 left-0 h-1 w-full"></div>
+
+                                        <div class="ticket-card-header pt-5">
+                                            <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-5 rounded w-3/4"></div>
                                         </div>
+
                                         <div class="ticket-card-body">
                                             <div class="flex justify-between items-center mb-2">
-                                                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-                                                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                                                <div class="flex items-center">
+                                                    <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-4 w-4 rounded-full mr-2"></div>
+                                                    <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-4 rounded w-20"></div>
+                                                </div>
+                                                <div class="flex items-center">
+                                                    <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-4 w-4 rounded-full mr-2"></div>
+                                                    <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-4 rounded w-16"></div>
+                                                </div>
                                             </div>
                                         </div>
+
                                         <div class="ticket-card-footer">
-                                            <div class="flex items-center">
-                                                <div class="h-3 w-3 bg-gray-200 dark:bg-gray-700 rounded-full mr-2"></div>
-                                                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-                                            </div>
+                                            <div :class="{'bg-gray-200': !$store.state.darkMode, 'bg-gray-700': $store.state.darkMode}" class="h-6 rounded-full w-24"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -311,65 +367,131 @@
 
                     <!-- No Records Found -->
                     <template v-else-if="!loading && ticketList.length === 0">
-                        <div class="h-full flex">
-                            <div class="m-auto">
-                                <div class="grid grid-cols-1 justify-items-center h-full w-full py-24">
-                                    <div class="flex justify-center items-center">
-                                        <svg-vue class="h-full h-auto w-48 mb-6" icon="undraw.task-list"></svg-vue>
-                                    </div>
-                                    <div class="flex justify-center items-center">
-                                        <div class="w-full font-semibold text-2xl" :class="textPrimary">{{ $t('No records found') }}</div>
-                                    </div>
-                                    <template v-if="anyFilter">
-                                        <div class="flex justify-center items-center">
-                                            <div :class="textSecondary">{{ $t('Try changing the filters, or rephrasing your search') }}.</div>
-                                        </div>
-                                    </template>
-                                </div>
+                        <div class="flex flex-col items-center justify-center py-16">
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-full p-6 mb-6" :style="$store.state.darkMode ? {'background-color': 'rgba(55, 65, 81, 0.3)'} : {}">
+                                <svg-vue class="h-24 w-24 text-gray-400 dark:text-gray-500" icon="undraw.task-list"></svg-vue>
                             </div>
+                            <h3 class="text-xl font-semibold mb-2" :class="textPrimary">{{ $t('No tickets found') }}</h3>
+                            <p class="text-center max-w-md mb-6" :class="textSecondary">
+                                <template v-if="anyFilter">
+                                    {{ $t('Try changing the filters, or rephrasing your search') }}.
+                                </template>
+                                <template v-else>
+                                    {{ $t('You don\'t have any tickets yet. Create a new ticket to get started.') }}
+                                </template>
+                            </p>
+                            <template v-if="!anyFilter">
+                                <router-link
+                                    class="btn btn-primary shadow-sm rounded-md inline-flex items-center"
+                                    to="/tickets/new"
+                                >
+                                    <svg-vue class="h-4 w-4 mr-2" icon="font-awesome.plus-solid"></svg-vue>
+                                    {{ $t('New ticket') }}
+                                </router-link>
+                            </template>
                         </div>
                     </template>
-                    <nav class="px-4 py-3 flex items-center justify-between border-t sm:px-6" :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightBorder: 'border-secondary-200', darkBorder: 'border-gray-700'})">
-                        <div class="hidden sm:block">
-                            <p class="text-sm leading-5" :class="textSecondary">
-                                {{ $t('Showing') }}
-                                <span class="font-medium" :class="textPrimary">{{ (pagination.perPage * pagination.currentPage) - pagination.perPage + 1 }}</span>
-                                {{ $t('to') }}
-                                <span class="font-medium" :class="textPrimary">{{ pagination.perPage * pagination.currentPage <= pagination.total ? pagination.perPage * pagination.currentPage : pagination.total }}</span>
-                                {{ $t('of') }}
-                                <span class="font-medium" :class="textPrimary">{{ pagination.total }}</span>
-                                {{ $t('results') }}
-                            </p>
+
+                    <!-- Pagination -->
+                    <div class="px-5 py-4 flex items-center justify-between border-t" :class="getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightBorder: 'border-gray-200', darkBorder: 'border-gray-700'})">
+                        <!-- Desktop Pagination Info -->
+                        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm" :class="textSecondary">
+                                    {{ $t('Showing') }}
+                                    <span class="font-medium" :class="textPrimary">{{ (pagination.perPage * pagination.currentPage) - pagination.perPage + 1 }}</span>
+                                    {{ $t('to') }}
+                                    <span class="font-medium" :class="textPrimary">{{ pagination.perPage * pagination.currentPage <= pagination.total ? pagination.perPage * pagination.currentPage : pagination.total }}</span>
+                                    {{ $t('of') }}
+                                    <span class="font-medium" :class="textPrimary">{{ pagination.total }}</span>
+                                    {{ $t('results') }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                    <button
+                                        :class="[
+                                            'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium ring-1 ring-inset focus:z-20 focus:outline-offset-0 transition-colors duration-150',
+                                            pagination.currentPage <= 1
+                                                ? getDarkModeClasses({lightBg: 'bg-gray-50', darkBg: 'bg-gray-800', lightText: 'text-gray-400', darkText: 'text-gray-500', lightRing: 'ring-gray-300', darkRing: 'ring-gray-700'}) + ' cursor-not-allowed'
+                                                : getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightText: 'text-gray-500', darkText: 'text-gray-400', lightRing: 'ring-gray-300', darkRing: 'ring-gray-700', lightHover: 'hover:bg-gray-50', darkHover: 'hover:bg-gray-700'})
+                                        ]"
+                                        :disabled="pagination.currentPage <= 1"
+                                        type="button"
+                                        @click="changePage(pagination.currentPage - 1)"
+                                    >
+                                        <span class="sr-only">{{ $t('Previous') }}</span>
+                                        <svg-vue class="h-5 w-5" icon="font-awesome.chevron-left-solid"></svg-vue>
+                                    </button>
+
+                                    <!-- Current Page Display -->
+                                    <span
+                                        class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset focus:outline-offset-0"
+                                        :class="getDarkModeClasses({lightBg: 'bg-primary-50', darkBg: 'bg-primary-900/20', lightText: 'text-primary-600', darkText: 'text-primary-400', lightRing: 'ring-primary-500/20', darkRing: 'ring-primary-500/30'})"
+                                    >
+                                        {{ pagination.currentPage }}
+                                    </span>
+
+                                    <button
+                                        :class="[
+                                            'relative inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium ring-1 ring-inset focus:z-20 focus:outline-offset-0 transition-colors duration-150',
+                                            pagination.currentPage >= pagination.totalPages
+                                                ? getDarkModeClasses({lightBg: 'bg-gray-50', darkBg: 'bg-gray-800', lightText: 'text-gray-400', darkText: 'text-gray-500', lightRing: 'ring-gray-300', darkRing: 'ring-gray-700'}) + ' cursor-not-allowed'
+                                                : getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightText: 'text-gray-500', darkText: 'text-gray-400', lightRing: 'ring-gray-300', darkRing: 'ring-gray-700', lightHover: 'hover:bg-gray-50', darkHover: 'hover:bg-gray-700'})
+                                        ]"
+                                        :disabled="pagination.currentPage >= pagination.totalPages"
+                                        type="button"
+                                        @click="changePage(pagination.currentPage + 1)"
+                                    >
+                                        <span class="sr-only">{{ $t('Next') }}</span>
+                                        <svg-vue class="h-5 w-5" icon="font-awesome.chevron-right-solid"></svg-vue>
+                                    </button>
+                                </nav>
+                            </div>
                         </div>
-                        <!-- Mobile Pagination Info -->
-                        <div class="sm:hidden pagination-info">
-                            <p class="text-xs leading-5" :class="textSecondary">
-                                <span class="font-medium" :class="textPrimary">{{ pagination.currentPage }}</span>
-                                {{ $t('of') }}
-                                <span class="font-medium" :class="textPrimary">{{ pagination.totalPages }}</span>
-                            </p>
+
+                        <!-- Mobile Pagination -->
+                        <div class="flex sm:hidden items-center justify-between w-full">
+                            <div class="pagination-info">
+                                <p class="text-sm" :class="textSecondary">
+                                    <span class="font-medium" :class="textPrimary">{{ pagination.currentPage }}</span>
+                                    {{ $t('of') }}
+                                    <span class="font-medium" :class="textPrimary">{{ pagination.totalPages }}</span>
+                                </p>
+                            </div>
+
+                            <div class="flex space-x-2">
+                                <button
+                                    :class="[
+                                        'relative inline-flex items-center justify-center rounded-md p-2 text-sm font-medium ring-1 ring-inset focus:z-20 focus:outline-offset-0 transition-colors duration-150',
+                                        pagination.currentPage <= 1
+                                            ? getDarkModeClasses({lightBg: 'bg-gray-50', darkBg: 'bg-gray-800', lightText: 'text-gray-400', darkText: 'text-gray-500', lightRing: 'ring-gray-300', darkRing: 'ring-gray-700'}) + ' cursor-not-allowed'
+                                            : getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightText: 'text-gray-500', darkText: 'text-gray-400', lightRing: 'ring-gray-300', darkRing: 'ring-gray-700', lightHover: 'hover:bg-gray-50', darkHover: 'hover:bg-gray-700'})
+                                    ]"
+                                    :disabled="pagination.currentPage <= 1"
+                                    type="button"
+                                    @click="changePage(pagination.currentPage - 1)"
+                                >
+                                    <svg-vue class="h-5 w-5" icon="font-awesome.chevron-left-solid"></svg-vue>
+                                </button>
+
+                                <button
+                                    :class="[
+                                        'relative inline-flex items-center justify-center rounded-md p-2 text-sm font-medium ring-1 ring-inset focus:z-20 focus:outline-offset-0 transition-colors duration-150',
+                                        pagination.currentPage >= pagination.totalPages
+                                            ? getDarkModeClasses({lightBg: 'bg-gray-50', darkBg: 'bg-gray-800', lightText: 'text-gray-400', darkText: 'text-gray-500', lightRing: 'ring-gray-300', darkRing: 'ring-gray-700'}) + ' cursor-not-allowed'
+                                            : getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-800', lightText: 'text-gray-500', darkText: 'text-gray-400', lightRing: 'ring-gray-300', darkRing: 'ring-gray-700', lightHover: 'hover:bg-gray-50', darkHover: 'hover:bg-gray-700'})
+                                    ]"
+                                    :disabled="pagination.currentPage >= pagination.totalPages"
+                                    type="button"
+                                    @click="changePage(pagination.currentPage + 1)"
+                                >
+                                    <svg-vue class="h-5 w-5" icon="font-awesome.chevron-right-solid"></svg-vue>
+                                </button>
+                            </div>
                         </div>
-                        <div class="flex-1 flex justify-between sm:justify-end">
-                            <button
-                                :class="[pagination.currentPage <= 1 ? 'opacity-50 cursor-not-allowed' : '', getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})]"
-                                :disabled="pagination.currentPage <= 1"
-                                class="relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md"
-                                type="button"
-                                @click="changePage(pagination.currentPage - 1)"
-                            >
-                                {{ $t('Previous') }}
-                            </button>
-                            <button
-                                :class="[pagination.currentPage >= pagination.totalPages ? 'opacity-50 cursor-not-allowed' : '', 'ml-3', getDarkModeClasses({lightBg: 'bg-white', darkBg: 'bg-gray-700', lightBorder: 'border-secondary-300', darkBorder: 'border-gray-600', lightText: 'text-secondary-700', darkText: 'text-gray-300'})]"
-                                :disabled="pagination.currentPage >= pagination.totalPages"
-                                class="relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md"
-                                type="button"
-                                @click="changePage(pagination.currentPage + 1)"
-                            >
-                                {{ $t('Next') }}
-                            </button>
-                        </div>
-                    </nav>
+                    </div>
                 </div>
             </div>
         </div>
@@ -487,7 +609,7 @@ export default {
 }
 
 .ticket-card:hover {
-    @apply shadow-md;
+    @apply shadow-md transform -translate-y-1;
 }
 
 .ticket-card-header {
@@ -503,17 +625,65 @@ export default {
 }
 
 .ticket-card-footer {
-    @apply p-4 bg-gray-50 border-t border-gray-100;
+    @apply p-4 bg-gray-50 border-t border-gray-100 flex items-center;
 }
 
 .dark-mode .ticket-card-footer {
-    @apply bg-gray-700 border-gray-700;
+    @apply bg-gray-800 border-gray-700;
+    background-color: rgba(31, 41, 55, 0.5); /* Equivalent to bg-gray-800 with 50% opacity */
 }
 
-/* Responsive pagination for mobile */
+/* Table Styles */
+table {
+    @apply border-collapse table-auto w-full;
+}
+
+th {
+    @apply font-medium text-left;
+}
+
+tbody tr {
+    @apply border-b border-gray-100;
+}
+
+tbody tr:last-child {
+    border-bottom: 0;
+}
+
+.dark-mode tbody tr {
+    @apply border-gray-700;
+}
+
+/* Status Badge */
+.status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
+}
+
+/* Responsive pagination */
+.pagination-info {
+    @apply text-sm;
+}
+
 @media (max-width: 640px) {
     .pagination-info {
         @apply text-xs;
     }
+}
+
+/* Animation for hover effects */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.ticket-card:hover {
+    animation: float 0.3s ease-in-out;
 }
 </style>

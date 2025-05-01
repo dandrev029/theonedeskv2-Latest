@@ -15,11 +15,22 @@ use Illuminate\Support\Facades\Broadcast;
 
 // Channel for user's notifications
 Broadcast::channel('notifications.{userId}', function ($user, $userId) {
+    // Cast both IDs to integers to ensure proper comparison
+    $userIdInt = (int) $userId;
+    $authUserIdInt = (int) $user->id;
+    $is_authorized = $authUserIdInt === $userIdInt;
+    
+    // Log detailed information for debugging
     \Log::info('Channel authorization request', [
         'channel' => 'notifications.' . $userId,
         'user_id' => $user->id,
+        'user_id_int' => $authUserIdInt,
         'requested_user_id' => $userId,
-        'authorized' => (int) $user->id === (int) $userId
+        'requested_user_id_int' => $userIdInt,
+        'authorized' => $is_authorized,
+        'token_type' => request()->bearerToken() ? 'Bearer' : 'None'
     ]);
-    return (int) $user->id === (int) $userId;
+    
+    // Return the user model on success, or false on failure
+    return $is_authorized ? $user : false;
 });

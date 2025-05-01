@@ -107,7 +107,7 @@
                     <!-- Mobile Icons for Tenant View -->
                     <div class="flex items-center mobile-controls-group">
                         <!-- Mobile Notification Dropdown -->
-                        <notification-dropdown v-if="$store.state.user && !isDashboardRoute" ref="notificationDropdownMobile" class="flex items-center mobile-notification-icon" />
+                        <notification-dropdown v-if="$store.state.user" ref="notificationDropdownMobile" class="flex items-center mobile-notification-icon" />
 
                         <!-- Mobile Dark Mode Toggle -->
                         <div class="flex items-center mobile-dark-mode-toggle">
@@ -248,8 +248,17 @@ export default {
             this.dropdownOpen = false;
         },
         closeNotificationDropdown() {
-            if (this.$refs.notificationDropdown) {
-                this.$refs.notificationDropdown.closeDropdown();
+            try {
+                if (this.$refs.notificationDropdown) {
+                    this.$refs.notificationDropdown.closeDropdown();
+                }
+
+                // Also close mobile dropdown if it exists
+                if (this.$refs.notificationDropdownMobile) {
+                    this.$refs.notificationDropdownMobile.closeDropdown();
+                }
+            } catch (error) {
+                console.warn('Error closing notification dropdown:', error);
             }
         },
         openMobileNotifications() {

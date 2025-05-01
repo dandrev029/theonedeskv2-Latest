@@ -367,7 +367,7 @@
                                 {{ $t('Voucher Code') }} ({{ isWifiHelpdesk ? 'Visible' : 'Hidden' }})
                             </h4>
                             <div class="flex items-center">
-                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.ticket-alt-solid"></svg-vue>
+                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.ticket-alt-regular"></svg-vue>
                                 <span v-if="ticket.voucher_code" class="text-sm font-medium text-gray-800">
                                     {{ ticket.voucher_code }}
                                 </span>

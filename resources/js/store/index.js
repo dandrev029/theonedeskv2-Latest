@@ -39,6 +39,14 @@ const store = new Vuex.Store({
                     state.user = response.data;
                     state.permissions = response.data.role.permissions;
                     console.log('User departments after setting state:', state.user.departments);
+
+                    // Emit an event to notify components that user data is loaded
+                    Vue.nextTick(() => {
+                        console.log('Emitting user-loaded event');
+                        if (window.app && window.app.$root) {
+                            window.app.$root.$emit('user-loaded', response.data);
+                        }
+                    });
                 });
             }
         },
@@ -51,8 +59,46 @@ const store = new Vuex.Store({
             state.notifications = notifications;
         },
         addNotification(state, notification) {
+            // Check for duplicates by ID
+            const existingIndex = state.notifications.findIndex(n => n.id === notification.id);
+            if (existingIndex !== -1) {
+                // If notification already exists, update it instead of adding a duplicate
+                state.notifications.splice(existingIndex, 1, notification);
+                console.log('Updated existing notification instead of adding duplicate');
+                return;
+            }
+
+            // Check for content duplicates within the last 10 seconds
+            const contentKey = `${notification.title}|${notification.message}`;
+            const now = Date.now();
+            const recentDuplicate = state.notifications.some(n => {
+                const nContentKey = `${n.title}|${n.message}`;
+                if (nContentKey === contentKey) {
+                    // Check if the notification was created within the last 10 seconds
+                    const existingTime = n.timestamp || new Date(n.created_at).getTime();
+                    const timeDiff = Math.abs(now - existingTime);
+                    return timeDiff < 10000; // 10 seconds in milliseconds
+                }
+                return false;
+            });
+
+            if (recentDuplicate) {
+                console.log('Skipping duplicate notification in store:', notification.title);
+                return;
+            }
+
+            // Add the notification to the beginning of the array
             state.notifications.unshift(notification);
-            state.unreadNotificationsCount++;
+
+            // Only increment unread count if notification is not read
+            if (!notification.is_read) {
+                state.unreadNotificationsCount++;
+            }
+
+            // Limit the number of notifications in the store to prevent memory issues
+            if (state.notifications.length > 50) {
+                state.notifications = state.notifications.slice(0, 50);
+            }
         },
         setUnreadCount(state, count) {
             state.unreadNotificationsCount = count;
@@ -91,31 +137,82 @@ const store = new Vuex.Store({
     },
     actions: {
         fetchNotifications({ commit }) {
-            return axios.get('/api/notifications').then(response => {
-                commit('setNotifications', response.data.notifications.data);
-                commit('setUnreadCount', response.data.unread_count);
-                return response.data;
-            });
+            return axios.get('/api/notifications')
+                .then(response => {
+                    if (response && response.data) {
+                        // Check if notifications data exists
+                        if (response.data.notifications && response.data.notifications.data) {
+                            commit('setNotifications', response.data.notifications.data);
+                        } else {
+                            console.warn('No notifications data in response');
+                            commit('setNotifications', []);
+                        }
+
+                        // Check if unread count exists
+                        if (response.data.unread_count !== undefined) {
+                            commit('setUnreadCount', response.data.unread_count);
+                        } else {
+                            console.warn('No unread count in response');
+                            commit('setUnreadCount', 0);
+                        }
+
+                        return response.data;
+                    } else {
+                        console.warn('Invalid response format from notifications API');
+                        commit('setNotifications', []);
+                        commit('setUnreadCount', 0);
+                        return { notifications: { data: [] }, unread_count: 0 };
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching notifications:', error);
+                    commit('setNotifications', []);
+                    commit('setUnreadCount', 0);
+                    return { notifications: { data: [] }, unread_count: 0 };
+                });
         },
         markNotificationAsRead({ commit }, notificationId) {
-            return axios.post(`/api/notifications/${notificationId}/mark-as-read`).then(response => {
-                commit('markAsRead', notificationId);
-                return response.data;
-            });
+            return axios.post(`/api/notifications/${notificationId}/mark-as-read`)
+                .then(response => {
+                    commit('markAsRead', notificationId);
+                    return response.data;
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                    return { success: false, error: error.message };
+                });
         },
         markAllNotificationsAsRead({ commit }) {
-            return axios.post('/api/notifications/mark-all-as-read').then(response => {
-                commit('markAllAsRead');
-                return response.data;
-            });
+            return axios.post('/api/notifications/mark-all-as-read')
+                .then(response => {
+                    commit('markAllAsRead');
+                    return response.data;
+                })
+                .catch(error => {
+                    console.error('Error marking all notifications as read:', error);
+                    return { success: false, error: error.message };
+                });
         },
         deleteNotification({ commit, state }, notificationId) {
-            return axios.delete(`/api/notifications/${notificationId}`).then(response => {
-                const notifications = state.notifications.filter(n => n.id !== notificationId);
-                commit('setNotifications', notifications);
-                commit('setUnreadCount', response.data.unread_count);
-                return response.data;
-            });
+            return axios.delete(`/api/notifications/${notificationId}`)
+                .then(response => {
+                    const notifications = state.notifications.filter(n => n.id !== notificationId);
+                    commit('setNotifications', notifications);
+
+                    // Check if unread count exists in response
+                    if (response && response.data && response.data.unread_count !== undefined) {
+                        commit('setUnreadCount', response.data.unread_count);
+                    }
+
+                    return response.data;
+                })
+                .catch(error => {
+                    console.error('Error deleting notification:', error);
+                    // Still remove from local state even if API call fails
+                    const notifications = state.notifications.filter(n => n.id !== notificationId);
+                    commit('setNotifications', notifications);
+                    return { success: false, error: error.message };
+                });
         }
     }
 });

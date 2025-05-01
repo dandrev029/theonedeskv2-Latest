@@ -4,7 +4,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="name">{{ $t('Name') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.user-regular"></svg-vue>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="h-5 w-5 text-primary-500 fill-current"><path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3 0 498.7 13.3 512 29.7 512h388.6c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>
                 </div>
                 <input
                     id="name"
@@ -19,7 +19,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="email">{{ $t('Email') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.envelope-regular"></svg-vue>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="h-5 w-5 text-primary-500 fill-current"><path d="M464 64H48C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-64-48-64zm-8 313.8L278.7 291c-10.4-7.8-25.4-7.8-35.8 0L56 377.8V112h400v265.8zM256 264c5.2 0 10.3 1 15.1 3l184.9 138.7H56l184.9-138.7c4.8-2 9.9-3 15.1-3z"/></svg>
                 </div>
                 <input
                     id="email"
@@ -35,7 +35,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="phone_number">{{ $t('Phone Number') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.phone-regular"></svg-vue>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="h-5 w-5 text-primary-500 fill-current"><path d="M497.4 361.8l-112-48a24 24 0 0 0-28 6.9l-49.6 60.6A370.7 370.7 0 0 1 130.6 204.8l60.6-49.6a24 24 0 0 0 6.9-28l-48-112A24.1 24.1 0 0 0 122.6.61l-104 24A24 24 0 0 0 0 48c0 256.5 207.9 464 464 464a24 24 0 0 0 23.4-18.6l24-104a24.2 24.2 0 0 0-14-27.6zM416 464c-199.3 0-359.4-160.7-359.4-360a1.7 1.7 0 0 1 .6-1.5l78.8-18.4-42.6 52.1a24.1 24.1 0 0 0 6.9 34.5 418.8 418.8 0 0 0 260.6 118.7 24.1 24.1 0 0 0 34.5-6.9l52.1-42.6-18.4 78.8a1.7 1.7 0 0 1-1.5.6h-.1z"/></svg>
                 </div>
                 <input
                     id="phone_number"
@@ -51,7 +51,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="unit_number">{{ $t('Unit Number w/ tower #') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.home-regular"></svg-vue>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" class="h-5 w-5 text-primary-500 fill-current"><path d="M280.37 148.26L96 300.11V464a16 16 0 0 0 16 16l112.06-.29a16 16 0 0 0 15.94-16V368a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v95.64a16 16 0 0 0 16 16.05L464 480a16 16 0 0 0 16-16V300L295.67 148.26a12.19 12.19 0 0 0-15.3 0zM571.6 251.47L488 182.57V44.05a12 12 0 0 0-12-12h-56a12 12 0 0 0-12 12v72.61L318.47 43a48 48 0 0 0-61 0L4.34 251.47a12 12 0 0 0-1.6 16.9l25.5 31A12 12 0 0 0 45.15 301l235.22-193.74a12.19 12.19 0 0 1 15.3 0L530.9 301a12 12 0 0 0 16.9-1.6l25.5-31a12 12 0 0 0-1.7-16.93z"/></svg>
                 </div>
                 <input
                     id="unit_number"
@@ -78,7 +78,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="password">{{ $t('Password') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.lock-regular"></svg-vue>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="h-5 w-5 text-primary-500 fill-current"><path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"/></svg>
                 </div>
                 <input
                     id="password"
@@ -94,7 +94,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="password_confirmation">{{ $t('Confirm password') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.lock-regular"></svg-vue>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="h-5 w-5 text-primary-500 fill-current"><path d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"/></svg>
                 </div>
                 <input
                     id="password_confirmation"

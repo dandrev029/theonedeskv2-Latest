@@ -20,22 +20,22 @@ class CustomDatabaseChannel extends DatabaseChannel
     {
         try {
             $data = $this->getData($notifiable, $notification);
-            
-            // Extract fields from data for the notifications table
-            $title = $data['title'] ?? null;
-            $message = $data['message'] ?? null;
-            $icon = $data['icon'] ?? null;
+
+            // Extract fields from data for the notifications table with default values
+            $title = $data['title'] ?? 'Notification';
+            $message = $data['message'] ?? 'You have a new notification';
+            $icon = $data['icon'] ?? 'font-awesome.bell-regular';
             $link = $data['link'] ?? null;
-            $type = $data['type'] ?? null;
-            
+            $type = $data['type'] ?? 'general';
+
             // Get the notifiable ID
             $notifiableId = $notifiable->getKey();
-            
+
             // Get the condo_location_id if available
             $condoLocationId = method_exists($notifiable, 'getCondoLocationId')
                 ? $notifiable->getCondoLocationId()
                 : null;
-            
+
             // Create the notification record with additional fields
             return $notifiable->notifications()->create([
                 'id' => $data['id'] ?? \Illuminate\Support\Str::uuid()->toString(),
@@ -56,7 +56,7 @@ class CustomDatabaseChannel extends DatabaseChannel
                 'notification_class' => get_class($notification),
                 'exception' => $e
             ]);
-            
+
             // Continue without throwing to prevent breaking the main functionality
             return null;
         }

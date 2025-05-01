@@ -15,16 +15,24 @@ window.Pusher = Pusher;
 Pusher.logToConsole = process.env.NODE_ENV !== 'production';
 
 // Initialize Laravel Echo
+const pusherKey = window.app && window.app.pusher_key ? window.app.pusher_key : process.env.MIX_PUSHER_APP_KEY;
+const pusherCluster = window.app && window.app.pusher_cluster ? window.app.pusher_cluster : process.env.MIX_PUSHER_APP_CLUSTER;
+
+if (!pusherKey || !pusherCluster) {
+    console.error('Pusher key or cluster is missing. Check window.app object or .env file.');
+}
+
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: window.app && window.app.pusher_key ? window.app.pusher_key : process.env.MIX_PUSHER_APP_KEY,
-    cluster: window.app && window.app.pusher_cluster ? window.app.pusher_cluster : process.env.MIX_PUSHER_APP_CLUSTER,
+    key: pusherKey,
+    cluster: pusherCluster,
     forceTLS: true,
     authEndpoint: '/broadcasting/auth',
     auth: {
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'Authorization': localStorage.getItem('token') ? 'Bearer ' + localStorage.getItem('token') : ''
         }
     }
 });
@@ -39,9 +47,10 @@ window.Echo.connector.pusher.connection.bind('error', (err) => {
 });
 
 // Log Pusher configuration for debugging
-console.log('Pusher configuration:', {
-    key: window.app && window.app.pusher_key ? window.app.pusher_key : process.env.MIX_PUSHER_APP_KEY,
-    cluster: window.app && window.app.pusher_cluster ? window.app.pusher_cluster : process.env.MIX_PUSHER_APP_CLUSTER
+console.log('Pusher configuration being used:', {
+    key: pusherKey,
+    cluster: pusherCluster,
+    authEndpoint: '/broadcasting/auth'
 });
 
 import Vue from "vue";

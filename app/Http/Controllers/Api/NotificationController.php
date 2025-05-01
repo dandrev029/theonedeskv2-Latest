@@ -8,6 +8,8 @@ use App\Models\AppNotification;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 
 class NotificationController extends Controller
 {
@@ -30,32 +32,74 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        // Get app notifications
+        // Check if user is authenticated
+        if (!Auth::check()) {
+            return response()->json([
+                'notifications' => ['data' => []],
+                'laravel_notifications' => ['data' => []],
+                'unread_count' => 0,
+                'app_unread_count' => 0,
+                'laravel_unread_count' => 0
+            ]);
+        }
+
+        // Get app notifications - limit to 25 for better performance
         $appNotifications = AppNotification::where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
-            ->paginate(100);
+            ->paginate(25);
 
         // Get Laravel notifications
         $user = Auth::user();
-        $laravelNotifications = $user->notifications()
-            ->orderBy('created_at', 'desc')
-            ->paginate(100);
+        $laravelNotifications = collect(['data' => []]); // Default empty collection
+        $laravelUnreadCount = 0;
+
+        // Only try to get Laravel notifications if user exists
+        if ($user) {
+            try {
+                $laravelNotifications = $user->notifications()
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(25); // Limit to 25 for better performance
+
+                $laravelUnreadCount = $user->unreadNotifications()->count();
+            } catch (\Exception $e) {
+                Log::error('Error fetching Laravel notifications: ' . $e->getMessage());
+            }
+        }
 
         // Count unread notifications from both sources
         $appUnreadCount = AppNotification::where('user_id', Auth::id())
             ->where('is_read', false)
             ->count();
 
-        $laravelUnreadCount = $user->unreadNotifications()->count();
+        // Get the actual count of unread notifications that will be displayed
+        // This ensures the count matches what the user actually sees in the UI
+        $displayedAppNotifications = $appNotifications->filter(function($notification) {
+            return $notification->is_read === false;
+        })->count();
 
+        $displayedLaravelNotifications = 0;
+        if ($laravelNotifications && isset($laravelNotifications['data'])) {
+            $displayedLaravelNotifications = collect($laravelNotifications['data'])->filter(function($notification) {
+                return $notification->read_at === null;
+            })->count();
+        }
+
+        // Use the displayed count instead of the total count
+        $displayedUnreadCount = $displayedAppNotifications + $displayedLaravelNotifications;
         $totalUnreadCount = $appUnreadCount + $laravelUnreadCount;
+
+        // Log if there's a discrepancy
+        if ($displayedUnreadCount !== $totalUnreadCount) {
+            Log::info("Notification count discrepancy: Total unread: {$totalUnreadCount}, Displayed unread: {$displayedUnreadCount}");
+        }
 
         return response()->json([
             'notifications' => $appNotifications,
             'laravel_notifications' => $laravelNotifications,
-            'unread_count' => $totalUnreadCount,
-            'app_unread_count' => $appUnreadCount,
-            'laravel_unread_count' => $laravelUnreadCount
+            'unread_count' => $displayedUnreadCount, // Use the displayed count instead of total count
+            'app_unread_count' => $displayedAppNotifications,
+            'laravel_unread_count' => $displayedLaravelNotifications,
+            'total_unread_count' => $totalUnreadCount // Keep the total count for reference
         ]);
     }
 
@@ -132,7 +176,7 @@ class NotificationController extends Controller
                 $this->notificationService->markAsRead($id);
             }
         } catch (\Exception $e) {
-            \Log::warning('Error marking app notification as read: ' . $e->getMessage());
+            Log::warning('Error marking app notification as read: ' . $e->getMessage());
         }
 
         // Try to find the notification in Laravel notifications
@@ -143,7 +187,7 @@ class NotificationController extends Controller
                 $laravelNotification->markAsRead();
             }
         } catch (\Exception $e) {
-            \Log::warning('Error marking Laravel notification as read: ' . $e->getMessage());
+            Log::warning('Error marking Laravel notification as read: ' . $e->getMessage());
         }
 
         // If neither notification was found, return 404
@@ -183,7 +227,7 @@ class NotificationController extends Controller
         try {
             $appCount = $this->notificationService->markAllAsRead(Auth::id());
         } catch (\Exception $e) {
-            \Log::warning('Error marking all app notifications as read: ' . $e->getMessage());
+            Log::warning('Error marking all app notifications as read: ' . $e->getMessage());
         }
 
         // Mark all Laravel notifications as read
@@ -191,7 +235,7 @@ class NotificationController extends Controller
             $laravelCount = $user->unreadNotifications()->count();
             $user->unreadNotifications()->update(['read_at' => now()]);
         } catch (\Exception $e) {
-            \Log::warning('Error marking all Laravel notifications as read: ' . $e->getMessage());
+            Log::warning('Error marking all Laravel notifications as read: ' . $e->getMessage());
         }
 
         $totalCount = $appCount + $laravelCount;

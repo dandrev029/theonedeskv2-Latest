@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Connection Status</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Database Connection Status</h1>
+            <p class="text-gray-600">Check if your MySQL database is running and accessible</p>
+        </div>
+
+        <div id="loading" class="text-center py-8">
+            <svg class="animate-spin h-10 w-10 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-3 text-gray-600">Checking database connection...</p>
+        </div>
+
+        <div id="result" class="hidden">
+            <div id="status-badge" class="mb-4 text-center">
+                <!-- Status badge will be inserted here -->
+            </div>
+
+            <div class="mb-4">
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Connection Details</h2>
+                <div class="bg-gray-50 rounded p-3">
+                    <div class="grid grid-cols-3 gap-2 text-sm">
+                        <div class="font-medium text-gray-500">Host:</div>
+                        <div id="host" class="col-span-2 text-gray-800"></div>
+                        
+                        <div class="font-medium text-gray-500">Port:</div>
+                        <div id="port" class="col-span-2 text-gray-800"></div>
+                        
+                        <div class="font-medium text-gray-500">Database:</div>
+                        <div id="database" class="col-span-2 text-gray-800"></div>
+                        
+                        <div class="font-medium text-gray-500">MySQL Service:</div>
+                        <div id="mysql-service" class="col-span-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="error-container" class="mb-4 hidden">
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Error Details</h2>
+                <div class="bg-red-50 text-red-800 rounded p-3 text-sm">
+                    <pre id="error" class="whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+
+            <div id="suggestions-container" class="mb-4 hidden">
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Suggestions</h2>
+                <ul id="suggestions" class="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                    <!-- Suggestions will be inserted here -->
+                </ul>
+            </div>
+
+            <div class="mt-6 flex justify-between">
+                <button id="refresh-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow transition">
+                    Refresh Status
+                </button>
+                <a href="/" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded shadow transition">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkDatabaseStatus();
+            
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('result').classList.add('hidden');
+                checkDatabaseStatus();
+            });
+        });
+
+        function checkDatabaseStatus() {
+            fetch('db-status.php')
+                .then(response => response.json())
+                .then(data => {
+                    displayResults(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('result').classList.remove('hidden');
+                    
+                    document.getElementById('status-badge').innerHTML = `
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                            <svg class="mr-1.5 h-2 w-2 text-red-600" fill="currentColor" viewBox="0 0 8 8">
+                                <circle cx="4" cy="4" r="3" />
+                            </svg>
+                            Error
+                        </span>
+                    `;
+                    
+                    document.getElementById('error-container').classList.remove('hidden');
+                    document.getElementById('error').textContent = 'Failed to check database status. The server might be down.';
+                });
+        }
+
+        function displayResults(data) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+            
+            // Set status badge
+            const statusColor = data.status === 'connected' ? 'green' : 'red';
+            const statusText = data.status === 'connected' ? 'Connected' : 'Disconnected';
+            document.getElementById('status-badge').innerHTML = `
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-${statusColor}-100 text-${statusColor}-800">
+                    <svg class="mr-1.5 h-2 w-2 text-${statusColor}-600" fill="currentColor" viewBox="0 0 8 8">
+                        <circle cx="4" cy="4" r="3" />
+                    </svg>
+                    ${statusText}
+                </span>
+            `;
+            
+            // Set connection details
+            document.getElementById('host').textContent = data.host;
+            document.getElementById('port').textContent = data.port;
+            document.getElementById('database').textContent = data.database;
+            
+            // Set MySQL service status
+            const serviceColor = data.mysql_service === 'running' ? 'green' : 'red';
+            document.getElementById('mysql-service').innerHTML = `
+                <span class="text-${serviceColor}-600 font-medium">${data.mysql_service}</span>
+            `;
+            
+            // Set error if any
+            if (data.error) {
+                document.getElementById('error-container').classList.remove('hidden');
+                document.getElementById('error').textContent = data.error;
+            } else {
+                document.getElementById('error-container').classList.add('hidden');
+            }
+            
+            // Set suggestions if any
+            if (data.suggestions && data.suggestions.length > 0) {
+                document.getElementById('suggestions-container').classList.remove('hidden');
+                const suggestionsEl = document.getElementById('suggestions');
+                suggestionsEl.innerHTML = '';
+                data.suggestions.forEach(suggestion => {
+                    const li = document.createElement('li');
+                    li.textContent = suggestion;
+                    suggestionsEl.appendChild(li);
+                });
+            } else {
+                document.getElementById('suggestions-container').classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

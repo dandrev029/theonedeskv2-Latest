@@ -122,10 +122,22 @@ export default {
   },
   created() {
     this.fetchNotifications();
-    // Add a small delay to ensure user data is loaded
-    setTimeout(() => {
-      this.setupPusherListener();
-    }, 1000);
+
+    // Set up a more reliable way to initialize Pusher
+    this.initializePusher();
+  },
+
+  mounted() {
+    // Add event listener for when user data is updated
+    this.$root.$on('user-loaded', this.setupPusherListener);
+  },
+
+  beforeDestroy() {
+    // Clean up event listeners
+    this.$root.$off('user-loaded', this.setupPusherListener);
+
+    // Clean up Pusher listener
+    this.cleanupPusherListener();
   },
   watch: {
     unreadCount(newCount) {
@@ -139,28 +151,78 @@ export default {
       const iconMap = {
         'font-awesome.user-tag-solid': 'font-awesome.user-tag-regular',
         'font-awesome.comment-alt-solid': 'font-awesome.comments-alt-regular', // Corrected based on list_dir output
-        'font-awesome.bell-solid': 'font-awesome.bell-regular' // Add mapping for the default replacement too
+        'font-awesome.bell-solid': 'font-awesome.bell-regular', // Add mapping for the default replacement too
+        'font-awesome.ticket-alt-solid': 'font-awesome.ticket-alt-regular' // Add mapping for ticket icon
       };
+      // Ensure the specific mapping is present
+      if (iconName === 'font-awesome.ticket-alt-solid') {
+        return 'font-awesome.ticket-alt-regular';
+      }
       return iconMap[iconName] || iconName;
     },
     async fetchNotifications() {
       try {
+        // Check if user is authenticated
+        if (!this.$store.state.user) {
+          console.log('User not authenticated, skipping notification fetch');
+          this.notifications = [];
+          this.unreadCount = 0;
+          return;
+        }
+
         const response = await this.$store.dispatch("fetchNotifications");
+
+        // If response is undefined or null, return early
+        if (!response) {
+          console.warn('No response from fetchNotifications');
+          return;
+        }
 
         // Process notifications from both sources
         let allNotifications = [];
         let seenNotifications = new Map(); // Track notifications by content to prevent duplicates
+        let seenTicketNotifications = new Map(); // Special tracking for ticket notifications
+        const maxNotificationsToDisplay = 20; // Limit the number of notifications to display
 
         // Process app_notifications
         if (response.notifications && response.notifications.data) {
           // Add each app notification to the map with a content-based key
           response.notifications.data.forEach(notification => {
-            const contentKey = `${notification.title}|${notification.message}`;
-            // Only add if we haven't seen this content before
-            if (!seenNotifications.has(contentKey)) {
-              seenNotifications.set(contentKey, notification);
-              allNotifications.push(notification);
+            // Skip notifications without title or message
+            if (!notification.title || !notification.message) {
+              console.warn('Skipping notification with missing title or message:', notification);
+              return;
             }
+
+            // Create a unique key for exact duplicate detection
+            const contentKey = `${notification.title}|${notification.message}`;
+
+            // Check for exact duplicates first
+            if (seenNotifications.has(contentKey)) {
+              console.log('Skipping exact duplicate notification:', notification.title);
+              return;
+            }
+
+            // For ticket notifications, do additional similarity checking
+            if (notification.title.toLowerCase().includes('ticket') ||
+                notification.message.toLowerCase().includes('ticket')) {
+
+              // Create a simplified key for ticket notifications (first part of the message)
+              const baseMessage = notification.message.split(':')[0];
+              const ticketKey = `${notification.title}|${baseMessage}`;
+
+              if (seenTicketNotifications.has(ticketKey)) {
+                console.log('Skipping similar ticket notification:', notification.title);
+                return;
+              }
+
+              // Add to both maps
+              seenTicketNotifications.set(ticketKey, notification);
+            }
+
+            // Add to regular tracking and notification list
+            seenNotifications.set(contentKey, notification);
+            allNotifications.push(notification);
           });
         }
 
@@ -170,6 +232,16 @@ export default {
           response.laravel_notifications.data.forEach(notification => {
             // Extract data from the notification
             const data = notification.data || {};
+
+            // Skip notifications without title or message
+            const title = notification.title || data.title || null;
+            const message = notification.message || data.message || null;
+
+            if (!title || !message) {
+              console.warn('Skipping Laravel notification with missing title or message:', notification);
+              return;
+            }
+
             let iconName = notification.icon || data.icon || 'font-awesome.bell-regular'; // Default to regular bell
             // Map missing solid icons to available regular ones
             if (iconName === 'font-awesome.user-tag-solid') {
@@ -182,10 +254,13 @@ export default {
             if (iconName === 'font-awesome.bell-solid') {
                  iconName = 'font-awesome.bell-regular';
             }
+            if (iconName === 'font-awesome.ticket-alt-solid') { // Add mapping for ticket icon
+                iconName = 'font-awesome.ticket-alt-regular';
+            }
             const formattedNotification = {
               id: notification.id,
-              title: notification.title || data.title || 'Notification',
-              message: notification.message || data.message || '',
+              title: title,
+              message: message,
               type: notification.type || data.type || 'general',
               icon: iconName, // Use the potentially replaced icon name
               link: notification.link || data.link || null,
@@ -194,12 +269,35 @@ export default {
               _source: 'laravel' // Mark the source for internal tracking
             };
 
-            // Check if we've already seen this content
+            // Create a unique key for exact duplicate detection
             const contentKey = `${formattedNotification.title}|${formattedNotification.message}`;
-            if (!seenNotifications.has(contentKey)) {
-              seenNotifications.set(contentKey, formattedNotification);
-              allNotifications.push(formattedNotification);
+
+            // Check for exact duplicates first
+            if (seenNotifications.has(contentKey)) {
+              console.log('Skipping exact duplicate Laravel notification:', formattedNotification.title);
+              return;
             }
+
+            // For ticket notifications, do additional similarity checking
+            if (formattedNotification.title.toLowerCase().includes('ticket') ||
+                formattedNotification.message.toLowerCase().includes('ticket')) {
+
+              // Create a simplified key for ticket notifications (first part of the message)
+              const baseMessage = formattedNotification.message.split(':')[0];
+              const ticketKey = `${formattedNotification.title}|${baseMessage}`;
+
+              if (seenTicketNotifications.has(ticketKey)) {
+                console.log('Skipping similar ticket Laravel notification:', formattedNotification.title);
+                return;
+              }
+
+              // Add to both maps
+              seenTicketNotifications.set(ticketKey, formattedNotification);
+            }
+
+            // Add to regular tracking and notification list
+            seenNotifications.set(contentKey, formattedNotification);
+            allNotifications.push(formattedNotification);
           });
         }
 
@@ -210,136 +308,208 @@ export default {
           return dateB - dateA;
         });
 
-        this.notifications = allNotifications;
-        this.unreadCount = response.unread_count;
+        // Limit the number of notifications to display
+        this.notifications = allNotifications.slice(0, maxNotificationsToDisplay);
+
+        // Log how many notifications were filtered out
+        if (allNotifications.length > maxNotificationsToDisplay) {
+          console.log(`Limiting notifications display to ${maxNotificationsToDisplay} out of ${allNotifications.length} total notifications`);
+        }
+
+        // Calculate the actual unread count from the notifications array
+        const actualUnreadCount = this.notifications.filter(notification => !notification.is_read).length;
+
+        // Use the calculated count if it's different from the response count
+        // This ensures the UI accurately reflects the actual unread notifications
+        if (actualUnreadCount !== response.unread_count) {
+          console.log(`Unread count mismatch: API reports ${response.unread_count}, actual count is ${actualUnreadCount}`);
+          this.unreadCount = actualUnreadCount;
+        } else {
+          this.unreadCount = response.unread_count;
+        }
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
     },
     setupPusherListener() {
-      if (this.$store.state.user) {
-        console.log('Setting up Pusher listener for user ID:', this.$store.state.user.id);
+      // Skip if user is not authenticated
+      if (!this.$store.state.user) {
+        console.warn('No user found in store, cannot setup Pusher listener');
+        return;
+      }
+
+      // Skip if user ID is not available
+      if (!this.$store.state.user.id) {
+        console.warn('User ID not available, cannot setup Pusher listener');
+        return;
+      }
+
+      console.log('Setting up Pusher listener for user ID:', this.$store.state.user.id);
+
+      try {
+        // Check if Echo is available
+        if (!window.Echo) {
+          console.warn('Echo not available, cannot setup Pusher listener');
+          return;
+        }
+
+        // Check if token exists
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.warn('No authentication token found, cannot setup Pusher listener');
+          return;
+        }
+
+        // First, remove any existing listeners to prevent duplicates
         try {
-          // First, remove any existing listeners to prevent duplicates
-          if (window.Echo) {
-            try {
-              window.Echo.leave(`notifications.${this.$store.state.user.id}`);
-              console.log('Removed existing Pusher listener');
-            } catch (leaveError) {
-              console.warn('Error removing existing listener:', leaveError);
+          window.Echo.leave(`notifications.${this.$store.state.user.id}`);
+          console.log('Removed existing Pusher listener');
+        } catch (leaveError) {
+          console.warn('Error removing existing listener:', leaveError);
+        }
+
+        // Ensure Echo has the latest auth token
+        if (window.Echo.connector && window.Echo.connector.options && window.Echo.connector.options.auth) {
+          window.Echo.connector.options.auth.headers.Authorization = `Bearer ${token}`;
+          console.log('Updated Pusher auth token');
+        }
+
+        // Set up the new listener
+        window.Echo.private(`notifications.${this.$store.state.user.id}`)
+          .listen(".notification.new", (e) => {
+            console.log('[PUSHER] Received raw notification event:', JSON.stringify(e));
+            // Call addNotification directly, Vue handles 'this' context
+            this.addNotification(e);
+          })
+          .error((err) => {
+            console.error('[PUSHER] Channel subscription error:', err);
+            // Log specific error details if available
+            if (err.error && err.error.data) {
+              console.error('[PUSHER] Error details:', JSON.stringify(err.error.data));
             }
-          }
+          });
 
-          // Set up the new listener
-          window.Echo.private(`notifications.${this.$store.state.user.id}`)
-            .listen(".notification.new", (e) => {
-              console.log('Received notification:', e);
-              this.addNotification(e);
-            })
-            .error((err) => {
-              console.error('Pusher channel error:', err);
-            });
+        console.log('Pusher listener setup complete');
 
-          console.log('Pusher listener setup complete');
-
-          // Test the connection
+        // Test the connection
+        if (window.Echo.connector && window.Echo.connector.pusher) {
           window.Echo.connector.pusher.connection.bind('connected', () => {
             console.log('Pusher connected successfully');
           });
 
           window.Echo.connector.pusher.connection.bind('error', (err) => {
-            console.error('Pusher connection error:', err);
+            console.error('[PUSHER] Connection error:', err);
+            // Log specific error details if available
+            if (err.error && err.error.data) {
+              console.error('[PUSHER] Connection error details:', JSON.stringify(err.error.data));
+            }
+            // You might want to add logic here to attempt reconnection or notify the user
           });
-        } catch (error) {
-          console.error('Error setting up Pusher listener:', error);
         }
-      } else {
-        console.warn('No user found in store, cannot setup Pusher listener');
+      } catch (error) {
+        console.error('Error setting up Pusher listener:', error);
       }
     },
     addNotification(notification) {
       console.log('Adding notification to UI:', notification);
 
-      // Validate notification data
-      if (!notification || !notification.id || !notification.title) {
-        console.error('Invalid notification data:', notification);
+      // Prepare the notification object for both toast and store
+      const newNotification = {
+        id: notification.id || Date.now(), // Use provided ID or generate one
+        title: notification.title,
+        message: notification.message,
+        icon: notification.icon || 'font-awesome.bell-regular', // Default icon
+        link: notification.link || null,
+        created_at: notification.created_at || new Date().toISOString(),
+        is_read: false,
+        timestamp: notification.timestamp || Date.now(), // Use provided timestamp or current time
+      };
+
+      // Check for duplicates before adding
+      const isDuplicate = this.checkForDuplicate(newNotification);
+      if (isDuplicate) {
+        console.log('Skipping duplicate notification:', newNotification.title);
         return;
       }
 
-      // Generate a unique ID for the notification if it doesn't have one
-      // This helps prevent duplicates when receiving notifications from different sources
-      const notificationId = notification.id + '-' + (notification.timestamp || Date.now());
-
-      // Check if notification already exists to prevent duplicates
-      const contentKey = `${notification.title}|${notification.message}`;
-      const timeThreshold = Date.now() - (5 * 60 * 1000); // 5 minutes ago
-
-      // Check for duplicates by content and time
-      const exists = this.notifications.some(n => {
-        // Check by ID
-        if (n.id === notification.id) return true;
-
-        // Check by content if received within the last 5 minutes
-        if (n.title === notification.title && n.message === notification.message) {
-          const notificationTime = new Date(n.created_at).getTime();
-          if (notificationTime > timeThreshold) {
-            return true;
-          }
-        }
-        return false;
-      });
-
-      if (exists) {
-        console.warn('Notification already exists, not adding duplicate:', notification.id);
-        return;
-      }
-
-      // Apply icon replacement logic for Pusher notifications
-      let iconName = notification.icon || notification.data?.icon || 'font-awesome.bell-solid';
-      if (iconName === 'font-awesome.user-tag-solid') {
-        iconName = 'font-awesome.user-tag-regular'; // Map to available regular icon
-      }
-      if (iconName === 'font-awesome.comment-alt-solid') {
-        iconName = 'font-awesome.comments-alt-regular'; // Map to available regular icon (corrected name)
-      }
-
-      // Add to local state
-      this.notifications.unshift({
-        ...notification,
-        icon: iconName, // Use the potentially replaced icon name
-        ...notification,
-        _uniqueId: notificationId // Add a unique ID for internal tracking
-      });
-      this.unreadCount++;
-
-      // Show toast notification
+      // Display notification using vue-notification
       try {
         this.$notify({
-          group: "app",
-          title: notification.title,
-          text: notification.message,
+          group: 'app', // Assuming 'app' is the notification group defined in app.vue
+          title: newNotification.title,
+          text: newNotification.message,
+          type: 'info', // Or map based on notification type if needed
           duration: 5000,
-          type: "info"
+          data: { // Pass data for potential click handling
+            link: newNotification.link,
+            notification: newNotification
+          }
         });
-        console.log('Toast notification displayed');
+        console.log('Displayed notification via this.$notify.');
 
-        // Play notification sound if available
+        // Play sound
         try {
-          const audio = new Audio('/notification.mp3');
+          const audio = new Audio('/notification-2-269292.mp3');
           audio.play();
         } catch (soundError) {
           console.warn('Could not play notification sound:', soundError);
         }
       } catch (error) {
-        console.error('Error displaying toast notification:', error);
+        console.error('Error displaying notification via this.$notify:', error);
       }
 
-      // Update the store
+      // Update the store and local notifications array
       try {
-        this.$store.commit('addNotification', notification);
+        this.$store.commit('addNotification', newNotification); // Commit the prepared object
+
+        // Add to local notifications array at the beginning (newest first)
+        this.notifications.unshift(newNotification);
+
+        // Increment unread count
+        this.unreadCount++;
+
+        // Limit the number of notifications to display (prevent overflow)
+        const maxNotificationsToDisplay = 20;
+        if (this.notifications.length > maxNotificationsToDisplay) {
+          this.notifications = this.notifications.slice(0, maxNotificationsToDisplay);
+        }
+
+        console.log('[addNotification] Notification added to UI and store');
       } catch (storeError) {
-        console.error('Error updating store with notification:', storeError);
+        console.error('[addNotification] Error updating notifications:', storeError);
       }
+    },
+
+    checkForDuplicate(newNotification) {
+      // If no notifications yet, it's not a duplicate
+      if (!this.notifications || this.notifications.length === 0) {
+        return false;
+      }
+
+      // Check for exact ID match (same notification)
+      const idMatch = this.notifications.some(n => n.id === newNotification.id && newNotification.id);
+      if (idMatch) {
+        console.log('Duplicate notification with same ID detected');
+        return true;
+      }
+
+      // Check for content match (duplicate content)
+      const contentKey = `${newNotification.title}|${newNotification.message}`;
+
+      // Check for exact content match within the last 10 seconds
+      const recentDuplicate = this.notifications.some(n => {
+        const nContentKey = `${n.title}|${n.message}`;
+        if (nContentKey === contentKey) {
+          // Check if the notification was created within the last 10 seconds
+          const existingTime = n.timestamp || new Date(n.created_at).getTime();
+          const newTime = newNotification.timestamp || new Date(newNotification.created_at).getTime();
+          const timeDiff = Math.abs(newTime - existingTime);
+          return timeDiff < 10000; // 10 seconds in milliseconds
+        }
+        return false;
+      });
+
+      return recentDuplicate;
     },
     async openNotification(notification) {
       if (!notification.is_read) {
@@ -459,12 +629,55 @@ export default {
       }
 
       this.isSwiping = false;
+    },
+
+    initializePusher() {
+      // Check if user is already loaded
+      if (this.$store.state.user && this.$store.state.user.id) {
+        console.log('User already loaded, setting up Pusher immediately');
+        this.setupPusherListener();
+        return;
+      }
+
+      // If user is not loaded yet, set up a retry mechanism
+      console.log('User not loaded yet, will retry Pusher setup');
+
+      // Try again in 1 second
+      setTimeout(() => {
+        if (this.$store.state.user && this.$store.state.user.id) {
+          console.log('User loaded on retry, setting up Pusher');
+          this.setupPusherListener();
+        } else {
+          console.log('User still not loaded, will try again');
+          // Try one more time after 2 seconds
+          setTimeout(() => {
+            if (this.$store.state.user && this.$store.state.user.id) {
+              console.log('User loaded on second retry, setting up Pusher');
+              this.setupPusherListener();
+            } else {
+              console.warn('User still not loaded after retries, giving up on Pusher setup');
+            }
+          }, 2000);
+        }
+      }, 1000);
+    },
+
+    cleanupPusherListener() {
+      // Only attempt cleanup if user is loaded and Echo is available
+      if (window.Echo && this.$store.state.user && this.$store.state.user.id) {
+        try {
+          window.Echo.leave(`notifications.${this.$store.state.user.id}`);
+          console.log('Cleaned up Pusher listener on component destroy');
+        } catch (error) {
+          console.warn('Error cleaning up Pusher listener:', error);
+        }
+      }
     }
   }
 };
 </script>
 
-<style>
+<style scoped>
 /* Mobile notification dropdown positioning */
 @media (max-width: 640px) {
   .mobile-notification-dropdown {

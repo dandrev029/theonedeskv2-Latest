@@ -74,7 +74,13 @@ class AuthController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->currentAccessToken()->delete();
+
+        // Check if the current token is a TransientToken before trying to delete it
+        $currentToken = $user->currentAccessToken();
+        if ($currentToken && method_exists($currentToken, 'delete')) {
+            $currentToken->delete();
+        }
+
         return response()->json(['message' => __('Session closed successfully')]);
     }
 

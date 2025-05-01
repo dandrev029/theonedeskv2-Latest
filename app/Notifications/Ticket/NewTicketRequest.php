@@ -33,7 +33,8 @@ class NewTicketRequest extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail', 'database'];
+        // Add 'broadcast' to send via Pusher
+        return ['mail', 'database', 'broadcast'];
     }
 
     /**
@@ -77,5 +78,24 @@ class NewTicketRequest extends Notification
             'type' => 'ticket_created',
             'message' => __('Your ticket has been created')
         ];
+    }
+
+    /**
+     * Get the broadcastable representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\BroadcastMessage
+     */
+    public function toBroadcast($notifiable)
+    {
+        // Data structure matching frontend expectations in addNotification
+        return new \Illuminate\Notifications\Messages\BroadcastMessage([
+            'id' => $this->id, // Use the notification's unique ID
+            'title' => __('New ticket created'),
+            'message' => __('Your ticket has been created: ') . Str::limit($this->ticket->subject, 50),
+            'icon' => 'font-awesome.ticket-alt-solid',
+            'link' => '/tickets/' . $this->ticket->uuid,
+            'created_at' => now()->toIso8601String(), // Ensure consistent timestamp format
+        ]);
     }
 }

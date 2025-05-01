@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
         Commands\FixTicketConcernDepartmentsCommand::class,
         Commands\FixDepartmentsCommand::class,
         Commands\FixNotificationsCondoLocation::class,
+        Commands\CleanupOldNotifications::class,
+        Commands\CleanupDuplicateNotifications::class,
     ];
 
     /**
@@ -28,6 +30,12 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+
+        // Run notification cleanup daily at midnight
+        $schedule->command('notifications:cleanup')->daily();
+
+        // Run duplicate notification cleanup every 6 hours
+        $schedule->command('notifications:cleanup-duplicates')->everyFourHours();
     }
 
     /**

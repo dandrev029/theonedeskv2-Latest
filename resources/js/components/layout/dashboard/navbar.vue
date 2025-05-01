@@ -127,8 +127,12 @@ export default {
             this.dropdownOpen = false;
         },
         closeNotificationDropdown() {
-            if (this.$refs.notificationDropdown) {
-                this.$refs.notificationDropdown.closeDropdown();
+            try {
+                if (this.$refs.notificationDropdown) {
+                    this.$refs.notificationDropdown.closeDropdown();
+                }
+            } catch (error) {
+                console.warn('Error closing notification dropdown:', error);
             }
         },
 

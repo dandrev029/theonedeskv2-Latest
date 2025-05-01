@@ -3,15 +3,12 @@
 namespace App\Events;
 
 use App\Models\AppNotification;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Log;
 
 class NewNotification implements ShouldBroadcastNow
 {
@@ -33,7 +30,7 @@ class NewNotification implements ShouldBroadcastNow
     public function __construct(AppNotification $notification)
     {
         $this->notification = $notification;
-        \Log::info('NewNotification event constructed', [
+        Log::info('NewNotification event constructed', [
             'notification_id' => $notification->id,
             'user_id' => $notification->user_id,
             'title' => $notification->title
@@ -48,7 +45,7 @@ class NewNotification implements ShouldBroadcastNow
     public function broadcastOn()
     {
         $channel = 'notifications.' . $this->notification->user_id;
-        \Log::info('Broadcasting notification on channel', [
+        Log::info('Broadcasting notification on channel', [
             'channel' => $channel,
             'notification_id' => $this->notification->id,
             'user_id' => $this->notification->user_id
@@ -73,6 +70,9 @@ class NewNotification implements ShouldBroadcastNow
      */
     public function broadcastWith()
     {
+        // Use the actual created_at timestamp for consistency
+        $timestamp = $this->notification->created_at->timestamp;
+
         $data = [
             'id' => $this->notification->id,
             'title' => $this->notification->title,
@@ -80,15 +80,18 @@ class NewNotification implements ShouldBroadcastNow
             'type' => $this->notification->type,
             'icon' => $this->notification->icon,
             'link' => $this->notification->link,
-            'created_at' => $this->notification->created_at->diffForHumans(),
+            'created_at' => $this->notification->created_at->toIso8601String(), // Use ISO format for consistency
+            'created_at_human' => $this->notification->created_at->diffForHumans(),
             'is_read' => false,
-            'timestamp' => now()->timestamp, // Add timestamp to ensure uniqueness
-            'user_id' => $this->notification->user_id // Include user_id for debugging
+            'timestamp' => $timestamp, // Use actual timestamp for deduplication
+            'user_id' => $this->notification->user_id, // Include user_id for debugging
+            'unique_id' => $this->notification->id . '_' . $timestamp // Add a unique ID to prevent duplicates
         ];
 
-        \Log::info('Broadcasting notification data', [
+        Log::info('Broadcasting notification data', [
             'notification_id' => $this->notification->id,
             'user_id' => $this->notification->user_id,
+            'timestamp' => $timestamp,
             'data' => $data
         ]);
 

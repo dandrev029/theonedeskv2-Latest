@@ -187,7 +187,7 @@
 
                                 <!-- Ticket Count -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" icon="font-awesome.ticket-alt-solid"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" icon="font-awesome.ticket-alt-regular"></svg-vue>
                                     <span>{{ $t('Tickets') }}: {{ ticketConcern.tickets_count || 0 }}</span>
                                 </div>
                             </div>

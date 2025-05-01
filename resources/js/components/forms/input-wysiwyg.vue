@@ -176,7 +176,8 @@ export default {
                 plugins: 'paste image link code fullscreen autoresize',
                 toolbar: 'undo redo | upload attachment link cannedReply shortCode | fullscreen code',
                 setup: function (editor) {
-                    if (self.plugins.images) {
+                    // Ensure self.plugins exists and has the property before accessing it
+                    if (self.plugins && self.plugins.images) {
                         editor.ui.registry.addButton('upload', {
                             icon: 'image',
                             onAction: function (_) {
@@ -184,33 +185,29 @@ export default {
                             }
                         });
                     }
-                    if (self.plugins.cannedReply) {
+                    // Note: Duplicate cannedReply button registration. Consolidating.
+                    if (self.plugins && self.plugins.cannedReply) {
                         editor.ui.registry.addButton('cannedReply', {
                             icon: 'comment-add',
-                            onAction: function (_) {
-                                alert('Working');
-                            }
-                        });
-                    }
-                    if (self.plugins.cannedReply) {
-                        editor.ui.registry.addButton('cannedReply', {
-                            icon: 'comment-add',
+                            tooltip: 'Insert Canned Reply',
                             onAction: function (_) {
                                 self.sidebar.cannedReplySelect = true;
                             }
                         });
                     }
-                    if (self.plugins.attachment) {
+                    if (self.plugins && self.plugins.attachment) {
                         editor.ui.registry.addButton('attachment', {
                             icon: 'upload',
+                            tooltip: 'Attach File',
                             onAction: function (_) {
                                 self.$emit('selectUploadFile')
                             }
                         });
                     }
-                    if (self.plugins.shortCode) {
+                    if (self.plugins && self.plugins.shortCode) {
                         // editor.ui.registry.addButton('shortCode', {
                         //     icon: 'template',
+                        //     tooltip: 'Insert Short Code',
                         //     onAction: function (_) {
                         //         self.sidebar.shortCodeSelect = true;
                         //     }
@@ -227,7 +224,7 @@ export default {
     watch: {
         '$store.state.darkMode': {
             handler(newVal) {
-                if (this.$refs.editor && this.$refs.editor.editor) {
+                if (this.$refs.editor && this.$refs.editor.editor && this.$refs.editor.editor.options) {
                     this.$refs.editor.editor.options.set('skin', this.editorTheme);
                     this.$refs.editor.editor.options.set('content_css', this.editorContent);
                 }
@@ -237,7 +234,7 @@ export default {
     mounted() {
         // Ensure the editor is initialized with the correct theme
         this.$nextTick(() => {
-            if (this.$refs.editor && this.$refs.editor.editor) {
+            if (this.$refs.editor && this.$refs.editor.editor && this.$refs.editor.editor.options) {
                 this.$refs.editor.editor.options.set('skin', this.editorTheme);
                 this.$refs.editor.editor.options.set('content_css', this.editorContent);
             }

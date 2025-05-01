@@ -33,7 +33,13 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        //
+        $this->reportable(function (\Illuminate\Database\QueryException $e) {
+            // Handle database connection errors
+            if (strpos($e->getMessage(), 'SQLSTATE[HY000] [2002]') !== false) {
+                // Log the database connection error
+                \Illuminate\Support\Facades\Log::error('Database connection error: ' . $e->getMessage());
+            }
+        });
     }
 
     public function report(Throwable $exception)
