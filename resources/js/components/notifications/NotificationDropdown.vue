@@ -194,6 +194,12 @@ export default {
               return;
             }
 
+            // Skip notifications with generic title "Notification"
+            if (notification.title === 'Notification') {
+              console.log('Skipping generic notification with title "Notification"');
+              return;
+            }
+
             // Create a unique key for exact duplicate detection
             const contentKey = `${notification.title}|${notification.message}`;
 
@@ -239,6 +245,12 @@ export default {
 
             if (!title || !message) {
               console.warn('Skipping Laravel notification with missing title or message:', notification);
+              return;
+            }
+
+            // Skip notifications with generic title "Notification"
+            if (title === 'Notification') {
+              console.log('Skipping generic Laravel notification with title "Notification"');
               return;
             }
 
@@ -424,6 +436,12 @@ export default {
         is_read: false,
         timestamp: notification.timestamp || Date.now(), // Use provided timestamp or current time
       };
+
+      // Skip notifications with generic title "Notification"
+      if (newNotification.title === 'Notification') {
+        console.log('Skipping generic notification with title "Notification"');
+        return;
+      }
 
       // Check for duplicates before adding
       const isDuplicate = this.checkForDuplicate(newNotification);

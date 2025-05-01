@@ -4,6 +4,8 @@ namespace App\Traits;
 
 use App\Events\NewNotification;
 use App\Models\AppNotification;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 trait CreatesAppNotification
 {
@@ -31,7 +33,7 @@ trait CreatesAppNotification
         try {
             // Ensure user_id is valid and not null
             if (!$userId) {
-                \Log::warning('Invalid user_id provided to createAppNotification. Using default admin user (1).', [
+                Log::warning('Invalid user_id provided to createAppNotification. Using default admin user (1).', [
                     'title' => $title,
                     'message' => $message,
                     'type' => $type
@@ -42,7 +44,7 @@ trait CreatesAppNotification
             // Check if user exists
             $user = \App\Models\User::find($userId);
             if (!$user) {
-                \Log::warning('User not found for notification. Using default admin user (1).', [
+                Log::warning('User not found for notification. Using default admin user (1).', [
                     'user_id' => $userId,
                     'title' => $title,
                     'type' => $type
@@ -50,12 +52,47 @@ trait CreatesAppNotification
                 $userId = 1; // Default to admin user if user not found
             }
 
-            \Log::info('Creating app notification', [
+            Log::info('Creating app notification', [
                 'user_id' => $userId,
                 'title' => $title,
                 'type' => $type,
                 'link' => $link
             ]);
+
+            // Check for existing similar notifications in the last 5 minutes
+            $existingNotification = AppNotification::where('user_id', $userId)
+                ->where('title', $title)
+                ->where('message', $message)
+                ->where('created_at', '>=', now()->subMinutes(5))
+                ->first();
+
+            if ($existingNotification) {
+                Log::info('Skipping duplicate app notification', [
+                    'user_id' => $userId,
+                    'title' => $title,
+                    'existing_id' => $existingNotification->id
+                ]);
+                return $existingNotification;
+            }
+
+            // Check for generic "Notification" title and skip if another notification exists
+            if ($title === 'Notification') {
+                // Look for any other notification with the same message but better title
+                $betterNotification = AppNotification::where('user_id', $userId)
+                    ->where('message', $message)
+                    ->where('title', '!=', 'Notification')
+                    ->where('created_at', '>=', now()->subMinutes(5))
+                    ->first();
+
+                if ($betterNotification) {
+                    Log::info('Skipping generic "Notification" title in favor of better titled notification', [
+                        'user_id' => $userId,
+                        'better_title' => $betterNotification->title,
+                        'better_id' => $betterNotification->id
+                    ]);
+                    return $betterNotification;
+                }
+            }
 
             $notification = AppNotification::create([
                 'user_id' => $userId,
@@ -68,7 +105,7 @@ trait CreatesAppNotification
                 'is_read' => false,
             ]);
 
-            \Log::info('App notification created successfully', [
+            Log::info('App notification created successfully', [
                 'notification_id' => $notification->id,
                 'user_id' => $userId
             ]);
@@ -76,7 +113,7 @@ trait CreatesAppNotification
             // Broadcast the notification
             try {
                 // Check if a Laravel notification with the same content already exists
-                $existingNotification = \DB::table('notifications')
+                $existingNotification = DB::table('notifications')
                     ->where('notifiable_id', $userId)
                     ->where('notifiable_type', 'App\\Models\\User')
                     ->where('title', $notification->title)
@@ -88,7 +125,7 @@ trait CreatesAppNotification
                 if (!$existingNotification) {
                     try {
                         // Create a database record directly to avoid the user_id issue
-                        \DB::table('notifications')->insert([
+                        DB::table('notifications')->insert([
                             'id' => \Illuminate\Support\Str::uuid()->toString(),
                             'type' => 'App\\Notifications\\InAppNotification',
                             'notifiable_type' => 'App\\Models\\User',
@@ -113,18 +150,18 @@ trait CreatesAppNotification
                             'updated_at' => now(),
                         ]);
 
-                        \Log::info('Database notification created successfully', [
+                        Log::info('Database notification created successfully', [
                             'user_id' => $userId
                         ]);
                     } catch (\Exception $dbEx) {
-                        \Log::error('Error creating database notification: ' . $dbEx->getMessage(), [
+                        Log::error('Error creating database notification: ' . $dbEx->getMessage(), [
                             'user_id' => $userId,
                             'exception' => $dbEx
                         ]);
                         // Continue even if database notification fails
                     }
                 } else {
-                    \Log::info('Skipped creating duplicate Laravel notification', [
+                    Log::info('Skipped creating duplicate Laravel notification', [
                         'user_id' => $userId,
                         'title' => $notification->title
                     ]);
@@ -132,12 +169,12 @@ trait CreatesAppNotification
 
                 // Broadcast the real-time notification
                 event(new NewNotification($notification));
-                \Log::info('Notification broadcast event fired', [
+                Log::info('Notification broadcast event fired', [
                     'notification_id' => $notification->id,
                     'user_id' => $userId
                 ]);
             } catch (\Exception $broadcastEx) {
-                \Log::error('Error broadcasting notification: ' . $broadcastEx->getMessage(), [
+                Log::error('Error broadcasting notification: ' . $broadcastEx->getMessage(), [
                     'notification_id' => $notification->id,
                     'user_id' => $userId,
                     'exception' => $broadcastEx
@@ -148,7 +185,7 @@ trait CreatesAppNotification
             return $notification;
         } catch (\Exception $e) {
             // Log the error but don't throw it to prevent breaking the main functionality
-            \Log::error('Error creating app notification: ' . $e->getMessage(), [
+            Log::error('Error creating app notification: ' . $e->getMessage(), [
                 'user_id' => $userId,
                 'title' => $title,
                 'message' => $message,

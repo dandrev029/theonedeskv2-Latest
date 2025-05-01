@@ -45,7 +45,7 @@ class InAppNotification extends Notification implements ShouldQueue
         // Ensure we have all the required fields for both notification systems
         return [
             'id' => $this->data['id'] ?? null,
-            'title' => $this->data['title'] ?? 'Notification',
+            'title' => $this->data['title'] ?? ($this->data['type'] === 'ticket' ? 'New ticket created' : 'System notification'),
             'message' => $this->data['message'] ?? '',
             'type' => $this->data['type'] ?? 'general',
             'icon' => $this->data['icon'] ?? 'font-awesome.bell-solid',
