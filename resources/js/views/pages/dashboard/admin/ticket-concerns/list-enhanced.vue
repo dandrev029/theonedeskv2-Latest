@@ -14,7 +14,6 @@
                         class="gradient-button shadow-sm rounded-md flex items-center px-4 py-2"
                         to="/dashboard/admin/ticket-concerns/new"
                     >
-                        <svg-vue class="h-5 w-5 mr-2" icon="font-awesome.plus-solid"></svg-vue>
                         {{ $t('Create Ticket Concern') }}
                     </router-link>
                 </div>
@@ -30,7 +29,7 @@
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('Search') }}</label>
                         <div class="relative rounded-md shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg-vue class="h-5 w-5 text-gray-400" icon="font-awesome.search-solid"></svg-vue>
+                                <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.search-solid"></svg-vue>
                             </div>
                             <input
                                 id="search"
@@ -149,14 +148,14 @@
                                 <div class="flex space-x-2">
                                     <router-link
                                         :to="'/dashboard/admin/ticket-concerns/' + ticketConcern.id + '/edit'"
-                                        class="text-primary-600 hover:text-primary-800 focus:outline-none"
+                                        class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 focus:outline-none"
                                         :title="$t('Edit')"
                                     >
                                         <svg-vue class="h-5 w-5" icon="font-awesome.edit-regular"></svg-vue>
                                     </router-link>
                                     <button
                                         @click.prevent="deleteTicketConcern(ticketConcern)"
-                                        class="text-red-600 hover:text-red-900 focus:outline-none"
+                                        class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 focus:outline-none"
                                         :title="$t('Delete')"
                                     >
                                         <svg-vue class="h-5 w-5" icon="font-awesome.trash-alt-regular"></svg-vue>
@@ -167,13 +166,13 @@
                             <div class="mt-3 space-y-2">
                                 <!-- Department -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" icon="font-awesome.building-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.building-regular"></svg-vue>
                                     <span>{{ $t('Department') }}: {{ ticketConcern.department ? ticketConcern.department.name : $t('Not assigned') }}</span>
                                 </div>
 
                                 <!-- Assigned User -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" icon="font-awesome.user-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.user-regular"></svg-vue>
                                     <span v-if="ticketConcern.assigned_user">
                                         <img
                                             :src="ticketConcern.assigned_user.avatar || ticketConcern.assigned_user.gravatar"
@@ -187,7 +186,7 @@
 
                                 <!-- Ticket Count -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" icon="font-awesome.ticket-alt-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.ticket-alt-regular"></svg-vue>
                                     <span>{{ $t('Tickets') }}: {{ ticketConcern.tickets_count || 0 }}</span>
                                 </div>
                             </div>
@@ -400,48 +399,70 @@ export default {
             const self = this;
             self.loading = true;
 
-            // First try the main endpoint
-            return axios.get('api/dashboard/admin/ticket-concerns/departments')
-                .then(function (response) {
-                    if (response.data && response.data.data) {
-                        self.departments = response.data.data;
+            // First try to fix departments
+            return axios.get('fix-ticket-concern-departments.php')
+                .then(function(fixResponse) {
+                    console.log('Fix departments response:', fixResponse.data);
 
-                        // If departments are empty, add fallback departments
-                        if (!self.departments || self.departments.length === 0) {
-                            console.warn('No departments returned from API');
-                            self.addFallbackDepartments();
-                            self.createMissingDepartments(); // Try to create the departments in the database
-                            self.showNotification('warning', self.$t('Warning'), self.$t('Using fallback departments'));
-                        } else {
-                            console.log('Departments loaded successfully:', self.departments.length);
-                        }
-                    } else {
-                        console.warn('Invalid department data format:', response.data);
-                        self.addFallbackDepartments();
-                        self.createMissingDepartments(); // Try to create the departments in the database
-                        self.showNotification('warning', self.$t('Warning'), self.$t('Using fallback departments due to invalid data format'));
-                    }
-                    return self.departments;
-                })
-                .catch(function (error) {
-                    console.error('Error loading departments:', error);
-
-                    // Try the public endpoint as a fallback
-                    return axios.get('api/ticket-concerns/departments')
-                        .then(function(response) {
+                    // Now try the main endpoint with public access
+                    return axios.get('api/dashboard/admin/ticket-concerns/departments/public')
+                        .then(function (response) {
                             if (response.data && response.data.data) {
                                 self.departments = response.data.data;
-                                console.log('Departments loaded from public endpoint:', self.departments.length);
+
+                                // If departments are empty, add fallback departments
+                                if (!self.departments || self.departments.length === 0) {
+                                    console.warn('No departments returned from API');
+                                    self.addFallbackDepartments();
+                                    self.showNotification('warning', self.$t('Warning'), self.$t('Using fallback departments'));
+                                } else {
+                                    console.log('Departments loaded successfully:', self.departments.length);
+                                }
+                            } else {
+                                console.warn('Invalid department data format:', response.data);
+                                self.addFallbackDepartments();
+                                self.showNotification('warning', self.$t('Warning'), self.$t('Using fallback departments due to invalid data format'));
+                            }
+                            return self.departments;
+                        })
+                        .catch(function (error) {
+                            console.error('Error loading departments:', error);
+
+                            // Try the public endpoint as a fallback
+                            return axios.get('api/ticket-concerns/departments')
+                                .then(function(response) {
+                                    if (response.data && response.data.data) {
+                                        self.departments = response.data.data;
+                                        console.log('Departments loaded from public endpoint:', self.departments.length);
+                                        return self.departments;
+                                    } else {
+                                        throw new Error('Invalid data from public endpoint');
+                                    }
+                                })
+                                .catch(function(secondError) {
+                                    console.error('Error loading from public endpoint:', secondError);
+                                    self.showNotification('error', self.$t('Error'), self.$t('Failed to load departments'));
+                                    self.addFallbackDepartments();
+                                    return self.departments;
+                                });
+                        });
+                })
+                .catch(function(fixError) {
+                    console.error('Error fixing departments:', fixError);
+
+                    // Continue with normal flow
+                    return axios.get('api/dashboard/admin/ticket-concerns/departments/public')
+                        .then(function (response) {
+                            if (response.data && response.data.data) {
+                                self.departments = response.data.data;
                                 return self.departments;
                             } else {
-                                throw new Error('Invalid data from public endpoint');
+                                throw new Error('Invalid department data format');
                             }
                         })
-                        .catch(function(secondError) {
-                            console.error('Error loading from public endpoint:', secondError);
-                            self.showNotification('error', self.$t('Error'), self.$t('Failed to load departments'));
+                        .catch(function (error) {
+                            console.error('Error loading departments after fix attempt:', error);
                             self.addFallbackDepartments();
-                            self.createMissingDepartments(); // Try to create the departments in the database
                             return self.departments;
                         });
                 });
@@ -469,7 +490,6 @@ export default {
         createMissingDepartments() {
             // This function attempts to create the fallback departments in the database
             // so they'll be available for future requests
-            const self = this;
 
             // We'll use the admin department creation endpoint if available
             axios.post('api/dashboard/admin/fix-departments', {

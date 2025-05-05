@@ -308,14 +308,14 @@
                             :class="['view-toggle-btn', !isGridView ? 'active' : '']"
                             @click="isGridView = false"
                         >
-                            <svg-vue class="h-4 w-4 mr-1" icon="font-awesome.list-solid"></svg-vue>
+                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.list-solid"></svg-vue>
                             {{ $t('List') }}
                         </button>
                         <button
                             :class="['view-toggle-btn', isGridView ? 'active' : '']"
                             @click="isGridView = true"
                         >
-                            <svg-vue class="h-4 w-4 mr-1" icon="font-awesome.th-large-solid"></svg-vue>
+                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.th-large-solid"></svg-vue>
                             {{ $t('Grid') }}
                         </button>
                     </div>
@@ -326,7 +326,7 @@
                         class="view-toggle-btn"
                         @click="getTickets"
                     >
-                        <svg-vue class="h-4 w-4" icon="font-awesome.sync-regular"></svg-vue>
+                        <svg-vue class="h-4 w-4" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.sync-regular"></svg-vue>
                     </button>
                 </div>
             </div>
@@ -453,7 +453,7 @@
                 <!-- Infinite Scroll Loader -->
                 <div v-if="hasMoreTickets" class="infinite-scroll-loader" v-intersect="loadMoreTickets">
                     <div v-if="loadingMore" class="flex items-center justify-center">
-                        <svg-vue class="animate-spin h-5 w-5 text-primary-500 mr-2" icon="font-awesome.spinner-solid"></svg-vue>
+                        <svg-vue class="animate-spin h-5 w-5 mr-2" :class="$store.state.darkMode ? 'text-primary-400' : 'text-primary-500'" icon="font-awesome.spinner-solid"></svg-vue>
                         {{ $t('Loading more tickets...') }}
                     </div>
                 </div>

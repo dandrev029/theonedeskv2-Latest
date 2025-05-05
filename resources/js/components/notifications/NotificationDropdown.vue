@@ -9,7 +9,7 @@
       aria-label="Notifications"
       @click="toggleDropdown"
     >
-      <svg-vue class="h-6 w-6 p-px" icon="font-awesome.bell-regular"></svg-vue>
+      <svg-vue class="h-6 w-6 p-px" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.bell-regular"></svg-vue>
       <span v-if="unreadCount > 0" class="absolute top-0 right-0 -mt-1 -mr-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
         {{ unreadCount > 9 ? '9+' : unreadCount }}
       </span>
@@ -61,8 +61,8 @@
             >
               <div class="flex-shrink-0 mr-3">
                 <div class="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center">
-                  <svg-vue v-if="notification.icon" class="h-4 w-4" :icon="mapIconName(notification.icon)"></svg-vue>
-                  <svg-vue v-else class="h-4 w-4" icon="font-awesome.bell-regular"></svg-vue>
+                  <svg-vue v-if="notification.icon" class="h-4 w-4 text-white" :icon="mapIconName(notification.icon)"></svg-vue>
+                  <svg-vue v-else class="h-4 w-4 text-white" icon="font-awesome.bell-regular"></svg-vue>
                 </div>
               </div>
               <div class="flex-1 min-w-0">
@@ -76,7 +76,7 @@
                   :class="getDarkModeClasses({lightText: 'text-gray-400', darkText: 'text-gray-500', lightHover: 'hover:text-gray-600', darkHover: 'hover:text-gray-300'})"
                   aria-label="Delete notification"
                 >
-                  <svg-vue class="h-4 w-4" icon="font-awesome.times-solid"></svg-vue>
+                  <svg-vue class="h-4 w-4" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-500'" icon="font-awesome.times-solid"></svg-vue>
                 </button>
               </div>
             </div>

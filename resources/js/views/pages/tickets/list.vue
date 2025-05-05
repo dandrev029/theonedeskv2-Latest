@@ -28,7 +28,7 @@
                                 <!-- Search Input -->
                                 <div class="relative flex-grow max-w-md">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg-vue class="h-5 w-5" :class="textTertiary" icon="font-awesome.search-regular"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.search-regular"></svg-vue>
                                     </div>
                                     <input
                                         id="search-desktop"
@@ -84,13 +84,13 @@
                                         <svg-vue
                                             v-show="sort.order === 'asc'"
                                             class="h-5 w-5"
-                                            :class="textTertiary"
+                                            :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'"
                                             icon="font-awesome.sort-amount-down-alt-regular"
                                         ></svg-vue>
                                         <svg-vue
                                             v-show="sort.order === 'desc'"
                                             class="h-5 w-5"
-                                            :class="textTertiary"
+                                            :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'"
                                             icon="font-awesome.sort-amount-up-alt-regular"
                                         ></svg-vue>
                                     </button>
@@ -103,7 +103,7 @@
                             <!-- Search Input -->
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg-vue class="h-5 w-5" :class="textTertiary" icon="font-awesome.search-regular"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.search-regular"></svg-vue>
                                 </div>
                                 <input
                                     id="search-mobile"
@@ -162,13 +162,13 @@
                                     <svg-vue
                                         v-show="sort.order === 'asc'"
                                         class="h-5 w-5"
-                                        :class="textTertiary"
+                                        :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'"
                                         icon="font-awesome.sort-amount-down-alt-regular"
                                     ></svg-vue>
                                     <svg-vue
                                         v-show="sort.order === 'desc'"
                                         class="h-5 w-5"
-                                        :class="textTertiary"
+                                        :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'"
                                         icon="font-awesome.sort-amount-up-alt-regular"
                                     ></svg-vue>
                                 </button>
@@ -270,11 +270,11 @@
                                         <div class="flex flex-col space-y-2">
                                             <div class="flex justify-between items-center">
                                                 <div class="flex items-center text-xs" :class="textSecondary">
-                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="textTertiary" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.calendar-alt-regular"></svg-vue>
                                                     {{ ticket.created_at | momentFormatDate }}
                                                 </div>
                                                 <div class="flex items-center text-xs" :class="textSecondary">
-                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="textTertiary" icon="font-awesome.clock-regular"></svg-vue>
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.clock-regular"></svg-vue>
                                                     {{ ticket.updated_at | momentFormatDateTimeAgo }}
                                                 </div>
                                             </div>
@@ -385,7 +385,7 @@
                                     class="btn btn-primary shadow-sm rounded-md inline-flex items-center"
                                     to="/tickets/new"
                                 >
-                                    <svg-vue class="h-4 w-4 mr-2" icon="font-awesome.plus-solid"></svg-vue>
+                                    <svg-vue class="h-4 w-4 mr-2 text-white" icon="font-awesome.plus-solid"></svg-vue>
                                     {{ $t('New ticket') }}
                                 </router-link>
                             </template>
@@ -422,7 +422,7 @@
                                         @click="changePage(pagination.currentPage - 1)"
                                     >
                                         <span class="sr-only">{{ $t('Previous') }}</span>
-                                        <svg-vue class="h-5 w-5" icon="font-awesome.chevron-left-solid"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.chevron-left-solid"></svg-vue>
                                     </button>
 
                                     <!-- Current Page Display -->
@@ -445,7 +445,7 @@
                                         @click="changePage(pagination.currentPage + 1)"
                                     >
                                         <span class="sr-only">{{ $t('Next') }}</span>
-                                        <svg-vue class="h-5 w-5" icon="font-awesome.chevron-right-solid"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.chevron-right-solid"></svg-vue>
                                     </button>
                                 </nav>
                             </div>
@@ -473,7 +473,7 @@
                                     type="button"
                                     @click="changePage(pagination.currentPage - 1)"
                                 >
-                                    <svg-vue class="h-5 w-5" icon="font-awesome.chevron-left-solid"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.chevron-left-solid"></svg-vue>
                                 </button>
 
                                 <button
@@ -487,7 +487,7 @@
                                     type="button"
                                     @click="changePage(pagination.currentPage + 1)"
                                 >
-                                    <svg-vue class="h-5 w-5" icon="font-awesome.chevron-right-solid"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.chevron-right-solid"></svg-vue>
                                 </button>
                             </div>
                         </div>
@@ -601,49 +601,79 @@ export default {
 <style scoped>
 /* Ticket Card Styles for Mobile View */
 .ticket-card {
-    @apply bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden transition-all duration-200;
+    border-radius: 0.5rem;
+    border-width: 1px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition-property: all;
+    transition-duration: 200ms;
 }
 
+/* Light mode */
+:root:not(.dark) .ticket-card {
+    background-color: #ffffff;
+    border-color: #e5e7eb;
+}
+
+/* Dark mode */
+.dark .ticket-card,
+:root[data-theme="dark"] .ticket-card,
 .dark-mode .ticket-card {
-    @apply bg-gray-800 border-gray-700;
+    background-color: #1f2937;
+    border-color: #374151;
 }
 
 .ticket-card:hover {
-    @apply shadow-md transform -translate-y-1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-0.25rem);
 }
 
 .ticket-card-header {
-    @apply p-4 border-b border-gray-100;
+    padding: 1rem;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #f3f4f6;
 }
 
 .dark-mode .ticket-card-header {
-    @apply border-gray-700;
+    border-bottom-color: #374151;
 }
 
 .ticket-card-body {
-    @apply p-4;
+    padding: 1rem;
 }
 
 .ticket-card-footer {
-    @apply p-4 bg-gray-50 border-t border-gray-100 flex items-center;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-top-color: #f3f4f6;
+    display: flex;
+    align-items: center;
 }
 
 .dark-mode .ticket-card-footer {
-    @apply bg-gray-800 border-gray-700;
-    background-color: rgba(31, 41, 55, 0.5); /* Equivalent to bg-gray-800 with 50% opacity */
+    background-color: rgba(31, 41, 55, 0.5);
+    border-top-color: #374151;
 }
 
 /* Table Styles */
 table {
-    @apply border-collapse table-auto w-full;
+    border-collapse: collapse;
+    table-layout: auto;
+    width: 100%;
 }
 
 th {
-    @apply font-medium text-left;
+    font-weight: 500;
+    text-align: left;
 }
 
 tbody tr {
-    @apply border-b border-gray-100;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #f3f4f6;
 }
 
 tbody tr:last-child {
@@ -651,22 +681,29 @@ tbody tr:last-child {
 }
 
 .dark-mode tbody tr {
-    @apply border-gray-700;
+    border-bottom-color: #374151;
 }
 
 /* Status Badge */
 .status-badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-width: 1px;
+    border-style: solid;
 }
 
 /* Responsive pagination */
 .pagination-info {
-    @apply text-sm;
+    font-size: 0.875rem;
 }
 
 @media (max-width: 640px) {
     .pagination-info {
-        @apply text-xs;
+        font-size: 0.75rem;
     }
 }
 

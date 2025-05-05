@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\Language\LanguageController as LanguageLanguageCont
 use App\Http\Controllers\Api\Ticket\TicketController as UserTicketController;
 use App\Http\Controllers\API\NotificationController;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'lang'], static function () {
     Route::get('/', [LanguageLanguageController::class, 'list'])->name('language.list');
@@ -56,6 +57,9 @@ Route::get('fix-departments', function() {
     Artisan::call('fix:ticket-concern-departments');
     return response()->json(['success' => true, 'message' => 'Departments fixed successfully']);
 })->name('fix-departments');
+
+// Public access to dashboard admin ticket concerns departments
+Route::get('dashboard/admin/ticket-concerns/departments/public', [\App\Http\Controllers\Api\Dashboard\Admin\TicketConcernController::class, 'departments'])->name('dashboard.admin.ticket-concerns.departments.public');
 
 Route::group(['prefix' => 'account'], static function () {
     Route::post('update', [AccountAccountController::class, 'update'])->name('account.update');
