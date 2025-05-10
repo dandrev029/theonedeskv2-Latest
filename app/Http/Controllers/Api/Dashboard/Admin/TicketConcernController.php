@@ -37,15 +37,27 @@ class TicketConcernController extends Controller
         // Check if user has admin role (role_id = 1) or has specific department restrictions
         $isAdmin = $user && $user->role_id === 1;
 
-        // If user is not admin and has dashboard permission, restrict to their departments
+        // If user is not admin and has dashboard permission, check if they have ticket concern management rights
         if (!$isAdmin && $user && $user->userRole->dashboard_access) {
-            // Get user's departments
-            $userDepartments = $user->departments;
-            $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+            // Check if user has ticket concern management permission
+            $hasTicketConcernManagement = $user->userRole->checkPermission('App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController');
 
-            // If user has departments, restrict to those departments
-            if (!empty($userDepartmentIds)) {
-                $query->whereIn('department_id', $userDepartmentIds);
+            // If user has ticket concern management rights, allow them to see all ticket concerns
+            if ($hasTicketConcernManagement) {
+                // User has permission to manage ticket concerns for any department
+                Log::info('User has ticket concern management rights, showing all ticket concerns', [
+                    'user_id' => $user->id
+                ]);
+                // No need to restrict the query
+            } else {
+                // User doesn't have ticket concern management rights, restrict to their departments
+                $userDepartments = $user->departments;
+                $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+
+                // If user has departments, restrict to those departments
+                if (!empty($userDepartmentIds)) {
+                    $query->whereIn('department_id', $userDepartmentIds);
+                }
             }
         }
 
@@ -87,15 +99,27 @@ class TicketConcernController extends Controller
         // Check if user has admin role (role_id = 1) or has specific department restrictions
         $isAdmin = $user && $user->role_id === 1;
 
-        // If user is not admin and has dashboard permission, restrict to their departments
+        // If user is not admin and has dashboard permission, check if they have ticket concern management rights
         if (!$isAdmin && $user && $user->userRole->dashboard_access) {
-            // Get user's departments
-            $userDepartments = $user->departments;
-            $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+            // Check if user has ticket concern management permission
+            $hasTicketConcernManagement = $user->userRole->checkPermission('App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController');
 
-            // If user has departments, restrict to those departments
-            if (!empty($userDepartmentIds)) {
-                $query->whereIn('department_id', $userDepartmentIds);
+            // If user has ticket concern management rights, allow them to see all ticket concerns
+            if ($hasTicketConcernManagement) {
+                // User has permission to manage ticket concerns for any department
+                Log::info('User has ticket concern management rights, showing all ticket concerns for select', [
+                    'user_id' => $user->id
+                ]);
+                // No need to restrict the query
+            } else {
+                // User doesn't have ticket concern management rights, restrict to their departments
+                $userDepartments = $user->departments;
+                $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+
+                // If user has departments, restrict to those departments
+                if (!empty($userDepartmentIds)) {
+                    $query->whereIn('department_id', $userDepartmentIds);
+                }
             }
         }
 
@@ -118,17 +142,29 @@ class TicketConcernController extends Controller
         // Check if user has admin role (role_id = 1)
         $isAdmin = $user && $user->role_id === 1;
 
-        // If user is not admin, check if they have access to the selected department
+        // If user is not admin, check if they have ticket concern management rights
         if (!$isAdmin && $user && $user->userRole->dashboard_access && $request->get('department_id')) {
-            // Get user's departments
-            $userDepartments = $user->departments;
-            $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+            // Check if user has ticket concern management permission
+            $hasTicketConcernManagement = $user->userRole->checkPermission('App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController');
 
-            // If user doesn't have access to this department, return forbidden
-            if (!empty($userDepartmentIds) && !in_array($request->get('department_id'), $userDepartmentIds)) {
-                return response()->json([
-                    'message' => __('You do not have permission to create ticket concerns for this department'),
-                ], 403);
+            // If user has ticket concern management rights, allow them to create concerns for any department
+            if ($hasTicketConcernManagement) {
+                // User has permission to manage ticket concerns for any department
+                Log::info('User has ticket concern management rights, allowing creation for any department', [
+                    'user_id' => $user->id,
+                    'department_id' => $request->get('department_id')
+                ]);
+            } else {
+                // User doesn't have ticket concern management rights, restrict to their departments
+                $userDepartments = $user->departments;
+                $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+
+                // If user doesn't have access to this department, return forbidden
+                if (!empty($userDepartmentIds) && !in_array($request->get('department_id'), $userDepartmentIds)) {
+                    return response()->json([
+                        'message' => __('You do not have permission to create ticket concerns for this department'),
+                    ], 403);
+                }
             }
         }
 
@@ -159,17 +195,30 @@ class TicketConcernController extends Controller
         // Check if user has admin role (role_id = 1)
         $isAdmin = $user && $user->role_id === 1;
 
-        // If user is not admin, check if they have access to the department
+        // If user is not admin, check if they have ticket concern management rights
         if (!$isAdmin && $user && $user->userRole->dashboard_access) {
-            // Get user's departments
-            $userDepartments = $user->departments;
-            $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+            // Check if user has ticket concern management permission
+            $hasTicketConcernManagement = $user->userRole->checkPermission('App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController');
 
-            // If user doesn't have access to this department, return forbidden
-            if (!empty($userDepartmentIds) && !in_array($ticketConcern->department_id, $userDepartmentIds)) {
-                return response()->json([
-                    'message' => __('You do not have permission to view ticket concerns from this department'),
-                ], 403);
+            // If user has ticket concern management rights, allow them to view concerns from any department
+            if ($hasTicketConcernManagement) {
+                // User has permission to manage ticket concerns for any department
+                Log::info('User has ticket concern management rights, allowing view for any department', [
+                    'user_id' => $user->id,
+                    'ticket_concern_id' => $ticketConcern->id,
+                    'department_id' => $ticketConcern->department_id
+                ]);
+            } else {
+                // User doesn't have ticket concern management rights, restrict to their departments
+                $userDepartments = $user->departments;
+                $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+
+                // If user doesn't have access to this department, return forbidden
+                if (!empty($userDepartmentIds) && !in_array($ticketConcern->department_id, $userDepartmentIds)) {
+                    return response()->json([
+                        'message' => __('You do not have permission to view ticket concerns from this department'),
+                    ], 403);
+                }
             }
         }
 
@@ -193,25 +242,39 @@ class TicketConcernController extends Controller
         // Check if user has admin role (role_id = 1)
         $isAdmin = $user && $user->role_id === 1;
 
-        // If user is not admin, check if they have access to the current department
+        // If user is not admin, check if they have ticket concern management rights
         if (!$isAdmin && $user && $user->userRole->dashboard_access) {
-            // Get user's departments
-            $userDepartments = $user->departments;
-            $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+            // Check if user has ticket concern management permission
+            $hasTicketConcernManagement = $user->userRole->checkPermission('App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController');
 
-            // Check if user has access to the current department
-            if (!empty($userDepartmentIds) && !in_array($ticketConcern->department_id, $userDepartmentIds)) {
-                return response()->json([
-                    'message' => __('You do not have permission to edit ticket concerns from this department'),
-                ], 403);
-            }
+            // If user has ticket concern management rights, allow them to edit concerns for any department
+            if ($hasTicketConcernManagement) {
+                // User has permission to manage ticket concerns for any department
+                Log::info('User has ticket concern management rights, allowing edit for any department', [
+                    'user_id' => $user->id,
+                    'ticket_concern_id' => $ticketConcern->id,
+                    'department_id' => $ticketConcern->department_id,
+                    'new_department_id' => $request->get('department_id')
+                ]);
+            } else {
+                // User doesn't have ticket concern management rights, restrict to their departments
+                $userDepartments = $user->departments;
+                $userDepartmentIds = $userDepartments->pluck('id')->toArray();
 
-            // If department is being changed, check if user has access to the new department
-            if ($request->get('department_id') && $request->get('department_id') != $ticketConcern->department_id) {
-                if (!empty($userDepartmentIds) && !in_array($request->get('department_id'), $userDepartmentIds)) {
+                // Check if user has access to the current department
+                if (!empty($userDepartmentIds) && !in_array($ticketConcern->department_id, $userDepartmentIds)) {
                     return response()->json([
-                        'message' => __('You do not have permission to move ticket concerns to this department'),
+                        'message' => __('You do not have permission to edit ticket concerns from this department'),
                     ], 403);
+                }
+
+                // If department is being changed, check if user has access to the new department
+                if ($request->get('department_id') && $request->get('department_id') != $ticketConcern->department_id) {
+                    if (!empty($userDepartmentIds) && !in_array($request->get('department_id'), $userDepartmentIds)) {
+                        return response()->json([
+                            'message' => __('You do not have permission to move ticket concerns to this department'),
+                        ], 403);
+                    }
                 }
             }
         }
@@ -242,17 +305,30 @@ class TicketConcernController extends Controller
         // Check if user has admin role (role_id = 1)
         $isAdmin = $user && $user->role_id === 1;
 
-        // If user is not admin, check if they have access to the department
+        // If user is not admin, check if they have ticket concern management rights
         if (!$isAdmin && $user && $user->userRole->dashboard_access) {
-            // Get user's departments
-            $userDepartments = $user->departments;
-            $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+            // Check if user has ticket concern management permission
+            $hasTicketConcernManagement = $user->userRole->checkPermission('App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController');
 
-            // If user doesn't have access to this department, return forbidden
-            if (!empty($userDepartmentIds) && !in_array($ticketConcern->department_id, $userDepartmentIds)) {
-                return response()->json([
-                    'message' => __('You do not have permission to delete ticket concerns from this department'),
-                ], 403);
+            // If user has ticket concern management rights, allow them to delete concerns from any department
+            if ($hasTicketConcernManagement) {
+                // User has permission to manage ticket concerns for any department
+                Log::info('User has ticket concern management rights, allowing deletion for any department', [
+                    'user_id' => $user->id,
+                    'ticket_concern_id' => $ticketConcern->id,
+                    'department_id' => $ticketConcern->department_id
+                ]);
+            } else {
+                // User doesn't have ticket concern management rights, restrict to their departments
+                $userDepartments = $user->departments;
+                $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+
+                // If user doesn't have access to this department, return forbidden
+                if (!empty($userDepartmentIds) && !in_array($ticketConcern->department_id, $userDepartmentIds)) {
+                    return response()->json([
+                        'message' => __('You do not have permission to delete ticket concerns from this department'),
+                    ], 403);
+                }
             }
         }
 
@@ -428,18 +504,30 @@ class TicketConcernController extends Controller
             // Check if user has admin role (role_id = 1) or has specific department restrictions
             $isAdmin = $user && $user->role_id === 1;
 
-            // If user is not admin and has dashboard permission, check if they have access to this department
+            // If user is not admin and has dashboard permission, check if they have ticket concern management rights
             if (!$isAdmin && $user && $user->userRole->dashboard_access) {
-                // Get user's departments
-                $userDepartments = $user->departments;
-                $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+                // Check if user has ticket concern management permission
+                $hasTicketConcernManagement = $user->userRole->checkPermission('App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController');
 
-                // If user doesn't have access to this department, return forbidden
-                if (!empty($userDepartmentIds) && !in_array($departmentId, $userDepartmentIds)) {
-                    return response()->json([
-                        'message' => __('You do not have access to this department'),
-                        'concerns' => []
-                    ], 403);
+                // If user has ticket concern management rights, allow them to see concerns from any department
+                if ($hasTicketConcernManagement) {
+                    // User has permission to manage ticket concerns for any department
+                    Log::info('User has ticket concern management rights, allowing access to concerns from any department', [
+                        'user_id' => $user->id,
+                        'department_id' => $departmentId
+                    ]);
+                } else {
+                    // User doesn't have ticket concern management rights, restrict to their departments
+                    $userDepartments = $user->departments;
+                    $userDepartmentIds = $userDepartments->pluck('id')->toArray();
+
+                    // If user doesn't have access to this department, return forbidden
+                    if (!empty($userDepartmentIds) && !in_array($departmentId, $userDepartmentIds)) {
+                        return response()->json([
+                            'message' => __('You do not have access to this department'),
+                            'concerns' => []
+                        ], 403);
+                    }
                 }
             }
 

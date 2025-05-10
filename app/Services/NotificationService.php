@@ -41,6 +41,16 @@ class NotificationService
                 return null;
             }
 
+            // Filter out generic notifications with title 'Notification' as they duplicate other more specific notifications
+            if ($title === 'Notification' || $title === __('Notification')) {
+                Log::info('Skipping generic notification', [
+                    'user_id' => $userId,
+                    'title' => $title,
+                    'message' => $message
+                ]);
+                return null;
+            }
+
             Log::info('Creating notification', [
                 'user_id' => $userId,
                 'title' => $title,

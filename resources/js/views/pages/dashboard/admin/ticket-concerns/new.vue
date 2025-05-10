@@ -68,114 +68,22 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Department and Assigned To fields removed as they are considered pointless -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium leading-5 text-gray-700" for="department_id">
-                            {{ $t('Department') }}
-                        </label>
-                        <div class="mt-1 relative">
-                            <!-- Show department name when user has only one department -->
-                            <div v-if="userHasOnlyOneDepartment && !isAdmin" class="rounded-md shadow-sm">
-                                <div class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5 bg-gray-100">
-                                    {{ singleDepartmentName }}
-                                    <input type="hidden" v-model="ticketConcern.department_id">
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700">
+                                        {{ $t('Department and user assignment have been removed from ticket concerns. Tickets will be automatically assigned based on user permissions.') }}
+                                    </p>
                                 </div>
                             </div>
-                            <!-- Show dropdown when user has multiple departments or is admin -->
-                            <div v-else :class="{'opacity-50 pointer-events-none': loadingDepartments}" class="rounded-md shadow-sm">
-                                <input-select-scrollable
-                                    id="department_id"
-                                    v-model="ticketConcern.department_id"
-                                    :options="departments"
-                                    option-label="name"
-                                    :searchable="true"
-                                    :placeholder="loadingDepartments ? $t('Loading departments...') : $t('Select a department for this concern')"
-                                    :clear-on-select="false"
-                                    :show-labels="false"
-                                    class="dropdown-improved"
-                                >
-                                    <template v-slot:noResult>
-                                        <div class="py-2 px-4 text-gray-500">{{ $t('No departments found') }}</div>
-                                    </template>
-                                    <template v-slot:noOptions>
-                                        <div class="py-2 px-4 text-gray-500">{{ $t('No departments available') }}</div>
-                                    </template>
-                                </input-select-scrollable>
-                            </div>
-                            <div v-if="loadingDepartments" class="absolute right-0 top-0 bottom-0 flex items-center pr-3">
-                                <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            </div>
                         </div>
-                        <p class="mt-2 text-sm text-gray-500">
-                            <span v-if="userHasOnlyOneDepartment && !isAdmin">
-                                {{ $t('This concern will be created for your department.') }}
-                            </span>
-                            <span v-else>
-                                {{ $t('Select the department that this concern belongs to.') }}
-                            </span>
-                        </p>
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium leading-5 text-gray-700" for="assigned_to">
-                            {{ $t('Assigned To') }}
-                        </label>
-                        <div class="mt-1 relative">
-                            <div :class="{'opacity-50 pointer-events-none': loadingUsers}" class="rounded-md shadow-sm">
-                                <input-select-scrollable
-                                    id="assigned_to"
-                                    v-model="ticketConcern.assigned_to"
-                                    :options="dashboardUsers"
-                                    option-label="name"
-                                    :searchable="true"
-                                    :placeholder="loadingUsers ? $t('Loading users...') : $t('Select a user to handle this concern')"
-                                    :clear-on-select="false"
-                                    :show-labels="false"
-                                    class="dropdown-improved"
-                                >
-                                    <template v-slot:option="{ option }">
-                                        <div class="flex items-center">
-                                            <img
-                                                :src="option.avatar || option.gravatar"
-                                                :alt="option.name"
-                                                class="h-6 w-6 rounded-full mr-2"
-                                            >
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ option.name }}</div>
-                                                <div class="text-xs text-gray-500 truncate max-w-xs">{{ option.email }}</div>
-                                            </div>
-                                        </div>
-                                    </template>
-                                    <template v-slot:selectedOption="{ option }">
-                                        <div v-if="option" class="flex items-center">
-                                            <img
-                                                :src="option.avatar || option.gravatar"
-                                                :alt="option.name"
-                                                class="h-5 w-5 rounded-full mr-2"
-                                            >
-                                            <span class="truncate">{{ option.name }}</span>
-                                        </div>
-                                        <span v-else class="text-gray-500">{{ $t('Select a user') }}</span>
-                                    </template>
-                                    <template v-slot:noResult>
-                                        <div class="py-2 px-4 text-gray-500">{{ $t('No users found') }}</div>
-                                    </template>
-                                    <template v-slot:noOptions>
-                                        <div class="py-2 px-4 text-gray-500">{{ $t('No users available') }}</div>
-                                    </template>
-                                </input-select-scrollable>
-                            </div>
-                            <div v-if="loadingUsers" class="absolute right-0 top-0 bottom-0 flex items-center pr-3">
-                                <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <p class="mt-2 text-sm text-gray-500">
-                            {{ $t('Select a user with dashboard access who will handle tickets with this concern category.') }}
-                        </p>
                     </div>
                     <div class="mt-8 border-t border-gray-200 pt-5">
                         <div class="flex justify-end">
@@ -380,32 +288,16 @@ export default {
                 return;
             }
 
-            // Ensure department is selected
-            if (!self.ticketConcern.department_id) {
-                self.formErrors.department_id = self.$i18n.t('Department is required');
-                self.saving = false;
-                self.$notify({
-                    title: self.$i18n.t('Validation Error').toString(),
-                    text: self.formErrors.department_id,
-                    type: 'error'
-                });
-                return;
+            // Set department_id to user's department if they have only one, or null otherwise
+            if (self.userHasOnlyOneDepartment && !self.isAdmin && self.userDepartments.length === 1) {
+                self.ticketConcern.department_id = self.userDepartments[0].id;
+            } else if (self.isAdmin) {
+                // For admins, set to null - will be handled by backend logic
+                self.ticketConcern.department_id = null;
             }
 
-            // If user is not admin, ensure they're only creating for their departments
-            if (!self.isAdmin && self.userDepartments.length > 0) {
-                const userDepartmentIds = self.userDepartments.map(dept => dept.id);
-                if (!userDepartmentIds.includes(self.ticketConcern.department_id)) {
-                    self.formErrors.department_id = self.$i18n.t('You can only create ticket concerns for your own departments');
-                    self.saving = false;
-                    self.$notify({
-                        title: self.$i18n.t('Permission Error').toString(),
-                        text: self.formErrors.department_id,
-                        type: 'error'
-                    });
-                    return;
-                }
-            }
+            // Set assigned_to to null - will be handled by backend logic
+            self.ticketConcern.assigned_to = null;
 
             const ladda = typeof Ladda !== 'undefined' ? Ladda.create(document.querySelector('#submit-ticket-concern')) : null;
             if (ladda) ladda.start();

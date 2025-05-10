@@ -7,7 +7,7 @@
                 </router-link>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
                     <!-- Notification Dropdown Component -->
-                    <notification-dropdown ref="notificationDropdown" v-on-clickaway="closeNotificationDropdown" />
+                    <notification-dropdown ref="notificationDropdown" v-on-clickaway="closeNotificationDropdown" class="dashboard-notification-icon" />
 
                     <!-- Dark Mode Toggle -->
                     <div class="flex items-center ml-2 mr-1">
@@ -360,5 +360,32 @@ export default {
 .mobile-dark-mode-toggle .toggle-track {
   width: 2.5rem;
   height: 1.3rem;
+}
+
+/* Dashboard notification icon styling */
+.dashboard-notification-icon button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+/* Add touch feedback */
+.dashboard-notification-icon button:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode support */
+.dark .dashboard-notification-icon button:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 640px) {
+  .dashboard-notification-icon {
+    margin-right: 0.5rem;
+  }
 }
 </style>

@@ -62,7 +62,7 @@
               <div class="flex-shrink-0 mr-3">
                 <div class="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center">
                   <svg-vue v-if="notification.icon" class="h-4 w-4 text-white" :icon="mapIconName(notification.icon)"></svg-vue>
-                  <svg-vue v-else class="h-4 w-4 text-white" icon="font-awesome.bell-regular"></svg-vue>
+                  <svg-vue v-else class="h-4 w-4 text-white" icon="font-awesome.bell-light"></svg-vue>
                 </div>
               </div>
               <div class="flex-1 min-w-0">
@@ -147,17 +147,29 @@ export default {
   },
   methods: {
     mapIconName(iconName) {
-      // Map missing solid icons to available regular ones
+      // Map icons to light versions for better compatibility with both light and dark modes
       const iconMap = {
-        'font-awesome.user-tag-solid': 'font-awesome.user-tag-regular',
-        'font-awesome.comment-alt-solid': 'font-awesome.comments-alt-regular', // Corrected based on list_dir output
-        'font-awesome.bell-solid': 'font-awesome.bell-regular', // Add mapping for the default replacement too
-        'font-awesome.ticket-alt-solid': 'font-awesome.ticket-alt-regular' // Add mapping for ticket icon
+        // Map solid icons to light versions
+        'font-awesome.user-tag-solid': 'font-awesome.user-tag-light',
+        'font-awesome.comment-alt-solid': 'font-awesome.comment-alt-light',
+        'font-awesome.bell-solid': 'font-awesome.bell-light',
+        'font-awesome.ticket-alt-solid': 'font-awesome.ticket-alt-light',
+        'font-awesome.envelope-solid': 'font-awesome.envelope-light',
+        'font-awesome.check-circle-solid': 'font-awesome.check-circle-light',
+        'font-awesome.exclamation-circle-solid': 'font-awesome.exclamation-circle-light',
+        'font-awesome.info-circle-solid': 'font-awesome.info-circle-light',
+
+        // Also map regular icons to light versions
+        'font-awesome.user-tag-regular': 'font-awesome.user-tag-light',
+        'font-awesome.comments-alt-regular': 'font-awesome.comment-alt-light',
+        'font-awesome.bell-regular': 'font-awesome.bell-light',
+        'font-awesome.ticket-alt-regular': 'font-awesome.ticket-alt-light',
+        'font-awesome.envelope-regular': 'font-awesome.envelope-light',
+        'font-awesome.check-circle-regular': 'font-awesome.check-circle-light',
+        'font-awesome.exclamation-circle-regular': 'font-awesome.exclamation-circle-light',
+        'font-awesome.info-circle-regular': 'font-awesome.info-circle-light'
       };
-      // Ensure the specific mapping is present
-      if (iconName === 'font-awesome.ticket-alt-solid') {
-        return 'font-awesome.ticket-alt-regular';
-      }
+
       return iconMap[iconName] || iconName;
     },
     async fetchNotifications() {

@@ -21,7 +21,37 @@ use App\Http\Controllers\Api\Language\LanguageController as LanguageLanguageCont
 use App\Http\Controllers\Api\Ticket\TicketController as UserTicketController;
 use App\Http\Controllers\API\NotificationController;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+
+// Health check endpoint for Coolify
+Route::get('/health', function () {
+    try {
+        // Check database connection
+        DB::connection()->select('SELECT 1');
+
+        // Return success response
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'Application is healthy',
+            'timestamp' => now()->toIso8601String(),
+            'environment' => app()->environment(),
+            'services' => [
+                'database' => 'ok',
+                'redis' => extension_loaded('redis') ? 'ok' : 'not available',
+                'storage' => is_writable(storage_path()) ? 'ok' : 'not writable'
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Application is not healthy',
+            'error' => $e->getMessage(),
+            'timestamp' => now()->toIso8601String(),
+            'environment' => app()->environment()
+        ], 500);
+    }
+})->name('api.health');
 
 Route::group(['prefix' => 'lang'], static function () {
     Route::get('/', [LanguageLanguageController::class, 'list'])->name('language.list');

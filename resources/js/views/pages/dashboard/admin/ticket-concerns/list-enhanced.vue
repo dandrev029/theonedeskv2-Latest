@@ -29,7 +29,7 @@
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('Search') }}</label>
                         <div class="relative rounded-md shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.search-solid"></svg-vue>
+                                <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-400'" icon="font-awesome.search-light"></svg-vue>
                             </div>
                             <input
                                 id="search"

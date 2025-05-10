@@ -1,0 +1,156 @@
+version: '3'
+
+services:
+  # PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: theonedeskv2/app
+    container_name: theonedeskv2-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: prod
+      APP_ENV: production
+      APP_DEBUG: 'false'
+    working_dir: /var/www/html
+    volumes:
+      - app-storage:/var/www/html/storage
+      - ./docker/php/production.ini:/usr/local/etc/php/conf.d/production.ini
+    networks:
+      - theonedeskv2-network
+    depends_on:
+      - db
+      - redis
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: theonedeskv2-webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - app-storage:/var/www/html/storage
+      - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./docker/nginx/ssl/:/etc/nginx/ssl/
+    networks:
+      - theonedeskv2-network
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MySQL Service
+  db:
+    image: mysql:8.0
+    container_name: theonedeskv2-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: prod
+      SERVICE_NAME: mysql
+    volumes:
+      - theonedeskv2-data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - theonedeskv2-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME}", "-p${DB_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: theonedeskv2-redis
+    restart: unless-stopped
+    tty: true
+    command: redis-server --appendonly yes
+    volumes:
+      - theonedeskv2-redis:/data
+    networks:
+      - theonedeskv2-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Queue Worker Service
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: theonedeskv2/queue
+    container_name: theonedeskv2-queue
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www/html
+    command: php artisan queue:work --tries=3 --timeout=90 --sleep=3
+    volumes:
+      - app-storage:/var/www/html/storage
+    networks:
+      - theonedeskv2-network
+    depends_on:
+      - app
+      - db
+      - redis
+    healthcheck:
+      test: ["CMD", "php", "-v"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Scheduler Service
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: theonedeskv2/scheduler
+    container_name: theonedeskv2-scheduler
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www/html
+    command: bash -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
+    volumes:
+      - app-storage:/var/www/html/storage
+    networks:
+      - theonedeskv2-network
+    depends_on:
+      - app
+      - db
+      - redis
+
+# Networks
+networks:
+  theonedeskv2-network:
+    driver: bridge
+
+# Volumes
+volumes:
+  theonedeskv2-data:
+    driver: local
+  theonedeskv2-redis:
+    driver: local
+  app-storage:
+    driver: local
