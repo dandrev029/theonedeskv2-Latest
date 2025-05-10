@@ -28,7 +28,7 @@
                                 <!-- Search Input -->
                                 <div class="relative flex-grow max-w-md">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-400'" icon="font-awesome.search-light"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="iconThemeColor" icon="font-awesome.search-light"></svg-vue>
                                     </div>
                                     <input
                                         id="search-desktop"
@@ -84,13 +84,13 @@
                                         <svg-vue
                                             v-show="sort.order === 'asc'"
                                             class="h-5 w-5"
-                                            :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'"
+                                            :class="iconThemeColor"
                                             icon="font-awesome.sort-amount-down-alt-regular"
                                         ></svg-vue>
                                         <svg-vue
                                             v-show="sort.order === 'desc'"
                                             class="h-5 w-5"
-                                            :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'"
+                                            :class="iconThemeColor"
                                             icon="font-awesome.sort-amount-up-alt-regular"
                                         ></svg-vue>
                                     </button>
@@ -103,7 +103,7 @@
                             <!-- Search Input -->
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-400'" icon="font-awesome.search-light"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="iconThemeColor" icon="font-awesome.search-light"></svg-vue>
                                 </div>
                                 <input
                                     id="search-mobile"
@@ -162,13 +162,13 @@
                                     <svg-vue
                                         v-show="sort.order === 'asc'"
                                         class="h-5 w-5"
-                                        :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'"
+                                        :class="iconThemeColor"
                                         icon="font-awesome.sort-amount-down-alt-regular"
                                     ></svg-vue>
                                     <svg-vue
                                         v-show="sort.order === 'desc'"
                                         class="h-5 w-5"
-                                        :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'"
+                                        :class="iconThemeColor"
                                         icon="font-awesome.sort-amount-up-alt-regular"
                                     ></svg-vue>
                                 </button>
@@ -270,11 +270,11 @@
                                         <div class="flex flex-col space-y-2">
                                             <div class="flex justify-between items-center">
                                                 <div class="flex items-center text-xs" :class="textSecondary">
-                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.calendar-alt-light"></svg-vue>
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="iconThemeColorSmall" icon="font-awesome.calendar-alt-light"></svg-vue>
                                                     {{ ticket.created_at | momentFormatDate }}
                                                 </div>
                                                 <div class="flex items-center text-xs" :class="textSecondary">
-                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.clock-light"></svg-vue>
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="iconThemeColorSmall" icon="font-awesome.clock-light"></svg-vue>
                                                     {{ ticket.updated_at | momentFormatDateTimeAgo }}
                                                 </div>
                                             </div>
@@ -422,7 +422,7 @@
                                         @click="changePage(pagination.currentPage - 1)"
                                     >
                                         <span class="sr-only">{{ $t('Previous') }}</span>
-                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.chevron-left-solid"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="iconThemeColor" icon="font-awesome.chevron-left-solid"></svg-vue>
                                     </button>
 
                                     <!-- Current Page Display -->
@@ -445,7 +445,7 @@
                                         @click="changePage(pagination.currentPage + 1)"
                                     >
                                         <span class="sr-only">{{ $t('Next') }}</span>
-                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.chevron-right-solid"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="iconThemeColor" icon="font-awesome.chevron-right-solid"></svg-vue>
                                     </button>
                                 </nav>
                             </div>
@@ -473,7 +473,7 @@
                                     type="button"
                                     @click="changePage(pagination.currentPage - 1)"
                                 >
-                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.chevron-left-solid"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="iconThemeColor" icon="font-awesome.chevron-left-solid"></svg-vue>
                                 </button>
 
                                 <button
@@ -487,7 +487,7 @@
                                     type="button"
                                     @click="changePage(pagination.currentPage + 1)"
                                 >
-                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.chevron-right-solid"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="iconThemeColor" icon="font-awesome.chevron-right-solid"></svg-vue>
                                 </button>
                             </div>
                         </div>
@@ -499,8 +499,11 @@
 </template>
 
 <script>
+import DarkModeMixin from "@/mixins/dark-mode-mixin";
+
 export default {
     name: "index",
+    mixins: [DarkModeMixin],
     metaInfo() {
         return {
             title: this.$i18n.t('My tickets')
@@ -536,7 +539,13 @@ export default {
     computed: {
         anyFilter() {
             return this.filters.search !== ''
-                || this.filters.status !== null
+                || this.filters.status !== null;
+        },
+        iconThemeColor() {
+            return this.$store.state.darkMode ? 'text-gray-300' : 'text-gray-500';
+        },
+        iconThemeColorSmall() {
+            return this.$store.state.darkMode ? 'text-gray-400' : 'text-gray-600';
         }
     },
     filters: {
@@ -549,49 +558,56 @@ export default {
     },
     methods: {
         getStatuses() {
-            const self = this;
-            axios.get('api/tickets/statuses').then(function (response) {
-                self.statusList = response.data;
-            });
+            this.loading = true;
+            axios.get('api/tickets/statuses')
+                .then(response => {
+                    this.statusList = response.data;
+                })
+                .catch(error => {
+                    console.error("Error fetching statuses:", error);
+                    // Optionally, notify the user e.g., using a toast message
+                    // this.$toast.error(this.$t('Failed to load statuses.'));
+                });
         },
         changePage(page) {
-            const self = this;
-            if ((page > 0) && (page <= self.pagination.totalPages) && (page !== self.page)) {
-                self.page = page;
-                self.getTickets();
+            if ((page > 0) && (page <= this.pagination.totalPages) && (page !== this.page)) {
+                this.page = page;
+                this.getTickets();
             }
         },
         changeSort() {
-            const self = this;
-            if (self.sort.order === 'asc') {
-                self.sort.order = 'desc';
-            } else if (self.sort.order === 'desc') {
-                self.sort.order = 'asc';
+            if (this.sort.order === 'asc') {
+                this.sort.order = 'desc';
+            } else if (this.sort.order === 'desc') {
+                this.sort.order = 'asc';
             }
-            self.getTickets();
+            this.getTickets();
         },
         getTickets() {
-            const self = this;
-            self.loading = true;
+            this.loading = true;
             axios.get('api/tickets', {
                 params: {
-                    page: self.page,
-                    sort: self.sort,
-                    perPage: self.perPage,
-                    search: self.filters.search,
-                    status: self.filters.status,
+                    page: this.page,
+                    sort: this.sort,
+                    perPage: this.perPage,
+                    search: this.filters.search,
+                    status: this.filters.status,
                 }
-            }).then(function (response) {
-                self.ticketList = response.data.items;
-                self.pagination = response.data.pagination;
-                if (self.pagination.totalPages < self.pagination.currentPage) {
-                    self.page = self.pagination.totalPages;
-                    self.getTickets();
+            }).then(response => {
+                this.ticketList = response.data.items;
+                this.pagination = response.data.pagination;
+                if (this.pagination.totalPages < this.pagination.currentPage && this.pagination.totalPages > 0) {
+                    // Only redirect to last page if there are pages available
+                    this.page = this.pagination.totalPages;
+                    this.getTickets();
                 } else {
-                    self.loading = false;
+                    this.loading = false;
                 }
-            }).catch(function () {
-                self.loading = false;
+            }).catch(error => {
+                console.error("Error fetching tickets:", error);
+                // Optionally, notify the user e.g., using a toast message
+                // this.$toast.error(this.$t('Failed to load tickets.'));
+                this.loading = false;
             });
         },
     }
@@ -605,8 +621,9 @@ export default {
     border-width: 1px;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     overflow: hidden;
-    transition-property: all;
-    transition-duration: 200ms;
+    transition-property: transform, box-shadow;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in-out;
 }
 
 /* Light mode */
@@ -625,7 +642,7 @@ export default {
 
 .ticket-card:hover {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    transform: translateY(-0.25rem);
+    transform: translateY(-4px);
 }
 
 .ticket-card-header {
@@ -707,20 +724,5 @@ tbody tr:last-child {
     }
 }
 
-/* Animation for hover effects */
-@keyframes float {
-    0% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-5px);
-    }
-    100% {
-        transform: translateY(0px);
-    }
-}
-
-.ticket-card:hover {
-    animation: float 0.3s ease-in-out;
-}
+/* Removed conflicting animation */
 </style>
