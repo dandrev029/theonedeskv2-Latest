@@ -270,11 +270,11 @@
                                         <div class="flex flex-col space-y-2">
                                             <div class="flex justify-between items-center">
                                                 <div class="flex items-center text-xs" :class="textSecondary">
-                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.calendar-alt-light"></svg-vue>
                                                     {{ ticket.created_at | momentFormatDate }}
                                                 </div>
                                                 <div class="flex items-center text-xs" :class="textSecondary">
-                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.clock-regular"></svg-vue>
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.clock-light"></svg-vue>
                                                     {{ ticket.updated_at | momentFormatDateTimeAgo }}
                                                 </div>
                                             </div>

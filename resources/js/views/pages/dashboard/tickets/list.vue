@@ -61,7 +61,7 @@
                                                                 </label>
                                                                 <div class="relative flex-grow focus-within:z-10">
                                                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                        <svg-vue class="h-4 w-4 text-gray-400" icon="font-awesome.search-regular"></svg-vue>
+                                                                        <svg-vue class="h-4 w-4" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.search-light"></svg-vue>
                                                                     </div>
                                                                     <input
                                                                         id="search"
@@ -79,7 +79,7 @@
                                                                 </label>
                                                                 <div class="relative flex-grow focus-within:z-10">
                                                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                                        <svg-vue class="h-5 w-5 text-gray-400" icon="font-awesome.users-regular"></svg-vue>
+                                                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.users-light"></svg-vue>
                                                                     </div>
                                                                     <input
                                                                         id="user"
@@ -277,7 +277,7 @@
                         class="rounded-md border border-gray-400 px-3 py-2 bg-white text-sm leading-5 font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150"
                         @click="getTickets"
                     >
-                        <svg-vue class="w-4 h-4" icon="font-awesome.sync-regular"></svg-vue>
+                        <svg-vue class="w-4 h-4" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.sync-light"></svg-vue>
                     </button>
                 </div>
             </div>
@@ -290,7 +290,7 @@
                 <!-- Search Bar -->
                 <div class="search-bar">
                     <div class="search-icon">
-                        <svg-vue class="h-5 w-5" icon="font-awesome.search-regular"></svg-vue>
+                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.search-light"></svg-vue>
                     </div>
                     <input
                         v-model.lazy="filters.search"
@@ -308,14 +308,14 @@
                             :class="['view-toggle-btn', !isGridView ? 'active' : '']"
                             @click="isGridView = false"
                         >
-                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.list-solid"></svg-vue>
+                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.list-light"></svg-vue>
                             {{ $t('List') }}
                         </button>
                         <button
                             :class="['view-toggle-btn', isGridView ? 'active' : '']"
                             @click="isGridView = true"
                         >
-                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.th-large-solid"></svg-vue>
+                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.th-large-light"></svg-vue>
                             {{ $t('Grid') }}
                         </button>
                     </div>
@@ -326,7 +326,7 @@
                         class="view-toggle-btn"
                         @click="getTickets"
                     >
-                        <svg-vue class="h-4 w-4" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.sync-regular"></svg-vue>
+                        <svg-vue class="h-4 w-4" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-600'" icon="font-awesome.sync-light"></svg-vue>
                     </button>
                 </div>
             </div>

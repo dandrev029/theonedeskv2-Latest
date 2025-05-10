@@ -82,7 +82,15 @@
                             {{ $t('Department') }}
                         </label>
                         <div class="mt-1 relative">
-                            <div :class="{'opacity-50 pointer-events-none': loadingDepartments}" class="rounded-md shadow-sm">
+                            <!-- Show department name when user has only one department or can't change department -->
+                            <div v-if="(userHasOnlyOneDepartment && !isAdmin) || !canChangeDepartment" class="rounded-md shadow-sm">
+                                <div class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5 bg-gray-100">
+                                    {{ getDepartmentName(ticketConcern.department_id) }}
+                                    <input type="hidden" v-model="ticketConcern.department_id">
+                                </div>
+                            </div>
+                            <!-- Show dropdown when user has multiple departments or is admin -->
+                            <div v-else :class="{'opacity-50 pointer-events-none': loadingDepartments}" class="rounded-md shadow-sm">
                                 <input-select-scrollable
                                     id="department_id"
                                     v-model="ticketConcern.department_id"
@@ -111,7 +119,12 @@
                         </div>
                         <p v-if="formErrors.department_id" class="mt-1 text-xs text-red-500">{{ formErrors.department_id }}</p>
                         <p v-else class="mt-2 text-sm text-gray-500">
-                            {{ $t('Select the department that this concern belongs to.') }}
+                            <span v-if="(userHasOnlyOneDepartment && !isAdmin) || !canChangeDepartment">
+                                {{ $t('This concern belongs to this department.') }}
+                            </span>
+                            <span v-else>
+                                {{ $t('Select the department that this concern belongs to.') }}
+                            </span>
                         </p>
                     </div>
                     <div class="mb-6">
@@ -277,6 +290,9 @@ export default {
             loadingDepartments: false,
             dashboardUsers: [],
             departments: [],
+            userDepartments: [],
+            isAdmin: false,
+            originalDepartmentId: null,
             ticketConcern: {
                 id: null,
                 name: '',
@@ -287,10 +303,57 @@ export default {
             formErrors: {}
         }
     },
+    computed: {
+        userHasOnlyOneDepartment() {
+            return this.userDepartments.length === 1;
+        },
+        canChangeDepartment() {
+            // If user is admin, they can always change department
+            if (this.isAdmin) return true;
+
+            // If user has no departments, they can't change
+            if (this.userDepartments.length === 0) return false;
+
+            // Check if the original department is in user's departments
+            const userDepartmentIds = this.userDepartments.map(dept => dept.id);
+            return userDepartmentIds.includes(this.originalDepartmentId);
+        }
+    },
     mounted() {
-        this.initialize();
+        this.getUserInfo();
     },
     methods: {
+        getUserInfo() {
+            const self = this;
+            self.loading = true;
+
+            // Get user info to determine if admin and get departments
+            axios.get('/api/user')
+                .then(function (response) {
+                    if (response.data) {
+                        // Check if user is admin (role_id = 1)
+                        self.isAdmin = response.data.role_id === 1;
+
+                        // If user has departments property, use it
+                        if (response.data.departments && Array.isArray(response.data.departments)) {
+                            self.userDepartments = response.data.departments;
+                        }
+
+                        // Now initialize the rest of the data
+                        self.initialize();
+                    }
+                })
+                .catch(function (error) {
+                    self.$notify({
+                        title: self.$i18n.t('Error').toString(),
+                        text: error.response ? error.response.data.message || self.$i18n.t('Could not load user info') : self.$i18n.t('Could not load user info'),
+                        type: 'error'
+                    });
+                    // Still try to initialize as fallback
+                    self.initialize();
+                });
+        },
+
         initialize() {
             // Load data in parallel
             Promise.all([
@@ -301,10 +364,17 @@ export default {
                 this.loading = false;
             });
         },
+
+        getDepartmentName(departmentId) {
+            if (!departmentId) return '';
+
+            const department = this.departments.find(dept => dept.id === departmentId);
+            return department ? department.name : '';
+        },
         getDashboardUsers() {
             const self = this;
             self.loadingUsers = true;
-            
+
             return axios.get('api/dashboard/admin/ticket-concerns/users/dashboard')
                 .then(function (response) {
                     if (response.data && response.data.data) {
@@ -329,15 +399,25 @@ export default {
         getDepartments() {
             const self = this;
             self.loadingDepartments = true;
-            
+
             return axios.get('/api/ticket-concerns/departments')
                 .then(function (response) {
+                    let allDepartments = [];
+
                     if (response.data && response.data.data) {
-                        self.departments = response.data.data;
+                        allDepartments = response.data.data;
                     } else if (Array.isArray(response.data)) {
-                        self.departments = response.data;
+                        allDepartments = response.data;
                     } else {
-                        self.departments = [];
+                        allDepartments = [];
+                    }
+
+                    // If user is not admin and has departments, filter to only show their departments
+                    if (!self.isAdmin && self.userDepartments.length > 0) {
+                        const userDepartmentIds = self.userDepartments.map(dept => dept.id);
+                        self.departments = allDepartments.filter(dept => userDepartmentIds.includes(dept.id));
+                    } else {
+                        self.departments = allDepartments;
                     }
                 })
                 .catch(function (error) {
@@ -355,11 +435,29 @@ export default {
         },
         getTicketConcern() {
             const self = this;
-            
+
             return axios.get('api/dashboard/admin/ticket-concerns/' + this.$route.params.id)
                 .then(function (response) {
                     if (response.data && response.data.data) {
                         self.ticketConcern = response.data.data;
+
+                        // Store the original department ID to check if user can change it
+                        self.originalDepartmentId = self.ticketConcern.department_id;
+
+                        // If user is not admin and has departments, check if they can access this ticket concern
+                        if (!self.isAdmin && self.userDepartments.length > 0) {
+                            const userDepartmentIds = self.userDepartments.map(dept => dept.id);
+
+                            // If user doesn't have access to this department, redirect to list
+                            if (!userDepartmentIds.includes(self.ticketConcern.department_id)) {
+                                self.$notify({
+                                    title: self.$i18n.t('Permission Error').toString(),
+                                    text: self.$i18n.t('You do not have permission to edit ticket concerns from this department'),
+                                    type: 'error'
+                                });
+                                self.$router.push('/dashboard/admin/ticket-concerns');
+                            }
+                        }
                     } else {
                         self.$notify({
                             title: self.$i18n.t('Error').toString(),
@@ -383,7 +481,7 @@ export default {
             const self = this;
             self.saving = true;
             self.formErrors = {};
-            
+
             // Basic form validation
             if (!self.ticketConcern.name || self.ticketConcern.name.trim() === '') {
                 self.formErrors.name = self.$i18n.t('Name is required');
@@ -394,6 +492,49 @@ export default {
                     type: 'error'
                 });
                 return;
+            }
+
+            // Ensure department is selected
+            if (!self.ticketConcern.department_id) {
+                self.formErrors.department_id = self.$i18n.t('Department is required');
+                self.saving = false;
+                self.$notify({
+                    title: self.$i18n.t('Validation Error').toString(),
+                    text: self.formErrors.department_id,
+                    type: 'error'
+                });
+                return;
+            }
+
+            // If user is not admin, ensure they're only editing for their departments
+            if (!self.isAdmin && self.userDepartments.length > 0) {
+                const userDepartmentIds = self.userDepartments.map(dept => dept.id);
+
+                // Check if user has access to the current department
+                if (!userDepartmentIds.includes(self.originalDepartmentId)) {
+                    self.formErrors.department_id = self.$i18n.t('You do not have permission to edit ticket concerns from this department');
+                    self.saving = false;
+                    self.$notify({
+                        title: self.$i18n.t('Permission Error').toString(),
+                        text: self.formErrors.department_id,
+                        type: 'error'
+                    });
+                    return;
+                }
+
+                // If department is being changed, check if user has access to the new department
+                if (self.ticketConcern.department_id !== self.originalDepartmentId) {
+                    if (!userDepartmentIds.includes(self.ticketConcern.department_id)) {
+                        self.formErrors.department_id = self.$i18n.t('You can only move ticket concerns to your own departments');
+                        self.saving = false;
+                        self.$notify({
+                            title: self.$i18n.t('Permission Error').toString(),
+                            text: self.formErrors.department_id,
+                            type: 'error'
+                        });
+                        return;
+                    }
+                }
             }
 
             const ladda = typeof Ladda !== 'undefined' ? Ladda.create(document.querySelector('#submit-ticket-concern')) : null;
@@ -432,7 +573,7 @@ export default {
                             type: 'error'
                         });
                     }
-                    
+
                     if (ladda) ladda.stop();
                 })
                 .finally(function () {
@@ -442,7 +583,24 @@ export default {
         deleteTicketConcern() {
             const self = this;
             self.deleting = true;
-            
+
+            // If user is not admin, ensure they're only deleting from their departments
+            if (!self.isAdmin && self.userDepartments.length > 0) {
+                const userDepartmentIds = self.userDepartments.map(dept => dept.id);
+
+                // Check if user has access to the current department
+                if (!userDepartmentIds.includes(self.ticketConcern.department_id)) {
+                    self.deleteTicketConcernModal = false;
+                    self.deleting = false;
+                    self.$notify({
+                        title: self.$i18n.t('Permission Error').toString(),
+                        text: self.$i18n.t('You do not have permission to delete ticket concerns from this department'),
+                        type: 'error'
+                    });
+                    return;
+                }
+            }
+
             axios.delete('api/dashboard/admin/ticket-concerns/' + this.ticketConcern.id)
                 .then(function () {
                     self.$notify({

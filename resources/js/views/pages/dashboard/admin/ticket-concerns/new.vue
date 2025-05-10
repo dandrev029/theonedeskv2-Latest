@@ -73,7 +73,15 @@
                             {{ $t('Department') }}
                         </label>
                         <div class="mt-1 relative">
-                            <div :class="{'opacity-50 pointer-events-none': loadingDepartments}" class="rounded-md shadow-sm">
+                            <!-- Show department name when user has only one department -->
+                            <div v-if="userHasOnlyOneDepartment && !isAdmin" class="rounded-md shadow-sm">
+                                <div class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5 bg-gray-100">
+                                    {{ singleDepartmentName }}
+                                    <input type="hidden" v-model="ticketConcern.department_id">
+                                </div>
+                            </div>
+                            <!-- Show dropdown when user has multiple departments or is admin -->
+                            <div v-else :class="{'opacity-50 pointer-events-none': loadingDepartments}" class="rounded-md shadow-sm">
                                 <input-select-scrollable
                                     id="department_id"
                                     v-model="ticketConcern.department_id"
@@ -101,7 +109,12 @@
                             </div>
                         </div>
                         <p class="mt-2 text-sm text-gray-500">
-                            {{ $t('Select the department that this concern belongs to.') }}
+                            <span v-if="userHasOnlyOneDepartment && !isAdmin">
+                                {{ $t('This concern will be created for your department.') }}
+                            </span>
+                            <span v-else>
+                                {{ $t('Select the department that this concern belongs to.') }}
+                            </span>
                         </p>
                     </div>
                     <div class="mb-6">
@@ -213,6 +226,8 @@ export default {
             loadingDepartments: false,
             dashboardUsers: [],
             departments: [],
+            userDepartments: [],
+            isAdmin: false,
             ticketConcern: {
                 name: '',
                 status: true,
@@ -222,16 +237,24 @@ export default {
             formErrors: {}
         }
     },
+    computed: {
+        userHasOnlyOneDepartment() {
+            return this.userDepartments.length === 1;
+        },
+        singleDepartmentName() {
+            return this.userHasOnlyOneDepartment ? this.userDepartments[0].name : '';
+        }
+    },
     mounted() {
+        this.getUserInfo();
         this.getDashboardUsers();
-        this.getDepartments();
     },
     methods: {
         getDashboardUsers() {
             const self = this;
             self.loadingUsers = true;
             self.loading = true;
-            
+
             axios.get('api/dashboard/admin/ticket-concerns/users/dashboard')
                 .then(function (response) {
                     if (response.data && response.data.data) {
@@ -260,24 +283,69 @@ export default {
                     }
                 });
         },
+        getUserInfo() {
+            const self = this;
+            self.loading = true;
+
+            // Get user info to determine if admin and get departments
+            axios.get('/api/user')
+                .then(function (response) {
+                    if (response.data) {
+                        // Check if user is admin (role_id = 1)
+                        self.isAdmin = response.data.role_id === 1;
+
+                        // If user has departments property, use it
+                        if (response.data.departments && Array.isArray(response.data.departments)) {
+                            self.userDepartments = response.data.departments;
+
+                            // If user has only one department, automatically set it
+                            if (self.userDepartments.length === 1 && !self.isAdmin) {
+                                self.ticketConcern.department_id = self.userDepartments[0].id;
+                            }
+                        }
+
+                        // Now get all departments (for admins) or just user's departments
+                        self.getDepartments();
+                    }
+                })
+                .catch(function (error) {
+                    self.$notify({
+                        title: self.$i18n.t('Error').toString(),
+                        text: error.response ? error.response.data.message || self.$i18n.t('Could not load user info') : self.$i18n.t('Could not load user info'),
+                        type: 'error'
+                    });
+                    // Still try to load departments as fallback
+                    self.getDepartments();
+                });
+        },
+
         getDepartments() {
             const self = this;
             self.loadingDepartments = true;
             self.loading = true;
-            
+
             axios.get('/api/ticket-concerns/departments')
                 .then(function (response) {
+                    let allDepartments = [];
+
                     if (response.data && response.data.data) {
-                        self.departments = response.data.data;
+                        allDepartments = response.data.data;
                     } else if (Array.isArray(response.data)) {
-                        self.departments = response.data;
+                        allDepartments = response.data;
                     } else {
                         self.$notify({
                             title: self.$i18n.t('Warning').toString(),
                             text: self.$i18n.t('Could not load departments data correctly').toString(),
                             type: 'warning'
                         });
-                        self.departments = [];
+                    }
+
+                    // If user is not admin and has departments, filter to only show their departments
+                    if (!self.isAdmin && self.userDepartments.length > 0) {
+                        const userDepartmentIds = self.userDepartments.map(dept => dept.id);
+                        self.departments = allDepartments.filter(dept => userDepartmentIds.includes(dept.id));
+                    } else {
+                        self.departments = allDepartments;
                     }
                 })
                 .catch(function (error) {
@@ -299,8 +367,8 @@ export default {
             const self = this;
             self.saving = true;
             self.formErrors = {};
-            
-            // Optional: Validate form before submitting
+
+            // Validate form before submitting
             if (!self.ticketConcern.name || self.ticketConcern.name.trim() === '') {
                 self.formErrors.name = self.$i18n.t('Name is required');
                 self.saving = false;
@@ -310,6 +378,33 @@ export default {
                     type: 'error'
                 });
                 return;
+            }
+
+            // Ensure department is selected
+            if (!self.ticketConcern.department_id) {
+                self.formErrors.department_id = self.$i18n.t('Department is required');
+                self.saving = false;
+                self.$notify({
+                    title: self.$i18n.t('Validation Error').toString(),
+                    text: self.formErrors.department_id,
+                    type: 'error'
+                });
+                return;
+            }
+
+            // If user is not admin, ensure they're only creating for their departments
+            if (!self.isAdmin && self.userDepartments.length > 0) {
+                const userDepartmentIds = self.userDepartments.map(dept => dept.id);
+                if (!userDepartmentIds.includes(self.ticketConcern.department_id)) {
+                    self.formErrors.department_id = self.$i18n.t('You can only create ticket concerns for your own departments');
+                    self.saving = false;
+                    self.$notify({
+                        title: self.$i18n.t('Permission Error').toString(),
+                        text: self.formErrors.department_id,
+                        type: 'error'
+                    });
+                    return;
+                }
             }
 
             const ladda = typeof Ladda !== 'undefined' ? Ladda.create(document.querySelector('#submit-ticket-concern')) : null;
@@ -348,7 +443,7 @@ export default {
                             type: 'error'
                         });
                     }
-                    
+
                     if (ladda) ladda.stop();
                 })
                 .finally(function () {
