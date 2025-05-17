@@ -75,15 +75,44 @@ import router from "@/views/router";
 
 Vue.use(Vuex);
 Vue.use(Meta);
-Vue.use(SvgVue);
+// Vue.use(SvgVue); // Will be configured below
 Vue.use(Notifications);
 Vue.use(TextareaAutosize);
 Vue.use(vueFilterPrettyBytes);
 Vue.component('VueElementLoading', VueElementLoading);
 
+// Chat components
+Vue.component('ChatHeader', require('./components/chat/ChatHeader.vue').default);
+Vue.component('ChatMessage', require('./components/chat/ChatMessage.vue').default);
+Vue.component('ChatInput', require('./components/chat/ChatInput.vue').default);
+Vue.component('ChatInterface', require('./components/chat/ChatInterface.vue').default);
+
 // Register custom directives
 Vue.directive('intersect', IntersectDirective);
 Vue.directive('on-clickaway', clickaway);
+
+// SvgVue configuration
+const requireSvg = require.context('@/../svg', true, /\.svg$/); // Adjusted path to go up to resources/svg
+const allIcons = requireSvg.keys().reduce((icons, path) => {
+  const icon = requireSvg(path);
+  // Create a name like 'font-awesome/smile-regular' or 'file-extension/pdf'
+  // Path is like './font-awesome/smile-regular.svg'
+  const name = path.replace(/^\.\/(.*)\.svg$/, '$1');
+  icons[name] = icon.default || icon;
+  return icons;
+}, {});
+
+Vue.use(SvgVue, {
+  icons: allIcons,
+  // Optional: default attributes for all SVGs
+  // defaultAttributes: {
+  //   width: '1em',
+  //   height: '1em',
+  //   fill: 'currentColor',
+  // },
+});
+
+
 if (window.app.recaptcha_enabled) {
     Vue.use(VueReCaptcha, {siteKey: window.app.recaptcha_public});
 }

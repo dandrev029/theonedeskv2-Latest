@@ -56,13 +56,30 @@ class File extends Model
     {
         if ($this->disk === 'public') {
             return Storage::disk($this->disk)->url($this->path.DIRECTORY_SEPARATOR.$this->server_name);
+        } elseif ($this->disk === 'private') {
+            // For private files, use the download route which will handle authentication
+            return $this->download();
         }
         return null;
     }
 
     public function download(): string
     {
-        return route('files.download', $this->uuid);
+        $token = '';
+        if (auth()->check()) {
+            try {
+                $accessToken = auth()->user()->currentAccessToken();
+                // Only get plainTextToken if it's a PersonalAccessToken, not a TransientToken
+                if ($accessToken && method_exists($accessToken, 'getAttribute') && $accessToken->getAttribute('token')) {
+                    $token = $accessToken->plainTextToken;
+                }
+            } catch (\Exception $e) {
+                // If there's any error getting the token, just continue without it
+                \Log::warning('Error getting access token: ' . $e->getMessage());
+            }
+        }
+
+        return route('files.download', $this->uuid) . ($token ? "?token={$token}" : '');
     }
 
     public function ticketReply(): ?TicketReply

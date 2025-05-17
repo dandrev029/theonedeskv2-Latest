@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Ticket;
 
 use App\Http\Resources\Department\DepartmentSelectResource;
+use App\Http\Resources\Status\StatusResource; // Added StatusResource
 use App\Http\Resources\TicketConcern\TicketConcernSelectResource;
 use App\Http\Resources\TicketReply\TicketReplyDetailsResource;
 use App\Models\Ticket;
@@ -32,9 +33,10 @@ class TicketDetailsResource extends JsonResource
             'voucher_code' => $ticket->voucher_code,
             'department' => new DepartmentSelectResource($ticket->department),
             'department_id' => $ticket->department_id,
+            'status' => new StatusResource($ticket->status), // Added status object
             'created_at' => $ticket->created_at->toISOString(),
             'updated_at' => $ticket->updated_at->toISOString(),
-            'ticketReplies' => TicketReplyDetailsResource::collection($ticket->ticketReplies()->orderByDesc('created_at')->get()),
+            'ticketReplies' => TicketReplyDetailsResource::collection($ticket->ticketReplies()->orderBy('created_at', 'asc')->get()),
         ];
     }
 }

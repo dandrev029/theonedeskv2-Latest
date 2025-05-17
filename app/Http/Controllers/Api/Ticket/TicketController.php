@@ -12,6 +12,7 @@ use App\Http\Resources\Ticket\TicketDetailsResource;
 use App\Http\Resources\Ticket\TicketListResource;
 use App\Http\Resources\Ticket\TicketManageResource;
 use App\Http\Resources\TicketConcern\TicketConcernSelectResource;
+use App\Http\Resources\TicketReply\TicketReplyDetailsResource;
 use App\Models\CondoLocation;
 use App\Models\Department;
 use App\Models\Setting;
@@ -214,9 +215,14 @@ class TicketController extends Controller
 
             if ($ticket->ticketReplies()->save($ticketReply)) {
                 if ($request->has('attachments')) {
-                    $ticketReply->ticketAttachments()->sync(collect($request->get('attachments'))->map(function ($attachment) {
-                        return $attachment['id'];
-                    }));
+                    $attachmentIds = collect($request->get('attachments'))->map(function ($attachment) {
+                        // Handle both formats: direct ID or object with ID property
+                        return is_array($attachment) && isset($attachment['id']) ? $attachment['id'] : $attachment;
+                    })->filter()->values()->toArray();
+
+                    if (!empty($attachmentIds)) {
+                        $ticketReply->ticketAttachments()->sync($attachmentIds);
+                    }
                 }
 
                 $ticket->updated_at = Carbon::now();
@@ -236,7 +242,14 @@ class TicketController extends Controller
                     \Log::error('Error sending ticket reply notification: ' . $e->getMessage());
                 }
 
-                return response()->json(['message' => __('Data saved correctly'), 'ticket' => new TicketManageResource($ticket)]);
+                // Load the user and attachments for the new reply to ensure they are included in the resource
+                $ticketReply->load('user', 'ticketAttachments');
+
+                return response()->json([
+                    'message' => __('Data saved correctly'),
+                    'reply' => new TicketReplyDetailsResource($ticketReply), // Return the new reply
+                    'ticket' => new TicketManageResource($ticket->fresh(['status', 'priority', 'department', 'user', 'concern', 'condoLocation'])) // Return updated ticket data
+                ]);
             }
 
             return response()->json(['message' => __('An error occurred while saving data')], 500);

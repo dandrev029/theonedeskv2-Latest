@@ -23,7 +23,7 @@ class FileResource extends JsonResource
             'uuid' => $file->uuid,
             'name' => $file->name,
             'size' => $file->size,
-            'mime' => $file->mime,
+            'mime_type' => $file->mime, // Changed 'mime' to 'mime_type'
             'extension' => $file->extension,
             'url' => $file->url(),
             'download' => $file->download(),
