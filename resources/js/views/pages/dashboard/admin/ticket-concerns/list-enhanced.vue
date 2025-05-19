@@ -29,7 +29,7 @@
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('Search') }}</label>
                         <div class="relative rounded-md shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.search-solid"></svg-vue>
+                                <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.search-solid"></svg-vue>
                             </div>
                             <input
                                 id="search"
@@ -166,13 +166,13 @@
                             <div class="mt-3 space-y-2">
                                 <!-- Department -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.building-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.building-regular"></svg-vue>
                                     <span>{{ $t('Department') }}: {{ ticketConcern.department ? ticketConcern.department.name : $t('Not assigned') }}</span>
                                 </div>
 
                                 <!-- Assigned User -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.user-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.user-regular"></svg-vue>
                                     <span v-if="ticketConcern.assigned_user">
                                         <img
                                             :src="ticketConcern.assigned_user.avatar || ticketConcern.assigned_user.gravatar"
@@ -186,7 +186,7 @@
 
                                 <!-- Ticket Count -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-300' : 'text-gray-500'" icon="font-awesome.ticket-alt-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.ticket-alt-regular"></svg-vue>
                                     <span>{{ $t('Tickets') }}: {{ ticketConcern.tickets_count || 0 }}</span>
                                 </div>
                             </div>

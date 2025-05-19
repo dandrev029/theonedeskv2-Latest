@@ -308,14 +308,14 @@
                             :class="['view-toggle-btn', !isGridView ? 'active' : '']"
                             @click="isGridView = false"
                         >
-                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.list-solid"></svg-vue>
+                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.list-solid"></svg-vue>
                             {{ $t('List') }}
                         </button>
                         <button
                             :class="['view-toggle-btn', isGridView ? 'active' : '']"
                             @click="isGridView = true"
                         >
-                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.th-large-solid"></svg-vue>
+                            <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.th-large-solid"></svg-vue>
                             {{ $t('Grid') }}
                         </button>
                     </div>
@@ -326,7 +326,7 @@
                         class="view-toggle-btn"
                         @click="getTickets"
                     >
-                        <svg-vue class="h-4 w-4" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.sync-regular"></svg-vue>
+                        <svg-vue class="h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.sync-regular"></svg-vue>
                     </button>
                 </div>
             </div>

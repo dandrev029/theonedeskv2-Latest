@@ -45,7 +45,7 @@
           <span class="font-medium">{{ $t('Voucher') }}:</span> {{ ticket.voucher_code }}
         </div>
         <div v-if="ticket.scheduled_visit_at" class="flex items-center mb-1">
-          <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-400' : 'text-gray-300'" icon="font-awesome.calendar-alt-regular"></svg-vue>
+          <svg-vue class="h-4 w-4 mr-1" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.calendar-alt-regular"></svg-vue>
           {{ ticket.scheduled_visit_at | momentFormatDateTime }}
         </div>
       </div>

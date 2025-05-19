@@ -74,7 +74,7 @@
                                             </div>
                                         </div>
                                         <div class="ml-5 flex-shrink-0">
-                                            <svg-vue class="h-5 w-5 text-gray-400" icon="font-awesome.angle-right-regular"></svg-vue>
+                                            <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.angle-right-regular"></svg-vue>
                                         </div>
                                     </div>
                                 </router-link>

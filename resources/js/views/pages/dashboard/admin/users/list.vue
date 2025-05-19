@@ -24,7 +24,7 @@
                         <div class="flex rounded-md shadow-sm">
                             <div class="relative flex-grow focus-within:z-10">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg-vue class="h-5 w-5 text-gray-400" icon="font-awesome.search-regular"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.search-regular"></svg-vue>
                                 </div>
                                 <input
                                     id="search"
@@ -42,12 +42,12 @@
                                 >
                                     <svg-vue
                                         v-show="sort.order === 'asc'"
-                                        class="h-5 w-5 text-gray-400"
+                                        class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'"
                                         icon="font-awesome.sort-amount-down-alt-regular"
                                     ></svg-vue>
                                     <svg-vue
                                         v-show="sort.order === 'desc'"
-                                        class="h-5 w-5 text-gray-400"
+                                        class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'"
                                         icon="font-awesome.sort-amount-up-alt-regular"
                                     ></svg-vue>
                                     <span class="ml-2">{{ $t('Sort') }}</span>
@@ -86,7 +86,7 @@
                                                 <div>
                                                     <div class="text-sm leading-5 font-medium text-blue-600 truncate">{{ user.name }}</div>
                                                     <div class="mt-2 flex items-center text-sm leading-5 text-gray-500">
-                                                        <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" icon="font-awesome.envelope-solid"></svg-vue>
+                                                        <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.envelope-solid"></svg-vue>
                                                         <span class="truncate">{{ user.email }}</span>
                                                     </div>
                                                 </div>
@@ -112,7 +112,7 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <svg-vue class="h-5 w-5 text-gray-400" icon="font-awesome.angle-right-regular"></svg-vue>
+                                            <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.angle-right-regular"></svg-vue>
                                         </div>
                                     </div>
                                 </router-link>
