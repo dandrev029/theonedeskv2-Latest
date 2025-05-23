@@ -23,7 +23,7 @@
         <!-- Search and Filter Section -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
             <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4 mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Search Input -->
                     <div class="col-span-1">
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('Search') }}</label>
@@ -39,32 +39,6 @@
                                 :placeholder="$t('Search by name')"
                                 @input="debounceSearch"
                             />
-                        </div>
-                    </div>
-
-                    <!-- Department Filter -->
-                    <div class="col-span-1">
-                        <label for="department" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('Department') }}</label>
-                        <div class="relative">
-                            <select
-                                id="department"
-                                v-model="filters.department"
-                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md appearance-none"
-                                @change="applyFilters"
-                            >
-                                <option value="">{{ $t('All Departments') }}</option>
-                                <option v-for="department in departments" :key="department.id" :value="department.id">
-                                    {{ department.name }}
-                                </option>
-                                <!-- Fallback options if API fails -->
-                                <option v-if="!departments.some(d => d.name === 'DASMA General Helpdesk')" value="dasma_general">DASMA General Helpdesk</option>
-                                <option v-if="!departments.some(d => d.name === 'CAMPA General Helpdesk')" value="campa_general">CAMPA General Helpdesk</option>
-                                <option v-if="!departments.some(d => d.name === 'Dasma WiFi HELPDESK')" value="dasma_wifi">Dasma WiFi HELPDESK</option>
-                                <option v-if="!departments.some(d => d.name === 'Campa WiFi Helpdesk')" value="campa_wifi">Campa WiFi Helpdesk</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg-vue class="h-4 w-4" icon="font-awesome.chevron-down-solid"></svg-vue>
-                            </div>
                         </div>
                     </div>
 
@@ -216,9 +190,6 @@
                                 </div>
                                 <div class="mt-2 text-center text-gray-500">
                                     {{ $t('Try adjusting your search or filter to find what you\'re looking for.') }}
-                                    <div v-if="filters.department" class="mt-1 text-sm text-red-500">
-                                        {{ $t('No query results for model [App\\Models\\TicketConcern] departments.') }}
-                                    </div>
                                 </div>
                                 <div class="mt-4">
                                     <button
@@ -340,10 +311,10 @@ export default {
             loading: true,
             deleting: false,
             ticketConcerns: [],
-            departments: [],
+            // departments: [], // Removed as department filter is removed
             filters: {
                 search: '',
-                department: '',
+                // department: '', // Removed
                 status: ''
             },
             sortBy: 'name_asc',
@@ -359,20 +330,21 @@ export default {
         }
     },
     mounted() {
-        this.initialize();
+        // this.initialize(); // Old initialization
+        this.getTicketConcerns(); // Directly get ticket concerns as departments are not needed for filters
     },
     methods: {
-        initialize() {
-            // First get departments, then get ticket concerns
-            this.getDepartments()
-                .then(() => {
-                    this.getTicketConcerns();
-                })
-                .catch(error => {
-                    console.error('Error during initialization:', error);
-                    this.loading = false;
-                });
-        },
+        // initialize() { // Removed initialize method
+        //     // First get departments, then get ticket concerns
+        //     this.getDepartments()
+        //         .then(() => {
+        //             this.getTicketConcerns();
+        //         })
+        //         .catch(error => {
+        //             console.error('Error during initialization:', error);
+        //             this.loading = false;
+        //         });
+        // },
         getTicketConcerns() {
             const self = this;
             self.loading = true;
@@ -380,7 +352,7 @@ export default {
             // Build query parameters
             const params = {};
             if (self.filters.search) params.search = self.filters.search;
-            if (self.filters.department) params.department_id = self.filters.department;
+            // if (self.filters.department) params.department_id = self.filters.department; // Removed department filter
             if (self.filters.status !== '') params.status = self.filters.status;
 
             return axios.get('api/dashboard/admin/ticket-concerns', { params })
@@ -395,122 +367,122 @@ export default {
                     self.loading = false;
                 });
         },
-        getDepartments() {
-            const self = this;
-            self.loading = true;
+        // getDepartments() { // Removed getDepartments method
+        //     const self = this;
+        //     self.loading = true;
+        //
+        //     // First try to fix departments
+        //     return axios.get('fix-ticket-concern-departments.php')
+        //         .then(function(fixResponse) {
+        //             console.log('Fix departments response:', fixResponse.data);
+        //
+        //             // Now try the main endpoint with public access
+        //             return axios.get('api/dashboard/admin/ticket-concerns/departments/public')
+        //                 .then(function (response) {
+        //                     if (response.data && response.data.data) {
+        //                         self.departments = response.data.data;
+        //
+        //                         // If departments are empty, add fallback departments
+        //                         if (!self.departments || self.departments.length === 0) {
+        //                             console.warn('No departments returned from API');
+        //                             self.addFallbackDepartments();
+        //                             self.showNotification('warning', self.$t('Warning'), self.$t('Using fallback departments'));
+        //                         } else {
+        //                             console.log('Departments loaded successfully:', self.departments.length);
+        //                         }
+        //                     } else {
+        //                         console.warn('Invalid department data format:', response.data);
+        //                         self.addFallbackDepartments();
+        //                         self.showNotification('warning', self.$t('Warning'), self.$t('Using fallback departments due to invalid data format'));
+        //                     }
+        //                     return self.departments;
+        //                 })
+        //                 .catch(function (error) {
+        //                     console.error('Error loading departments:', error);
+        //
+        //                     // Try the public endpoint as a fallback
+        //                     return axios.get('api/ticket-concerns/departments')
+        //                         .then(function(response) {
+        //                             if (response.data && response.data.data) {
+        //                                 self.departments = response.data.data;
+        //                                 console.log('Departments loaded from public endpoint:', self.departments.length);
+        //                                 return self.departments;
+        //                             } else {
+        //                                 throw new Error('Invalid data from public endpoint');
+        //                             }
+        //                         })
+        //                         .catch(function(secondError) {
+        //                             console.error('Error loading from public endpoint:', secondError);
+        //                             self.showNotification('error', self.$t('Error'), self.$t('Failed to load departments'));
+        //                             self.addFallbackDepartments();
+        //                             return self.departments;
+        //                         });
+        //                 });
+        //         })
+        //         .catch(function(fixError) {
+        //             console.error('Error fixing departments:', fixError);
+        //
+        //             // Continue with normal flow
+        //             return axios.get('api/dashboard/admin/ticket-concerns/departments/public')
+        //                 .then(function (response) {
+        //                     if (response.data && response.data.data) {
+        //                         self.departments = response.data.data;
+        //                         return self.departments;
+        //                     } else {
+        //                         throw new Error('Invalid department data format');
+        //                     }
+        //                 })
+        //                 .catch(function (error) {
+        //                     console.error('Error loading departments after fix attempt:', error);
+        //                     self.addFallbackDepartments();
+        //                     return self.departments;
+        //                 });
+        //         });
+        // },
 
-            // First try to fix departments
-            return axios.get('fix-ticket-concern-departments.php')
-                .then(function(fixResponse) {
-                    console.log('Fix departments response:', fixResponse.data);
+        // addFallbackDepartments() { // Removed addFallbackDepartments method
+        //     // Add fallback departments with numeric IDs to better match expected format
+        //     this.departments = [
+        //         { id: 1, name: 'DASMA General Helpdesk' },
+        //         { id: 2, name: 'CAMPA General Helpdesk' },
+        //         { id: 3, name: 'Dasma WiFi HELPDESK' },
+        //         { id: 4, name: 'Campa WiFi Helpdesk' }
+        //     ];
+        //     console.log('Using fallback departments:', this.departments);
+        //
+        //     // Try to create these departments in the backend
+        //     this.createMissingDepartments();
+        //
+        //     // Refresh the page after a short delay to ensure departments are loaded
+        //     setTimeout(() => {
+        //         this.getTicketConcerns();
+        //     }, 1000);
+        // },
 
-                    // Now try the main endpoint with public access
-                    return axios.get('api/dashboard/admin/ticket-concerns/departments/public')
-                        .then(function (response) {
-                            if (response.data && response.data.data) {
-                                self.departments = response.data.data;
-
-                                // If departments are empty, add fallback departments
-                                if (!self.departments || self.departments.length === 0) {
-                                    console.warn('No departments returned from API');
-                                    self.addFallbackDepartments();
-                                    self.showNotification('warning', self.$t('Warning'), self.$t('Using fallback departments'));
-                                } else {
-                                    console.log('Departments loaded successfully:', self.departments.length);
-                                }
-                            } else {
-                                console.warn('Invalid department data format:', response.data);
-                                self.addFallbackDepartments();
-                                self.showNotification('warning', self.$t('Warning'), self.$t('Using fallback departments due to invalid data format'));
-                            }
-                            return self.departments;
-                        })
-                        .catch(function (error) {
-                            console.error('Error loading departments:', error);
-
-                            // Try the public endpoint as a fallback
-                            return axios.get('api/ticket-concerns/departments')
-                                .then(function(response) {
-                                    if (response.data && response.data.data) {
-                                        self.departments = response.data.data;
-                                        console.log('Departments loaded from public endpoint:', self.departments.length);
-                                        return self.departments;
-                                    } else {
-                                        throw new Error('Invalid data from public endpoint');
-                                    }
-                                })
-                                .catch(function(secondError) {
-                                    console.error('Error loading from public endpoint:', secondError);
-                                    self.showNotification('error', self.$t('Error'), self.$t('Failed to load departments'));
-                                    self.addFallbackDepartments();
-                                    return self.departments;
-                                });
-                        });
-                })
-                .catch(function(fixError) {
-                    console.error('Error fixing departments:', fixError);
-
-                    // Continue with normal flow
-                    return axios.get('api/dashboard/admin/ticket-concerns/departments/public')
-                        .then(function (response) {
-                            if (response.data && response.data.data) {
-                                self.departments = response.data.data;
-                                return self.departments;
-                            } else {
-                                throw new Error('Invalid department data format');
-                            }
-                        })
-                        .catch(function (error) {
-                            console.error('Error loading departments after fix attempt:', error);
-                            self.addFallbackDepartments();
-                            return self.departments;
-                        });
-                });
-        },
-
-        addFallbackDepartments() {
-            // Add fallback departments with numeric IDs to better match expected format
-            this.departments = [
-                { id: 1, name: 'DASMA General Helpdesk' },
-                { id: 2, name: 'CAMPA General Helpdesk' },
-                { id: 3, name: 'Dasma WiFi HELPDESK' },
-                { id: 4, name: 'Campa WiFi Helpdesk' }
-            ];
-            console.log('Using fallback departments:', this.departments);
-
-            // Try to create these departments in the backend
-            this.createMissingDepartments();
-
-            // Refresh the page after a short delay to ensure departments are loaded
-            setTimeout(() => {
-                this.getTicketConcerns();
-            }, 1000);
-        },
-
-        createMissingDepartments() {
-            // This function attempts to create the fallback departments in the database
-            // so they'll be available for future requests
-
-            // We'll use the admin department creation endpoint if available
-            axios.post('api/dashboard/admin/fix-departments', {
-                departments: [
-                    { name: 'DASMA General Helpdesk', public: true, all_agents: true },
-                    { name: 'CAMPA General Helpdesk', public: true, all_agents: true },
-                    { name: 'Dasma WiFi HELPDESK', public: true, all_agents: true },
-                    { name: 'Campa WiFi Helpdesk', public: true, all_agents: true }
-                ]
-            })
-            .then(response => {
-                console.log('Department creation response:', response.data);
-                if (response.data && response.data.success) {
-                    console.log('Successfully created missing departments');
-                }
-            })
-            .catch(error => {
-                console.error('Failed to create missing departments:', error);
-                // We don't show a notification here as this is a background operation
-            });
-        },
+        // createMissingDepartments() { // Removed createMissingDepartments method
+        //     // This function attempts to create the fallback departments in the database
+        //     // so they'll be available for future requests
+        //
+        //     // We'll use the admin department creation endpoint if available
+        //     axios.post('api/dashboard/admin/fix-departments', {
+        //         departments: [
+        //             { name: 'DASMA General Helpdesk', public: true, all_agents: true },
+        //             { name: 'CAMPA General Helpdesk', public: true, all_agents: true },
+        //             { name: 'Dasma WiFi HELPDESK', public: true, all_agents: true },
+        //             { name: 'Campa WiFi Helpdesk', public: true, all_agents: true }
+        //         ]
+        //     })
+        //     .then(response => {
+        //         console.log('Department creation response:', response.data);
+        //         if (response.data && response.data.success) {
+        //             console.log('Successfully created missing departments');
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('Failed to create missing departments:', error);
+        //         // We don't show a notification here as this is a background operation
+        //     });
+        // },
         sortTicketConcerns() {
             const [field, direction] = this.sortBy.split('_');
 
@@ -532,74 +504,13 @@ export default {
             this.applyFilters();
         }, 300),
         applyFilters() {
-            // If using a fallback department, we need to handle it differently
-            const fallbackDeptIds = [1, 2, 3, 4]; // Numeric IDs for our fallback departments
-            if (this.filters.department && fallbackDeptIds.includes(parseInt(this.filters.department))) {
-                // For fallback departments, we'll filter client-side
-                this.loading = true;
-
-                // Get all ticket concerns first
-                axios.get('api/dashboard/admin/ticket-concerns')
-                    .then(response => {
-                        if (response.data && response.data.data) {
-                            const allConcerns = response.data.data;
-
-                            // Filter based on department name or ID
-                            const departmentId = parseInt(this.filters.department);
-                            const department = this.departments.find(d => d.id === departmentId);
-
-                            if (department) {
-                                this.ticketConcerns = allConcerns.filter(concern => {
-                                    // Try to match by department ID first
-                                    if (concern.department && concern.department.id === departmentId) {
-                                        return true;
-                                    }
-
-                                    // Fall back to matching by name (case insensitive partial match)
-                                    return concern.department &&
-                                           concern.department.name.toLowerCase().includes(department.name.toLowerCase());
-                                });
-                            } else {
-                                this.ticketConcerns = allConcerns;
-                            }
-
-                            // Apply other filters
-                            if (this.filters.search) {
-                                const search = this.filters.search.toLowerCase();
-                                this.ticketConcerns = this.ticketConcerns.filter(concern =>
-                                    concern.name.toLowerCase().includes(search)
-                                );
-                            }
-
-                            if (this.filters.status !== '') {
-                                const status = this.filters.status === 'true';
-                                this.ticketConcerns = this.ticketConcerns.filter(concern =>
-                                    concern.status === status
-                                );
-                            }
-
-                            this.sortTicketConcerns();
-                        } else {
-                            console.warn('Invalid ticket concerns data format:', response.data);
-                            this.ticketConcerns = [];
-                            this.showNotification('error', this.$t('Error'), this.$t('Failed to load ticket concerns data'));
-                        }
-                        this.loading = false;
-                    })
-                    .catch(error => {
-                        console.error('Error applying filters:', error);
-                        this.showNotification('error', this.$t('Error'), this.$t('Failed to apply filters'));
-                        this.loading = false;
-                    });
-            } else {
-                // Normal API filtering
-                this.getTicketConcerns();
-            }
+            // Normal API filtering
+            this.getTicketConcerns();
         },
         resetFilters() {
             this.filters = {
                 search: '',
-                department: '',
+                // department: '', // Removed
                 status: ''
             };
             this.getTicketConcerns();

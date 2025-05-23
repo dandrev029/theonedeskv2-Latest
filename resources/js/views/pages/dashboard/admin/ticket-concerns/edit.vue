@@ -119,16 +119,17 @@
                             {{ $t('Assigned To') }}
                         </label>
                         <div class="mt-1 relative">
-                            <div :class="{'opacity-50 pointer-events-none': loadingUsers}" class="rounded-md shadow-sm">
+                            <div :class="{'opacity-50 pointer-events-none': loadingUsers || !ticketConcern.department_id}" class="rounded-md shadow-sm">
                                 <input-select-scrollable
                                     id="assigned_to"
                                     v-model="ticketConcern.assigned_to"
                                     :options="dashboardUsers"
                                     option-label="name"
                                     :searchable="true"
-                                    :placeholder="loadingUsers ? $t('Loading users...') : $t('Select a user to handle this concern')"
+                                    :placeholder="loadingUsers ? $t('Loading users...') : (!ticketConcern.department_id ? $t('Select a department first') : $t('Select a user to handle this concern'))"
                                     :clear-on-select="false"
                                     :show-labels="false"
+                                    :disabled="!ticketConcern.department_id || loadingUsers"
                                     class="dropdown-improved"
                                 >
                                     <template v-slot:option="{ option }">
@@ -288,24 +289,47 @@ export default {
         }
     },
     mounted() {
-        this.initialize();
+        this.initializeEditForm();
+    },
+    watch: {
+        'ticketConcern.department_id': function (newDepartmentId, oldDepartmentId) {
+            if (newDepartmentId !== oldDepartmentId) {
+                this.ticketConcern.assigned_to = null; // Clear assigned user
+                this.dashboardUsers = []; // Clear current user list
+                if (newDepartmentId) {
+                    this.getDashboardUsers(newDepartmentId);
+                }
+            }
+        }
     },
     methods: {
-        initialize() {
-            // Load data in parallel
-            Promise.all([
-                this.getDashboardUsers(),
-                this.getDepartments(),
-                this.getTicketConcern()
-            ]).finally(() => {
+        initializeEditForm() {
+            this.loading = true;
+            this.getTicketConcern().then(() => {
+                // Once ticket concern is loaded, then load departments and users
+                // This ensures department_id is available for fetching relevant users if already set
+                const promises = [this.getDepartments()];
+                if (this.ticketConcern.department_id) {
+                    promises.push(this.getDashboardUsers(this.ticketConcern.department_id));
+                } else {
+                    // If no department is initially set, we might not load any users or load all dashboard users
+                    // For now, let's not load users until a department is selected or if one was pre-selected.
+                    this.dashboardUsers = [];
+                }
+                return Promise.all(promises);
+            }).finally(() => {
                 this.loading = false;
             });
         },
-        getDashboardUsers() {
+        getDashboardUsers(departmentId = null) {
             const self = this;
             self.loadingUsers = true;
+            let apiUrl = 'api/dashboard/admin/ticket-concerns/users/dashboard';
+            if (departmentId) {
+                apiUrl += `?department_id=${departmentId}`;
+            }
             
-            return axios.get('api/dashboard/admin/ticket-concerns/users/dashboard')
+            return axios.get(apiUrl)
                 .then(function (response) {
                     if (response.data && response.data.data) {
                         self.dashboardUsers = response.data.data;
@@ -329,15 +353,24 @@ export default {
         getDepartments() {
             const self = this;
             self.loadingDepartments = true;
-            
-            return axios.get('/api/ticket-concerns/departments')
+            // Use the new endpoint for user-accessible departments
+            return axios.get('/api/dashboard/admin/ticket-concerns/user-accessible-departments')
                 .then(function (response) {
                     if (response.data && response.data.data) {
                         self.departments = response.data.data;
-                    } else if (Array.isArray(response.data)) {
-                        self.departments = response.data;
+                        // If the current ticketConcern.department_id is not in the new list, clear it.
+                        if (self.ticketConcern.department_id && !self.departments.find(d => d.id === self.ticketConcern.department_id)) {
+                            self.ticketConcern.department_id = null;
+                            self.ticketConcern.assigned_to = null; // Also clear assigned user
+                            self.dashboardUsers = [];
+                        }
                     } else {
                         self.departments = [];
+                         self.$notify({
+                            title: self.$i18n.t('Warning').toString(),
+                            text: self.$i18n.t('No accessible departments found or could not load them.').toString(),
+                            type: 'warning'
+                        });
                     }
                 })
                 .catch(function (error) {

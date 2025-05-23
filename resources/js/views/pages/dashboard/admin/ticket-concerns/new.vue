@@ -18,7 +18,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="my-6 bg-white shadow overflow-hidden sm:rounded-md">
                 <loading :status="loading"/>
-                <form @submit.prevent="saveTicketConcern" class="p-6">
+                <form @submit.prevent="saveTicketConcern" class="p-6" v-if="!loading">
                     <div class="mb-6">
                         <label class="block text-sm font-medium leading-5 text-gray-700" for="name">
                             {{ $t('Name') }} <span class="text-red-500">*</span>
@@ -33,7 +33,8 @@
                                 :placeholder="$t('Enter concern name')"
                             >
                         </div>
-                        <p class="mt-1 text-xs text-gray-500">{{ $t('A descriptive name for this ticket concern') }}</p>
+                        <p v-if="formErrors.name" class="mt-1 text-xs text-red-500">{{ formErrors.name }}</p>
+                        <p v-else class="mt-1 text-xs text-gray-500">{{ $t('A descriptive name for this ticket concern') }}</p>
                     </div>
                     <div class="mb-6">
                         <label class="block text-sm font-medium leading-5 text-gray-700">
@@ -66,6 +67,7 @@
                                     <span class="block text-sm leading-5 text-gray-700">{{ $t('Inactive') }}</span>
                                 </label>
                             </div>
+                             <p v-if="formErrors.status" class="mt-1 text-xs text-red-500">{{ formErrors.status }}</p>
                         </div>
                     </div>
                     <div class="mb-6">
@@ -100,7 +102,8 @@
                                 </svg>
                             </div>
                         </div>
-                        <p class="mt-2 text-sm text-gray-500">
+                        <p v-if="formErrors.department_id" class="mt-1 text-xs text-red-500">{{ formErrors.department_id }}</p>
+                        <p v-else class="mt-2 text-sm text-gray-500">
                             {{ $t('Select the department that this concern belongs to.') }}
                         </p>
                     </div>
@@ -109,16 +112,17 @@
                             {{ $t('Assigned To') }}
                         </label>
                         <div class="mt-1 relative">
-                            <div :class="{'opacity-50 pointer-events-none': loadingUsers}" class="rounded-md shadow-sm">
+                            <div :class="{'opacity-50 pointer-events-none': loadingUsers || !ticketConcern.department_id}" class="rounded-md shadow-sm">
                                 <input-select-scrollable
                                     id="assigned_to"
                                     v-model="ticketConcern.assigned_to"
                                     :options="dashboardUsers"
                                     option-label="name"
                                     :searchable="true"
-                                    :placeholder="loadingUsers ? $t('Loading users...') : $t('Select a user to handle this concern')"
+                                    :placeholder="loadingUsers ? $t('Loading users...') : (!ticketConcern.department_id ? $t('Select a department first') : $t('Select a user to handle this concern'))"
                                     :clear-on-select="false"
                                     :show-labels="false"
+                                    :disabled="!ticketConcern.department_id || loadingUsers"
                                     class="dropdown-improved"
                                 >
                                     <template v-slot:option="{ option }">
@@ -160,7 +164,8 @@
                                 </svg>
                             </div>
                         </div>
-                        <p class="mt-2 text-sm text-gray-500">
+                         <p v-if="formErrors.assigned_to" class="mt-1 text-xs text-red-500">{{ formErrors.assigned_to }}</p>
+                        <p v-else class="mt-2 text-sm text-gray-500">
                             {{ $t('Select a user with dashboard access who will handle tickets with this concern category.') }}
                         </p>
                     </div>
@@ -207,10 +212,10 @@ export default {
     },
     data() {
         return {
-            loading: false,
+            loading: true, // Main loading state for the form
             saving: false,
-            loadingUsers: false,
-            loadingDepartments: false,
+            loadingUsers: false, // Specific for users dropdown
+            loadingDepartments: false, // Specific for departments dropdown
             dashboardUsers: [],
             departments: [],
             ticketConcern: {
@@ -223,16 +228,36 @@ export default {
         }
     },
     mounted() {
-        this.getDashboardUsers();
-        this.getDepartments();
+        this.initializeNewForm();
+    },
+    watch: {
+        'ticketConcern.department_id': function (newDepartmentId, oldDepartmentId) {
+            if (newDepartmentId !== oldDepartmentId) {
+                this.ticketConcern.assigned_to = null; // Clear assigned user
+                this.dashboardUsers = []; // Clear current user list
+                if (newDepartmentId) {
+                    this.getDashboardUsers(newDepartmentId);
+                }
+            }
+        }
     },
     methods: {
-        getDashboardUsers() {
+        initializeNewForm() {
+            this.loading = true; // Start with overall loading true
+            this.getDepartments().finally(() => {
+                // Users will be loaded by the watcher if/when a department is selected.
+                this.loading = false; // Set overall loading to false after departments are attempted
+            });
+        },
+        getDashboardUsers(departmentId = null) {
             const self = this;
             self.loadingUsers = true;
-            self.loading = true;
+            let apiUrl = 'api/dashboard/admin/ticket-concerns/users/dashboard';
+            if (departmentId) {
+                apiUrl += `?department_id=${departmentId}`;
+            }
             
-            axios.get('api/dashboard/admin/ticket-concerns/users/dashboard')
+            axios.get(apiUrl)
                 .then(function (response) {
                     if (response.data && response.data.data) {
                         self.dashboardUsers = response.data.data;
@@ -255,29 +280,23 @@ export default {
                 })
                 .finally(function () {
                     self.loadingUsers = false;
-                    if (!self.loadingDepartments) {
-                        self.loading = false;
-                    }
                 });
         },
         getDepartments() {
             const self = this;
             self.loadingDepartments = true;
-            self.loading = true;
-            
-            axios.get('/api/ticket-concerns/departments')
+            // Use the new endpoint for user-accessible departments
+            return axios.get('/api/dashboard/admin/ticket-concerns/user-accessible-departments')
                 .then(function (response) {
                     if (response.data && response.data.data) {
                         self.departments = response.data.data;
-                    } else if (Array.isArray(response.data)) {
-                        self.departments = response.data;
                     } else {
+                        self.departments = [];
                         self.$notify({
                             title: self.$i18n.t('Warning').toString(),
-                            text: self.$i18n.t('Could not load departments data correctly').toString(),
+                            text: self.$i18n.t('No accessible departments found or could not load them.').toString(),
                             type: 'warning'
                         });
-                        self.departments = [];
                     }
                 })
                 .catch(function (error) {
@@ -290,9 +309,6 @@ export default {
                 })
                 .finally(function () {
                     self.loadingDepartments = false;
-                    if (!self.loadingUsers) {
-                        self.loading = false;
-                    }
                 });
         },
         saveTicketConcern() {
@@ -300,13 +316,22 @@ export default {
             self.saving = true;
             self.formErrors = {};
             
-            // Optional: Validate form before submitting
             if (!self.ticketConcern.name || self.ticketConcern.name.trim() === '') {
                 self.formErrors.name = self.$i18n.t('Name is required');
                 self.saving = false;
                 self.$notify({
                     title: self.$i18n.t('Validation Error').toString(),
                     text: self.formErrors.name,
+                    type: 'error'
+                });
+                return;
+            }
+             if (!self.ticketConcern.department_id) {
+                self.formErrors.department_id = self.$i18n.t('Department is required');
+                self.saving = false;
+                self.$notify({
+                    title: self.$i18n.t('Validation Error').toString(),
+                    text: self.formErrors.department_id,
                     type: 'error'
                 });
                 return;
@@ -328,10 +353,11 @@ export default {
                     if (error.response && error.response.data) {
                         if (error.response.data.errors) {
                             self.formErrors = error.response.data.errors;
-                            const firstError = Object.values(error.response.data.errors)[0];
+                            const firstErrorKey = Object.keys(error.response.data.errors)[0];
+                            const firstErrorMessage = error.response.data.errors[firstErrorKey][0];
                             self.$notify({
                                 title: self.$i18n.t('Error').toString(),
-                                text: Array.isArray(firstError) ? firstError[0] : firstError,
+                                text: firstErrorMessage,
                                 type: 'error'
                             });
                         } else if (error.response.data.message) {

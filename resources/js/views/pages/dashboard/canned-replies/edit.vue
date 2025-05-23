@@ -1,86 +1,93 @@
 <template>
     <main class="flex-1 relative overflow-y-auto py-6 focus:outline-none" tabindex="0">
         <form @submit.prevent="saveCannedReply">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 px-5">
+            <div class="max-w-3xl mx-auto sm:px-6 lg:px-8 px-4">
                 <div class="md:flex md:items-center md:justify-between">
                     <div class="flex-1 min-w-0">
-                        <h1 class="py-0.5 text-2xl font-semibold text-gray-900">{{ $t('Edit canned reply') }}</h1>
+                        <h1 class="py-0.5 text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ $t('Edit canned reply') }}</h1>
                     </div>
-                    <div class="mt-4 flex md:mt-0 md:ml-4">
+                    <div class="mt-4 flex md:mt-0 md:ml-4 space-x-2">
+                         <router-link
+                            class="btn btn-white dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 shadow-sm rounded-md"
+                            to="/dashboard/canned-replies"
+                        >
+                            {{ $t('Back to List') }}
+                        </router-link>
                         <button
-                            :disabled="!cannedReply.author"
+                            v-if="cannedReply.author"
                             class="btn btn-red shadow-sm rounded-md"
                             type="button"
                             @click="deleteCannedReplyModal = true"
                         >
-                            {{ $t('Delete canned reply') }}
+                            {{ $t('Delete') }}
                         </button>
                     </div>
                 </div>
             </div>
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="mt-6 shadow sm:rounded-lg">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8"> 
+                <div class="mt-6 bg-white dark:bg-gray-800 shadow-xl overflow-hidden sm:rounded-lg">
                     <loading :status="loading"/>
-                    <div class="bg-white md:grid md:grid-cols-3 md:gap-6 px-4 py-5 sm:p-6">
-                        <div class="md:col-span-1">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900">{{ $t('Canned reply details') }}</h3>
-                            <p class="mt-1 text-sm leading-5 text-gray-500">
-                                {{ $t('Canned reply details and settings') }}.
-                            </p>
+                    <div v-if="!loading" class="p-6 space-y-6"> 
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300" for="name">{{ $t('Name') }} <span class="text-red-500">*</span></label>
+                            <div class="mt-1">
+                                <input
+                                    id="name"
+                                    v-model="cannedReply.name"
+                                    :placeholder="$t('Enter a descriptive name')"
+                                    :readonly="!cannedReply.author"
+                                    class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600"
+                                    required
+                                >
+                            </div>
+                            <p v-if="formErrors.name" class="mt-1 text-xs text-red-500">{{ formErrors.name }}</p>
                         </div>
-                        <div class="mt-5 md:mt-0 md:col-span-2">
-                            <div class="grid grid-cols-3 gap-6">
-                                <div class="col-span-3">
-                                    <label class="block text-sm font-medium leading-5 text-gray-700" for="name">{{ $t('Name') }}</label>
-                                    <div class="mt-1 relative rounded-md shadow-sm">
-                                        <input
-                                            id="name"
-                                            v-model="cannedReply.name"
-                                            :placeholder="$t('Name')"
-                                            :readonly="!cannedReply.author"
-                                            class="form-input block w-full transition duration-150 ease-in-out sm:text-sm sm:leading-5"
-                                            required
-                                        >
-                                    </div>
-                                </div>
-                                <div class="col-span-3">
-                                    <label class="block text-sm font-medium leading-5 text-gray-700" for="shared">{{ $t('Shared') }}</label>
-                                    <input-switch
-                                        id="shared"
-                                        v-model="cannedReply.shared"
-                                        :disabled-label="$t('The canned reply is not shared')"
-                                        :enabled-label="$t('The canned reply is shared')"
-                                        :readonly="!cannedReply.author"
-                                    ></input-switch>
-                                    <div class="mt-2 relative text-xs text-gray-500">
-                                        {{ $t('A shared saved answer, allows other users to use it') }}.
-                                    </div>
-                                </div>
-                                <div class="col-span-3">
-                                    <label class="block text-sm font-medium leading-5 text-gray-700" for="body">{{ $t('Body') }}</label>
-                                    <input-wysiwyg
-                                        id="body"
-                                        v-model="cannedReply.body"
-                                        :readonly="!cannedReply.author"
-                                    ></input-wysiwyg>
-                                </div>
+
+                        <div>
+                            <label class="block text-sm font-medium leading-5 text-gray-700 dark:text-gray-300" for="body">{{ $t('Body') }} <span class="text-red-500">*</span></label>
+                            <div class="mt-1">
+                                <input-wysiwyg
+                                    id="body"
+                                    v-model="cannedReply.body"
+                                    :readonly="!cannedReply.author"
+                                    class="dark:bg-gray-700 dark:text-gray-200" 
+                                />
+                                 <p v-if="formErrors.body" class="mt-1 text-xs text-red-500">{{ formErrors.body }}</p>
                             </div>
                         </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium leading-5 text-gray-700 dark:text-gray-300" for="shared">{{ $t('Visibility') }}</label>
+                            <input-switch
+                                id="shared"
+                                v-model="cannedReply.shared"
+                                :disabled-label="$t('Private (only you can use this)')"
+                                :enabled-label="$t('Shared (others in your context can use this)')"
+                                :readonly="!cannedReply.author"
+                                class="mt-2"
+                            ></input-switch>
+                             <p v-if="formErrors.shared" class="mt-1 text-xs text-red-500">{{ formErrors.shared }}</p>
+                        </div>
                     </div>
-                    <div class="bg-gray-100 text-right px-4 py-3 sm:px-6">
-                        <div class="inline-flex">
+                    <div v-if="!loading" class="bg-gray-50 dark:bg-gray-750 text-right px-4 py-3 sm:px-6">
+                        <div class="inline-flex space-x-3"> 
                             <router-link
-                                class="btn btn-secondary shadow-sm rounded-md mr-4"
+                                class="btn btn-secondary dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 shadow-sm rounded-md"
                                 to="/dashboard/canned-replies"
                             >
-                                {{ $t('Close') }}
+                                {{ $t('Cancel') }}
                             </router-link>
                             <button
-                                :disabled="!cannedReply.author"
+                                v-if="cannedReply.author"
                                 class="btn btn-green shadow-sm rounded-md"
                                 type="submit"
+                                :disabled="saving"
                             >
-                                {{ $t('Edit canned reply') }}
+                                <svg v-if="saving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                {{ saving ? $t('Saving...') : $t('Save Changes') }}
                             </button>
                         </div>
                     </div>
@@ -179,6 +186,8 @@ export default {
                 body: '',
                 author: false,
             },
+            formErrors: {},
+            saving: false,
         }
     },
     mounted() {

@@ -25,8 +25,60 @@ class TicketConcernController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
+        $user = auth()->user();
+        $userDepartments = $user->departments()->pluck('departments.id')->toArray(); // Ensure we get IDs from the pivot table correctly
+        $userCondoLocationId = $user->condo_location_id;
+
         $query = TicketConcern::with(['assignedUser', 'department'])
-            ->withCount('tickets');
+            ->withCount('tickets')
+            ->where(function ($q) use ($userDepartments, $userCondoLocationId) {
+                if (!empty($userDepartments)) {
+                    $q->whereIn('department_id', $userDepartments);
+                }
+                // Assuming TicketConcern might also be linked to a condo_location_id directly or via its department.
+                // If TicketConcern has a direct condo_location_id:
+                // $q->orWhere('condo_location_id', $userCondoLocationId);
+
+                // If TicketConcern is linked to CondoLocation via Department,
+                // and Department model has a condo_location_id,
+                // we might need a more complex query or ensure departments are already filtered by condo location.
+                // For now, focusing on department_id and a potential direct condo_location_id on User.
+                // If the requirement is that a user sees concerns from their department OR their condo location (if not department specific)
+                // and TicketConcern has a condo_location_id field.
+                if ($userCondoLocationId) {
+                    // This part assumes TicketConcern has a 'condo_location_id' field.
+                    // If not, this 'orWhere' might need adjustment based on how condo locations relate to ticket concerns.
+                    // For example, if ticket concerns are only tied to departments, and departments are tied to condo locations.
+                    // The current user model has `condo_location_id`. We need to see how `TicketConcern` relates to `CondoLocation`.
+                    // Let's assume for now that a TicketConcern can also have a `condo_location_id`.
+                    // $q->orWhere('ticket_concerns.condo_location_id', $userCondoLocationId);
+
+                    // A more robust way, if concerns are strictly departmental but departments can be location-specific:
+                    // Query departments associated with the user's condo_location_id
+                    $departmentsInUserCondo = Department::where('condo_location_id', $userCondoLocationId)->pluck('id')->toArray();
+                    if (!empty($departmentsInUserCondo)) {
+                        // Add these departments to the list of allowed departments
+                        $allowedDepartmentIds = array_unique(array_merge($userDepartments, $departmentsInUserCondo));
+                        if (!empty($allowedDepartmentIds)) {
+                             $q->whereIn('department_id', $allowedDepartmentIds);
+                        } else {
+                            // If user has a condo location but no departments are explicitly assigned to it,
+                            // and no departments are assigned to the user directly, this might result in no concerns.
+                            // This logic branch might need refinement based on business rules for users with
+                            // a condo_location_id but no specific department assignments.
+                            // For now, if no allowed departments, it will correctly show nothing.
+                        }
+                    } else if (empty($userDepartments)) {
+                        // If user has a condo location, but that location has no departments,
+                        // AND the user is not part of any other department, they see nothing.
+                        // To prevent an empty whereIn clause if both are empty.
+                         $q->whereRaw('1 = 0'); // No results if no departments and no condo-specific departments
+                    }
+                } elseif (empty($userDepartments)) {
+                    // If user has no departments and no condo location, they see nothing.
+                    $q->whereRaw('1 = 0'); // No results if no departments and no condo location
+                }
+            });
 
         // Apply search filter
         if (request()->has('search') && !empty(request('search'))) {
@@ -142,14 +194,25 @@ class TicketConcernController extends Controller
      */
     public function dashboardUsers(): AnonymousResourceCollection
     {
+        $departmentId = request()->input('department_id');
+
         // Get all roles with dashboard access
         $dashboardRoles = UserRole::where('dashboard_access', true)->pluck('id');
 
-        // Get all users with those roles
-        $users = User::whereIn('role_id', $dashboardRoles)
-            ->where('status', true)
-            ->orderBy('name')
-            ->get();
+        $usersQuery = User::whereIn('role_id', $dashboardRoles)
+            ->where('status', true);
+
+        if ($departmentId) {
+            $usersQuery->whereHas('departments', function ($query) use ($departmentId) {
+                $query->where('departments.id', $departmentId);
+            });
+        }
+        // If no department_id is provided, it lists all dashboard users.
+        // Alternatively, if no department_id, we could restrict to users in the admin's accessible departments.
+        // For now, this matches the previous behavior if department_id is omitted,
+        // but filters if department_id is present.
+
+        $users = $usersQuery->orderBy('name')->get();
 
         return UserSelectResource::collection($users);
     }
@@ -394,6 +457,51 @@ class TicketConcernController extends Controller
                     ['id' => 4, 'name' => 'Campa WiFi Helpdesk']
                 ]
             ]);
+        }
+    }
+
+    /**
+     * Get departments accessible by the authenticated user.
+     *
+     * @return JsonResponse
+     */
+    public function userAccessibleDepartments(): JsonResponse
+    {
+        try {
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json(['message' => __('User not authenticated')], 401);
+            }
+
+            $userDepartmentIds = $user->departments()->pluck('departments.id')->toArray();
+            $departmentsFromCondo = [];
+
+            if ($user->condo_location_id) {
+                $departmentsFromCondo = Department::where('condo_location_id', $user->condo_location_id)
+                                                ->pluck('id')->toArray();
+            }
+
+            $accessibleDepartmentIds = array_unique(array_merge($userDepartmentIds, $departmentsFromCondo));
+
+            if (empty($accessibleDepartmentIds)) {
+                 // If user has no specific departments and their condo location has no departments (or no condo location)
+                 // Should they see all public departments or a restricted list?
+                 // For now, let's return only explicitly accessible ones.
+                 // If the business rule is to fall back to all assignable departments if none are directly linked,
+                 // then this logic would need to change, perhaps to fetch all departments marked as 'public' or similar.
+                 // Based on strict segregation, if no departments are linked, they can't assign to any.
+                $departments = collect();
+            } else {
+                $departments = Department::whereIn('id', $accessibleDepartmentIds)->orderBy('name')->get();
+            }
+
+            return response()->json([
+                'data' => DepartmentSelectResource::collection($departments)
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching user accessible departments: ' . $e->getMessage());
+            return response()->json(['message' => __('Error fetching departments')], 500);
         }
     }
 }

@@ -137,6 +137,7 @@ Route::group(['prefix' => 'dashboard'], static function () {
         Route::apiResource('user-roles', DashboardAdminUserRoleController::class);
 
         Route::apiResource('condo-locations', DashboardAdminCondoLocationController::class);
+        Route::get('ticket-concerns/user-accessible-departments', [DashboardAdminTicketConcernController::class, 'userAccessibleDepartments'])->name('ticket-concerns.user-accessible-departments');
         Route::apiResource('ticket-concerns', DashboardAdminTicketConcernController::class);
         Route::get('ticket-concerns/users/dashboard', [DashboardAdminTicketConcernController::class, 'dashboardUsers'])->name('ticket-concerns.dashboard-users');
         Route::get('ticket-concerns/departments', [DashboardAdminTicketConcernController::class, 'departments'])->name('ticket-concerns.departments');
