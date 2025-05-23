@@ -49,12 +49,12 @@
                                 <svg-vue
                                     v-show="sort.order === 'asc'"
                                     class="h-5 w-5 text-gray-500 dark:text-gray-400"
-                                    icon="font-awesome.sort-amount-down-solid"
+                                    icon="font-awesome.sort-amount-down-alt-regular"
                                 ></svg-vue>
                                 <svg-vue
                                     v-show="sort.order === 'desc'"
                                     class="h-5 w-5 text-gray-500 dark:text-gray-400"
-                                    icon="font-awesome.sort-amount-up-solid"
+                                    icon="font-awesome.sort-amount-up-alt-regular"
                                 ></svg-vue>
                             </button>
                             <select

@@ -87,7 +87,7 @@
                                                 <div class="flex items-center px-6 py-3 hover:bg-gray-100 cursor-pointer rounded" @click="selectAgent(user.id)">
                                                     <div>
                                                         <div class="flex items-center justify-center">
-                                                            <svg-vue v-if="department.agents.includes(user.id)" class="w-5 h-5 text-green-400" icon="font-awesome.check-circle-solid"></svg-vue>
+                                                            <svg-vue v-if="department.agents.includes(user.id)" class="w-5 h-5 text-green-400" icon="font-awesome/check-circle-solid"></svg-vue>
                                                             <div v-else class="w-5 h-5 p-1 overflow-hidden rounded-full border"></div>
                                                         </div>
                                                     </div>
@@ -163,7 +163,7 @@
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="sm:flex sm:items-start">
                                 <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                    <svg-vue class="h-6 w-6 pb-1 text-red-600" icon="font-awesome.exclamation-triangle-light"></svg-vue>
+                                    <svg-vue class="h-6 w-6 pb-1 text-red-600" icon="font-awesome/exclamation-triangle-light"></svg-vue>
                                 </div>
                                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                                     <h3 id="modal-headline" class="text-lg leading-6 font-medium text-gray-900">

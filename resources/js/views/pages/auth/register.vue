@@ -19,7 +19,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="email">{{ $t('Email') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="h-5 w-5 text-primary-500 fill-current"><path d="M464 64H48C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-64-48-64zm-8 313.8L278.7 291c-10.4-7.8-25.4-7.8-35.8 0L56 377.8V112h400v265.8zM256 264c5.2 0 10.3 1 15.1 3l184.9 138.7H56l184.9-138.7c4.8-2 9.9-3 15.1-3z"/></svg>
+                    <svg-vue icon="font-awesome/envelope-solid" class="h-5 w-5 text-primary-500 fill-current"></svg-vue>
                 </div>
                 <input
                     id="email"
@@ -35,7 +35,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="phone_number">{{ $t('Phone Number') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="h-5 w-5 text-primary-500 fill-current"><path d="M497.4 361.8l-112-48a24 24 0 0 0-28 6.9l-49.6 60.6A370.7 370.7 0 0 1 130.6 204.8l60.6-49.6a24 24 0 0 0 6.9-28l-48-112A24.1 24.1 0 0 0 122.6.61l-104 24A24 24 0 0 0 0 48c0 256.5 207.9 464 464 464a24 24 0 0 0 23.4-18.6l24-104a24.2 24.2 0 0 0-14-27.6zM416 464c-199.3 0-359.4-160.7-359.4-360a1.7 1.7 0 0 1 .6-1.5l78.8-18.4-42.6 52.1a24.1 24.1 0 0 0 6.9 34.5 418.8 418.8 0 0 0 260.6 118.7 24.1 24.1 0 0 0 34.5-6.9l52.1-42.6-18.4 78.8a1.7 1.7 0 0 1-1.5.6h-.1z"/></svg>
+                    <svg-vue icon="font-awesome/phone-alt-solid" class="h-5 w-5 text-primary-500 fill-current"></svg-vue>
                 </div>
                 <input
                     id="phone_number"
@@ -64,9 +64,13 @@
         </div>
         <div class="mb-4 relative rounded-md shadow-sm">
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="condo_location_id">{{ $t('Condo Location') }}</label>
-            <div class="mt-1 relative rounded-md shadow-sm">
+            <div class="mt-1 relative rounded-md shadow-sm z-10">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg-vue icon="font-awesome/map-marker-alt-solid" class="h-5 w-5 text-primary-500 fill-current"></svg-vue>
+                </div>
                 <input-select
                     v-model="user.condo_location_id"
+                    class="pl-10"
                     :options="condoLocations"
                     option-label="name"
                     :searchable="true"

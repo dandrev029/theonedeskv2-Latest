@@ -4,7 +4,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="email">{{ $t('Email') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.envelope-regular"></svg-vue>
+                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome/envelope-regular"></svg-vue>
                 </div>
                 <input
                     id="email"
@@ -20,7 +20,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="password">{{ $t('Password') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.lock-regular"></svg-vue>
+                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome/lock-regular"></svg-vue>
                 </div>
                 <input
                     id="password"
@@ -36,7 +36,7 @@
             <label class="block text-sm font-medium leading-5 text-secondary-700" for="password_confirmation">{{ $t('Confirm password') }}</label>
             <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome.lock-regular"></svg-vue>
+                    <svg-vue class="h-5 w-5 text-primary-500" icon="font-awesome/lock-regular"></svg-vue>
                 </div>
                 <input
                     id="password_confirmation"

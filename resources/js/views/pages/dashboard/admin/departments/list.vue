@@ -36,14 +36,14 @@
                                                     v-show="department.public"
                                                     class="mt-2 flex items-center text-sm leading-5 text-gray-500"
                                                 >
-                                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-green-400" icon="font-awesome.lock-open-alt-solid"></svg-vue>
+                                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-green-400" icon="font-awesome/lock-open-alt-solid"></svg-vue>
                                                     {{ $t('The department is public') }}
                                                 </div>
                                                 <div
                                                     v-show="!department.public"
                                                     class="mt-2 flex items-center text-sm leading-5 text-red-500"
                                                 >
-                                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-red-400" icon="font-awesome.lock-alt-regular"></svg-vue>
+                                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-red-400" icon="font-awesome/lock-alt-regular"></svg-vue>
                                                     {{ $t('The department is not public') }}
                                                 </div>
                                             </div>
@@ -74,7 +74,7 @@
                                             </div>
                                         </div>
                                         <div class="ml-5 flex-shrink-0">
-                                            <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.angle-right-regular"></svg-vue>
+                                            <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/angle-right-regular"></svg-vue>
                                         </div>
                                     </div>
                                 </router-link>

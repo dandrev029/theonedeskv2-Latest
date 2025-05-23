@@ -2,7 +2,7 @@
     <main class="flex-1 relative overflow-y-auto py-6 focus:outline-none" tabindex="0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
             <h1 class="py-0.5 text-2xl font-semibold flex items-center" :class="{'text-secondary-900': !$store.state.darkMode, 'text-white': $store.state.darkMode}">
-                <svg-vue class="h-6 w-6 text-primary-600 mr-2" icon="font-awesome.tachometer-alt-regular"></svg-vue>
+                <svg-vue class="h-6 w-6 text-primary-600 mr-2" icon="font-awesome/tachometer-alt-regular"></svg-vue>
                 {{ $t('Dashboard') }}
             </h1>
         </div>

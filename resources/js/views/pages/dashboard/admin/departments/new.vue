@@ -78,7 +78,7 @@
                                                 <div class="flex items-center px-6 py-3 hover:bg-gray-100 cursor-pointer rounded" @click="selectAgent(user.id)">
                                                     <div>
                                                         <div class="flex items-center justify-center">
-                                                            <svg-vue v-if="department.agents.includes(user.id)" class="w-5 h-5 text-green-400" icon="font-awesome.check-circle-solid"></svg-vue>
+                                                            <svg-vue v-if="department.agents.includes(user.id)" class="w-5 h-5 text-green-400" icon="font-awesome/check-circle-solid"></svg-vue>
                                                             <div v-else class="w-5 h-5 p-1 overflow-hidden rounded-full border"></div>
                                                         </div>
                                                     </div>

@@ -7,12 +7,12 @@
                     <div class="sm:flex sm:justify-between">
                         <div class="flex">
                             <button class="btn p-4 rounded-none" type="button" @click="$router.push('/dashboard/tickets')">
-                                <svg-vue class="h-5 w-5 text-gray-700" icon="font-awesome.chevron-left-regular"></svg-vue>
+                                <svg-vue class="h-5 w-5 text-gray-700 dark:text-gray-300" icon="font-awesome/chevron-left-regular"></svg-vue>
                             </button>
                             <div v-on-clickaway="closeActionDropdown" class="block">
                                 <div class="relative inline-block text-left">
                                     <button class="btn p-4 rounded-none" type="button" @click="toggleActionDropdown('agent')">
-                                        <svg-vue class="h-5 w-5 text-gray-700" icon="font-awesome.user-tag-regular"></svg-vue>
+                                        <svg-vue class="h-5 w-5 text-gray-700 dark:text-gray-300" icon="font-awesome/user-tag-regular"></svg-vue>
                                     </button>
                                     <div v-show="actions.agent" class="origin-top-right absolute left-0 mt-1 w-56 rounded-md shadow-lg z-20">
                                         <div class="rounded-md bg-white shadow-xs">
@@ -33,7 +33,7 @@
                                 </div>
                                 <div class="relative inline-block text-left">
                                     <button class="btn p-4 rounded-none" type="button" @click="toggleActionDropdown('department')">
-                                        <svg-vue class="h-5 w-5 text-gray-700" icon="font-awesome.users-class-regular"></svg-vue>
+                                        <svg-vue class="h-5 w-5 text-gray-700 dark:text-gray-300" icon="font-awesome/users-class-regular"></svg-vue>
                                     </button>
                                     <div v-show="actions.department" class="origin-top-right absolute left-0 mt-1 w-56 rounded-md shadow-lg z-20">
                                         <div class="rounded-md bg-white shadow-xs">
@@ -54,7 +54,7 @@
                                 </div>
                                 <div class="relative inline-block text-left">
                                     <button class="btn p-4 rounded-none" type="button" @click="toggleActionDropdown('label')">
-                                        <svg-vue class="h-5 w-5 text-gray-700" icon="font-awesome.tags-regular"></svg-vue>
+                                        <svg-vue class="h-5 w-5 text-gray-700 dark:text-gray-300" icon="font-awesome/tags-regular"></svg-vue>
                                     </button>
                                     <div v-show="actions.label" class="origin-top-right absolute left-0 mt-1 w-56 rounded-md shadow-lg z-20">
                                         <div class="rounded-md bg-white shadow-xs">
@@ -75,7 +75,7 @@
                                 </div>
                                 <div class="relative inline-block text-left">
                                     <button class="btn p-4 rounded-none" type="button" @click="toggleActionDropdown('priority')">
-                                        <svg-vue class="h-5 w-5 text-gray-700" icon="font-awesome.pennant-regular"></svg-vue>
+                                        <svg-vue class="h-5 w-5 text-gray-700 dark:text-gray-300" icon="font-awesome/pennant-regular"></svg-vue>
                                     </button>
                                     <div v-show="actions.priority" class="origin-top-right absolute left-0 mt-1 w-56 rounded-md shadow-lg z-20">
                                         <div class="rounded-md bg-white shadow-xs">
@@ -96,7 +96,7 @@
                                 </div>
                             </div>
                             <button class="btn p-4 rounded-none" type="button" @click="deleteTicketModal = true">
-                                <svg-vue class="h-5 w-5 text-gray-700" icon="font-awesome.trash-alt-regular"></svg-vue>
+                                <svg-vue class="h-5 w-5 text-gray-700 dark:text-gray-300" icon="font-awesome/trash-alt-regular"></svg-vue>
                             </button>
                         </div>
                         <div class="flex items-center justify-end m-3 sm:m-0">
@@ -116,7 +116,7 @@
                             <div class="px-6 sm:pl-6 sm:pr-3 sm:flex-1 sm:w-3/4">
                                 <div class="text-xl truncate">{{ ticket.subject }}</div>
                                 <div v-if="ticket.scheduled_visit_at" class="flex items-center text-sm text-gray-600 mt-2 mb-2">
-                                    <svg-vue class="h-4 w-4 mr-1" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                    <svg-vue class="h-4 w-4 mr-1 text-gray-500 dark:text-gray-300" icon="font-awesome/calendar-alt-regular"></svg-vue>
                                     <span>{{ $t('Scheduled Visit') }}: {{ ticket.scheduled_visit_at | momentFormatDateTime }}</span>
                                 </div>
                                 <template v-for="(label, index) in ticket.labels">
@@ -126,16 +126,16 @@
                                     >
                                         {{ label.name }}
                                         <button class="flex-shrink-0 ml-1.5 inline-flex text-gray-100 focus:outline-none focus:text-gray-100 cursor-pointer" type="button" @click="removeLabel(index)">
-                                            <svg-vue class="h-3 w-3" icon="font-awesome.times-solid"></svg-vue>
+                                            <svg-vue class="h-3 w-3" icon="font-awesome/times-solid"></svg-vue>
                                         </button>
                                     </div>
                                 </template>
                             </div>
                             <div class="px-6 sm:pl-3 sm:pr-6 sm:flex-1 sm:w-1/4">
                                 <div class="flex items-center sm:float-right mt-3 sm:mt-0">
-                                    <div class="text-sm sm:pr-2">{{ ticket.created_at | momentFormatDateTimeAgo }}</div>
+                                <div class="text-sm sm:pr-2">{{ ticket.created_at | momentFormatDateTimeAgo }}</div>
                                     <button class="flex items-center btn btn-white p-2 ml-3 sm:ml-0" type="button" @click="replyForm = true">
-                                        <svg-vue class="h-4 w-4 mr-2" icon="font-awesome.reply-regular"></svg-vue>
+                                        <svg-vue class="h-4 w-4 mr-2 text-gray-700 dark:text-gray-300" icon="font-awesome/reply-regular"></svg-vue>
                                         {{ $t('Reply') }}
                                     </button>
                                 </div>
@@ -266,11 +266,11 @@
                             <div class="ml-4">
                                 <h3 class="text-white font-medium text-lg truncate">{{ ticket.user.name }}</h3>
                                 <div class="flex items-center text-sm text-white opacity-90 mb-1">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" icon="font-awesome.envelope-solid"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-white opacity-90" icon="font-awesome/envelope-solid"></svg-vue>
                                     <span class="truncate">{{ ticket.user.email }}</span>
                                 </div>
                                 <div class="flex items-center text-sm text-white opacity-90">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" icon="font-awesome.phone-alt-solid"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4 text-white" icon="font-awesome/phone-alt-solid"></svg-vue>
                                     <span class="truncate">{{ ticket.user.phone_number || $t('No phone number') }}</span>
                                 </div>
                             </div>
@@ -321,7 +321,7 @@
                                 {{ $t('Condo Location') }}
                             </h4>
                             <div class="flex items-center">
-                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.map-marker-alt-solid"></svg-vue>
+                                <svg-vue class="h-4 w-4 text-gray-500 dark:text-gray-300 mr-2" icon="font-awesome/map-marker-alt-solid"></svg-vue>
                                 <span class="text-sm text-gray-800">
                                     {{ ticket.condoLocation && ticket.condoLocation.name
                                        ? ticket.condoLocation.name
@@ -338,7 +338,7 @@
                                 {{ $t('Unit Number') }}
                             </h4>
                             <div class="flex items-center">
-                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.building-regular"></svg-vue>
+                                <svg-vue class="h-4 w-4 text-gray-500 dark:text-gray-300 mr-2" icon="font-awesome/building-regular"></svg-vue>
                                 <span class="text-sm text-gray-800">
                                     {{ ticket.user && ticket.user.unit_number
                                        ? ticket.user.unit_number
@@ -353,7 +353,7 @@
                                 {{ $t('Scheduled Visit') }}
                             </h4>
                             <div class="flex items-center">
-                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                <svg-vue class="h-4 w-4 text-gray-500 dark:text-gray-300 mr-2" icon="font-awesome/calendar-alt-regular"></svg-vue>
                                 <span v-if="ticket.scheduled_visit_at" class="text-sm text-gray-800">
                                     {{ ticket.scheduled_visit_at | momentFormatDateTime }}
                                 </span>
@@ -367,7 +367,7 @@
                                 {{ $t('Voucher Code') }} ({{ isWifiHelpdesk ? 'Visible' : 'Hidden' }})
                             </h4>
                             <div class="flex items-center">
-                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.ticket-alt-regular"></svg-vue>
+                                <svg-vue class="h-4 w-4 text-gray-500 dark:text-gray-300 mr-2" icon="font-awesome/ticket-alt-regular"></svg-vue>
                                 <span v-if="ticket.voucher_code" class="text-sm font-medium text-gray-800">
                                     {{ ticket.voucher_code }}
                                 </span>
@@ -390,7 +390,7 @@
                                     <span class="text-sm font-medium text-gray-800">{{ ticket.agent.name }}</span>
                                 </div>
                                 <div v-else class="flex items-center">
-                                    <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.user-regular"></svg-vue>
+                                    <svg-vue class="h-4 w-4 text-gray-500 dark:text-gray-300 mr-2" icon="font-awesome/user-regular"></svg-vue>
                                     <span class="text-sm text-gray-500">{{ $t('Unassigned') }}</span>
                                 </div>
                             </div>
@@ -402,7 +402,7 @@
                                 {{ $t('Department') }}
                             </h4>
                             <div class="flex items-center">
-                                <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.users-class-regular"></svg-vue>
+                                <svg-vue class="h-4 w-4 text-gray-500 dark:text-gray-300 mr-2" icon="font-awesome/users-class-regular"></svg-vue>
                                 <span v-if="ticket.department" class="text-sm font-medium text-gray-800">
                                     {{ ticket.department.name }}
                                 </span>
@@ -419,7 +419,7 @@
                                         {{ $t('Created') }}
                                     </h4>
                                     <div class="flex items-center">
-                                        <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.clock-regular"></svg-vue>
+                                        <svg-vue class="h-4 w-4 text-gray-500 dark:text-gray-300 mr-2" icon="font-awesome/clock-regular"></svg-vue>
                                         <span class="text-sm text-gray-600">{{ ticket.created_at | momentFormatDateTime }}</span>
                                     </div>
                                 </div>
@@ -430,7 +430,7 @@
                                         {{ $t('Updated') }}
                                     </h4>
                                     <div class="flex items-center">
-                                        <svg-vue class="h-4 w-4 text-gray-400 mr-2" icon="font-awesome.history-solid"></svg-vue>
+                                        <svg-vue class="h-4 w-4 text-gray-500 dark:text-gray-300 mr-2" icon="font-awesome/history-solid"></svg-vue>
                                         <span class="text-sm text-gray-600">
                                             {{ ticket.updated_at | momentFormatDateTime }}
                                             <span class="text-xs text-gray-500 ml-1">({{ ticket.updated_at | momentFormatDateTimeAgo }})</span>
@@ -494,7 +494,7 @@
                         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="sm:flex sm:items-start">
                                 <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                    <svg-vue class="h-6 w-6 pb-1 text-red-600" icon="font-awesome.exclamation-triangle-light"></svg-vue>
+                                    <svg-vue class="h-6 w-6 pb-1 text-red-600" icon="font-awesome/exclamation-triangle-light"></svg-vue>
                                 </div>
                                 <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                                     <h3 id="modal-headline" class="text-lg leading-6 font-medium text-gray-900">
@@ -819,3 +819,16 @@ export default {
     }
 }
 </script>
+
+<style>
+/*
+  Force SVG path elements to inherit their fill color from the parent's text color.
+  This is to ensure Tailwind text color utilities (e.g., .text-white, .text-gray-500)
+  correctly color the SVG icons. The !important flag is used to override
+  any default or conflicting fill attributes on the path elements.
+*/
+[class*="text-"] svg path,
+svg[class*="text-"] path {
+  fill: currentColor !important;
+}
+</style>

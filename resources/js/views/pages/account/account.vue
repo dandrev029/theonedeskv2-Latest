@@ -84,7 +84,7 @@
                                                     type="button"
                                                     @click="removeAvatar"
                                                 >
-                                                    <svg-vue class="h-4 w-4 p-px" icon="font-awesome.times-light"></svg-vue>
+                                                    <svg-vue class="h-4 w-4 p-px" icon="font-awesome/times-light"></svg-vue>
                                                 </button>
                                                 <img
                                                     :src="user.avatar === 'gravatar' ? user.gravatar : user.avatar_preview"

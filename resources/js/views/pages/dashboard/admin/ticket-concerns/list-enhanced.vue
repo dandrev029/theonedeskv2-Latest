@@ -29,7 +29,7 @@
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('Search') }}</label>
                         <div class="relative rounded-md shadow-sm">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.search-solid"></svg-vue>
+                                <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/search-solid"></svg-vue>
                             </div>
                             <input
                                 id="search"
@@ -57,7 +57,7 @@
                                 <option value="false">{{ $t('Inactive') }}</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg-vue class="h-4 w-4" icon="font-awesome.chevron-down-solid"></svg-vue>
+                                <svg-vue class="h-4 w-4" icon="font-awesome/chevron-down-solid"></svg-vue>
                             </div>
                         </div>
                     </div>
@@ -125,14 +125,14 @@
                                         class="text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 focus:outline-none"
                                         :title="$t('Edit')"
                                     >
-                                        <svg-vue class="h-5 w-5" icon="font-awesome.edit-regular"></svg-vue>
+                                        <svg-vue class="h-5 w-5" icon="font-awesome/edit-regular"></svg-vue>
                                     </router-link>
                                     <button
                                         @click.prevent="deleteTicketConcern(ticketConcern)"
                                         class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 focus:outline-none"
                                         :title="$t('Delete')"
                                     >
-                                        <svg-vue class="h-5 w-5" icon="font-awesome.trash-alt-regular"></svg-vue>
+                                        <svg-vue class="h-5 w-5" icon="font-awesome/trash-alt-regular"></svg-vue>
                                     </button>
                                 </div>
                             </div>
@@ -140,13 +140,13 @@
                             <div class="mt-3 space-y-2">
                                 <!-- Department -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.building-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/building-regular"></svg-vue>
                                     <span>{{ $t('Department') }}: {{ ticketConcern.department ? ticketConcern.department.name : $t('Not assigned') }}</span>
                                 </div>
 
                                 <!-- Assigned User -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.user-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/user-regular"></svg-vue>
                                     <span v-if="ticketConcern.assigned_user">
                                         <img
                                             :src="ticketConcern.assigned_user.avatar || ticketConcern.assigned_user.gravatar"
@@ -160,7 +160,7 @@
 
                                 <!-- Ticket Count -->
                                 <div class="flex items-center text-sm text-gray-500 dark:text-gray-300">
-                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.ticket-alt-regular"></svg-vue>
+                                    <svg-vue class="flex-shrink-0 mr-1.5 h-4 w-4" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/ticket-alt-regular"></svg-vue>
                                     <span>{{ $t('Tickets') }}: {{ ticketConcern.tickets_count || 0 }}</span>
                                 </div>
                             </div>
@@ -196,7 +196,7 @@
                                         @click="resetFilters"
                                         class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                                     >
-                                        <svg-vue class="h-4 w-4 mr-2" icon="font-awesome.sync-regular"></svg-vue>
+                                        <svg-vue class="h-4 w-4 mr-2" icon="font-awesome/sync-regular"></svg-vue>
                                         {{ $t('Reset Filters') }}
                                     </button>
                                 </div>
@@ -216,7 +216,7 @@
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                <svg-vue class="h-6 w-6 text-red-600" icon="font-awesome.exclamation-triangle-solid"></svg-vue>
+                                <svg-vue class="h-6 w-6 text-red-600" icon="font-awesome/exclamation-triangle-solid"></svg-vue>
                             </div>
                             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                                 <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
@@ -243,7 +243,7 @@
                             :disabled="deleting"
                             @click="confirmDelete"
                         >
-                            <svg-vue v-if="deleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" icon="font-awesome.spinner-solid"></svg-vue>
+                            <svg-vue v-if="deleting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" icon="font-awesome/spinner-solid"></svg-vue>
                             {{ deleting ? $t('Deleting...') : $t('Delete') }}
                         </button>
                         <button
@@ -270,7 +270,7 @@
                         <svg-vue
                             class="h-6 w-6"
                             :class="notification.type === 'success' ? 'text-green-500' : 'text-red-500'"
-                            :icon="notification.type === 'success' ? 'font-awesome.check-circle-solid' : 'font-awesome.exclamation-circle-solid'"
+                            :icon="notification.type === 'success' ? 'font-awesome/check-circle-solid' : 'font-awesome/exclamation-circle-solid'"
                         ></svg-vue>
                     </div>
                     <div class="ml-3 w-0 flex-1 pt-0.5">
@@ -287,7 +287,7 @@
                             @click="notification.show = false"
                         >
                             <span class="sr-only">{{ $t('Close') }}</span>
-                            <svg-vue class="h-5 w-5" icon="font-awesome.times-solid"></svg-vue>
+                            <svg-vue class="h-5 w-5" icon="font-awesome/times-solid"></svg-vue>
                         </button>
                     </div>
                 </div>

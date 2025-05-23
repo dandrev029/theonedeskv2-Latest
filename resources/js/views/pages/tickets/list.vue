@@ -28,7 +28,7 @@
                                 <!-- Search Input -->
                                 <div class="relative flex-grow max-w-md">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.search-regular"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/search-regular"></svg-vue>
                                     </div>
                                     <input
                                         id="search-desktop"
@@ -85,13 +85,13 @@
                                             v-show="sort.order === 'asc'"
                                             class="h-5 w-5"
                                             :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'"
-                                            icon="font-awesome.sort-amount-down-alt-regular"
+                                            icon="font-awesome/sort-amount-down-alt-regular"
                                         ></svg-vue>
                                         <svg-vue
                                             v-show="sort.order === 'desc'"
                                             class="h-5 w-5"
                                             :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'"
-                                            icon="font-awesome.sort-amount-up-alt-regular"
+                                            icon="font-awesome/sort-amount-up-alt-regular"
                                         ></svg-vue>
                                     </button>
                                 </div>
@@ -99,11 +99,11 @@
                         </div>
 
                         <!-- Mobile Search and Filter UI -->
-                        <div class="sm:hidden space-y-3">
+                            <div class="sm:hidden space-y-3">
                             <!-- Search Input -->
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.search-regular"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/search-regular"></svg-vue>
                                 </div>
                                 <input
                                     id="search-mobile"
@@ -163,13 +163,13 @@
                                         v-show="sort.order === 'asc'"
                                         class="h-5 w-5"
                                         :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'"
-                                        icon="font-awesome.sort-amount-down-alt-regular"
+                                        icon="font-awesome/sort-amount-down-alt-regular"
                                     ></svg-vue>
                                     <svg-vue
                                         v-show="sort.order === 'desc'"
                                         class="h-5 w-5"
                                         :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'"
-                                        icon="font-awesome.sort-amount-up-alt-regular"
+                                        icon="font-awesome/sort-amount-up-alt-regular"
                                     ></svg-vue>
                                 </button>
                             </div>
@@ -270,11 +270,11 @@
                                         <div class="flex flex-col space-y-2">
                                             <div class="flex justify-between items-center">
                                                 <div class="flex items-center text-xs" :class="textSecondary">
-                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.calendar-alt-regular"></svg-vue>
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/calendar-alt-regular"></svg-vue>
                                                     {{ ticket.created_at | momentFormatDate }}
                                                 </div>
                                                 <div class="flex items-center text-xs" :class="textSecondary">
-                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.clock-regular"></svg-vue>
+                                                    <svg-vue class="h-3.5 w-3.5 mr-1.5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/clock-regular"></svg-vue>
                                                     {{ ticket.updated_at | momentFormatDateTimeAgo }}
                                                 </div>
                                             </div>
@@ -385,7 +385,7 @@
                                     class="btn btn-primary shadow-sm rounded-md inline-flex items-center"
                                     to="/tickets/new"
                                 >
-                                    <svg-vue class="h-4 w-4 mr-2 text-white" icon="font-awesome.plus-solid"></svg-vue>
+                                    <svg-vue class="h-4 w-4 mr-2 text-white" icon="font-awesome/plus-solid"></svg-vue>
                                     {{ $t('New ticket') }}
                                 </router-link>
                             </template>
@@ -422,7 +422,7 @@
                                         @click="changePage(pagination.currentPage - 1)"
                                     >
                                         <span class="sr-only">{{ $t('Previous') }}</span>
-                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.chevron-left-solid"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/chevron-left-solid"></svg-vue>
                                     </button>
 
                                     <!-- Current Page Display -->
@@ -445,7 +445,7 @@
                                         @click="changePage(pagination.currentPage + 1)"
                                     >
                                         <span class="sr-only">{{ $t('Next') }}</span>
-                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.chevron-right-solid"></svg-vue>
+                                        <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/chevron-right-solid"></svg-vue>
                                     </button>
                                 </nav>
                             </div>
@@ -473,7 +473,7 @@
                                     type="button"
                                     @click="changePage(pagination.currentPage - 1)"
                                 >
-                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.chevron-left-solid"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/chevron-left-solid"></svg-vue>
                                 </button>
 
                                 <button
@@ -487,7 +487,7 @@
                                     type="button"
                                     @click="changePage(pagination.currentPage + 1)"
                                 >
-                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.chevron-right-solid"></svg-vue>
+                                    <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/chevron-right-solid"></svg-vue>
                                 </button>
                             </div>
                         </div>

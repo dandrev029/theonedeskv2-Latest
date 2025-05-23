@@ -4,13 +4,13 @@
             <div>
                 <div class="flex justify-center">
                     <div v-if="status === 'success'" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                        <svg-vue class="h-6 w-6 text-green-600" icon="font-awesome.check-circle-solid"></svg-vue>
+                        <svg-vue class="h-6 w-6 text-green-600" icon="font-awesome/check-circle-solid"></svg-vue>
                     </div>
                     <div v-else-if="status === 'already_verified'" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary-100">
-                        <svg-vue class="h-6 w-6 text-primary-600" icon="font-awesome.info-circle-solid"></svg-vue>
+                        <svg-vue class="h-6 w-6 text-primary-600" icon="font-awesome/info-circle-solid"></svg-vue>
                     </div>
                     <div v-else class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                        <svg-vue class="h-6 w-6 text-red-600" icon="font-awesome.exclamation-circle-solid"></svg-vue>
+                        <svg-vue class="h-6 w-6 text-red-600" icon="font-awesome/exclamation-circle-solid"></svg-vue>
                     </div>
                 </div>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-secondary-900">

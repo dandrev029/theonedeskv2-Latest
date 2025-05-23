@@ -13,7 +13,7 @@
                     <router-link class="col-span-1 flex flex-col text-center cursor-pointer bg-white rounded-lg shadow" tag="li" to="/dashboard/admin/settings/general">
                         <div class="flex-1 flex flex-col p-8">
                             <div class="flex-shrink-0 mx-auto bg-gray-700 rounded-3xl">
-                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome.keyboard-duotone"></svg-vue>
+                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome/keyboard-duotone"></svg-vue>
                             </div>
                             <h3 class="mt-6 text-gray-900 text-xl leading-5 font-medium">{{ $t('General') }}</h3>
                             <p class="text-gray-500 text-sm leading-5 mt-2">{{ $t('Configure general site settings') }}</p>
@@ -22,7 +22,7 @@
                     <router-link class="col-span-1 flex flex-col text-center cursor-pointer bg-white rounded-lg shadow" tag="li" to="/dashboard/admin/settings/seo">
                         <div class="flex-1 flex flex-col p-8">
                             <div class="flex-shrink-0 mx-auto bg-gray-700 rounded-3xl">
-                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome.search-duotone"></svg-vue>
+                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome/search-duotone"></svg-vue>
                             </div>
                             <h3 class="mt-6 text-gray-900 text-xl leading-5 font-medium">{{ $t('SEO') }}</h3>
                             <p class="text-gray-500 text-sm leading-5 mt-2">{{ $t('Configure site SEO parameters') }}</p>
@@ -31,7 +31,7 @@
                     <router-link class="col-span-1 flex flex-col text-center cursor-pointer bg-white rounded-lg shadow" tag="li" to="/dashboard/admin/settings/appearance">
                         <div class="flex-1 flex flex-col p-8">
                             <div class="flex-shrink-0 mx-auto bg-gray-700 rounded-3xl">
-                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome.swatchbook-duotone"></svg-vue>
+                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome/swatchbook-duotone"></svg-vue>
                             </div>
                             <h3 class="mt-6 text-gray-900 text-xl leading-5 font-medium">{{ $t('Appearance') }}</h3>
                             <p class="text-gray-500 text-sm leading-5 mt-2">{{ $t('Configure the site icon and background') }}</p>
@@ -40,7 +40,7 @@
                     <router-link class="col-span-1 flex flex-col text-center cursor-pointer bg-white rounded-lg shadow" tag="li" to="/dashboard/admin/settings/localization">
                         <div class="flex-1 flex flex-col p-8">
                             <div class="flex-shrink-0 mx-auto bg-gray-700 rounded-3xl">
-                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome.language-duotone"></svg-vue>
+                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome/language-duotone"></svg-vue>
                             </div>
                             <h3 class="mt-6 text-gray-900 text-xl leading-5 font-medium">{{ $t('Localization') }}</h3>
                             <p class="text-gray-500 text-sm leading-5 mt-2">{{ $t('Configure localization settings for the site') }}</p>
@@ -49,7 +49,7 @@
                     <router-link class="col-span-1 flex flex-col text-center cursor-pointer bg-white rounded-lg shadow" tag="li" to="/dashboard/admin/settings/authentication">
                         <div class="flex-1 flex flex-col p-8">
                             <div class="flex-shrink-0 mx-auto bg-gray-700 rounded-3xl">
-                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome.fingerprint-duotone"></svg-vue>
+                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome/fingerprint-duotone"></svg-vue>
                             </div>
                             <h3 class="mt-6 text-gray-900 text-xl leading-5 font-medium">{{ $t('Authentication') }}</h3>
                             <p class="text-gray-500 text-sm leading-5 mt-2">{{ $t('Configure registration, social login and related 3rd party integrations') }}</p>
@@ -58,7 +58,7 @@
                     <router-link class="col-span-1 flex flex-col text-center cursor-pointer bg-white rounded-lg shadow" tag="li" to="/dashboard/admin/settings/outgoing-mail">
                         <div class="flex-1 flex flex-col p-8">
                             <div class="flex-shrink-0 mx-auto bg-gray-700 rounded-3xl">
-                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome.inbox-out-duotone"></svg-vue>
+                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome/inbox-out-duotone"></svg-vue>
                             </div>
                             <h3 class="mt-6 text-gray-900 text-xl leading-5 font-medium">{{ $t('Outgoing mail') }}</h3>
                             <p class="text-gray-500 text-sm leading-5 mt-2">{{ $t('Configure outgoing email service preferences') }}</p>
@@ -67,7 +67,7 @@
                     <router-link class="col-span-1 flex flex-col text-center cursor-pointer bg-white rounded-lg shadow" tag="li" to="/dashboard/admin/settings/logging">
                         <div class="flex-1 flex flex-col p-8">
                             <div class="flex-shrink-0 mx-auto bg-gray-700 rounded-3xl">
-                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome.exclamation-triangle-duotone"></svg-vue>
+                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome/exclamation-triangle-duotone"></svg-vue>
                             </div>
                             <h3 class="mt-6 text-gray-900 text-xl leading-5 font-medium">{{ $t('Logging') }}</h3>
                             <p class="text-gray-500 text-sm leading-5 mt-2">{{ $t('Configure outgoing email service preferences') }}</p>
@@ -76,7 +76,7 @@
                     <router-link class="col-span-1 flex flex-col text-center cursor-pointer bg-white rounded-lg shadow" tag="li" to="/dashboard/admin/settings/captcha">
                         <div class="flex-1 flex flex-col p-8">
                             <div class="flex-shrink-0 mx-auto bg-gray-700 rounded-3xl">
-                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome.robot-duotone"></svg-vue>
+                                <svg-vue class="w-16 h-16 p-3 text-gray-200" icon="font-awesome/robot-duotone"></svg-vue>
                             </div>
                             <h3 class="mt-6 text-gray-900 text-xl leading-5 font-medium">{{ $t('Captcha') }}</h3>
                             <p class="text-gray-500 text-sm leading-5 mt-2">{{ $t('Configure captcha settings & preferences') }}</p>

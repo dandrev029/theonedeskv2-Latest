@@ -49,9 +49,9 @@
                                                 class="text-red-600 hover:text-red-900 focus:outline-none"
                                                 :title="$t('Delete')"
                                             >
-                                                <svg-vue class="h-5 w-5" icon="font-awesome.trash-alt-regular"></svg-vue>
+                                                <svg-vue class="h-5 w-5" icon="font-awesome/trash-alt-regular"></svg-vue>
                                             </button>
-                                            <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome.angle-right-regular"></svg-vue>
+                                            <svg-vue class="h-5 w-5" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/angle-right-regular"></svg-vue>
                                         </div>
                                     </div>
                                 </router-link>

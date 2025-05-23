@@ -8,10 +8,10 @@
                             <div class="p-4" @click="props.close">
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0">
-                                        <svg-vue v-if="props.item.type === 'error'" class="h-6 w-6 text-red-400" icon="font-awesome.times-circle-light"></svg-vue>
-                                        <svg-vue v-else-if="props.item.type === 'warning'" class="h-6 w-6 text-orange-400" icon="font-awesome.exclamation-triangle-light"></svg-vue>
-                                        <svg-vue v-else-if="props.item.type === 'info'" class="h-6 w-6 text-blue-400" icon="font-awesome.info-circle-light"></svg-vue>
-                                        <svg-vue v-else class="h-6 w-6 text-green-400" icon="font-awesome.check-circle-light"></svg-vue>
+                                        <svg-vue v-if="props.item.type === 'error'" class="h-6 w-6 text-red-400" icon="font-awesome/times-circle-light"></svg-vue>
+                                        <svg-vue v-else-if="props.item.type === 'warning'" class="h-6 w-6 text-orange-400" icon="font-awesome/exclamation-triangle-light"></svg-vue>
+                                        <svg-vue v-else-if="props.item.type === 'info'" class="h-6 w-6 text-blue-400" icon="font-awesome/info-circle-light"></svg-vue>
+                                        <svg-vue v-else class="h-6 w-6 text-green-400" icon="font-awesome/check-circle-light"></svg-vue>
                                     </div>
                                     <div class="ml-3 w-0 flex-1 pt-0.5">
                                         <p class="text-sm leading-5 font-medium" :class="textPrimary">
@@ -21,7 +21,7 @@
                                     </div>
                                     <div class="ml-4 flex-shrink-0 flex">
                                         <button class="inline-flex focus:outline-none transition ease-in-out duration-150" :class="getDarkModeClasses({lightText: 'text-gray-400', darkText: 'text-gray-500', lightHover: 'focus:text-gray-500', darkHover: 'focus:text-gray-300'})" type="button" @click="props.close">
-                                            <svg-vue class="h-5 w-5 p-px" icon="font-awesome.times-light"></svg-vue>
+                                            <svg-vue class="h-5 w-5 p-px" icon="font-awesome/times-light"></svg-vue>
                                         </button>
                                     </div>
                                 </div>
