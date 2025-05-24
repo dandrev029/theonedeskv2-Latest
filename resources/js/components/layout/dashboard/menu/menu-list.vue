@@ -23,6 +23,13 @@
             icon="font-awesome.comments-alt-regular"
             to="/dashboard/canned-replies"
         ></menu-item>
+        <menu-item
+            v-if="$store.state.permissions && $store.state.permissions['App.Http.Controllers.Api.Dashboard.ReportController']"
+            :label="$t('Reports')"
+            :mobile="mobile"
+            icon="font-awesome/file-export-solid"
+            to="/dashboard/reports"
+        ></menu-item>
         <div
             v-if="$store.state.permissions && (
                 $store.state.permissions['App.Http.Controllers.Api.Dashboard.Admin.UserController'] ||

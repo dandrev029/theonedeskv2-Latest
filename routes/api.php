@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\Dashboard\Admin\UserRoleController as DashboardAdmi
 use App\Http\Controllers\Api\Dashboard\CannedReplyController as DashboardCannedReplyController;
 use App\Http\Controllers\Api\Dashboard\StatsController as DashboardStatsController;
 use App\Http\Controllers\Api\Dashboard\TicketController as DashboardTicketController;
+use App\Http\Controllers\Api\Dashboard\ReportController as DashboardReportController;
 use App\Http\Controllers\Api\File\FileController as FileFileController;
 use App\Http\Controllers\Api\Language\LanguageController as LanguageLanguageController;
 use App\Http\Controllers\Api\Ticket\TicketController as UserTicketController;
@@ -118,6 +119,12 @@ Route::group(['prefix' => 'dashboard'], static function () {
     Route::apiResource('tickets', DashboardTicketController::class)->except(['update']);
 
     Route::apiResource('canned-replies', DashboardCannedReplyController::class);
+
+    Route::group(['prefix' => 'reports'], static function () {
+        Route::get('filter-options', [DashboardReportController::class, 'getFilterOptions'])->name('dashboard.reports.filter-options');
+        Route::get('tickets', [DashboardReportController::class, 'getTicketReports'])->name('dashboard.reports.tickets');
+        Route::get('tickets/download', [DashboardReportController::class, 'downloadTicketReport'])->name('dashboard.reports.tickets.download');
+    });
 
     Route::group(['prefix' => 'admin'], static function () {
 

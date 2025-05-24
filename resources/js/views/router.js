@@ -27,6 +27,8 @@ import DashboardTicketsList from "@/views/pages/dashboard/tickets/list";
 import DashboardTicketsNew from "@/views/pages/dashboard/tickets/new";
 import DashboardTicketsManage from "@/views/pages/dashboard/tickets/manage";
 
+import DashboardReports from "@/views/pages/dashboard/reports/Reports";
+
 import AdminDashboardDepartmentsList from "@/views/pages/dashboard/admin/departments/list";
 import AdminDashboardDepartmentsNew from "@/views/pages/dashboard/admin/departments/new";
 import AdminDashboardDepartmentsEdit from "@/views/pages/dashboard/admin/departments/edit";
@@ -114,6 +116,8 @@ let routes = [
             {path: 'canned-replies', component: DashboardCannedRepliesList, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.CannedReplyController'}},
             {path: 'canned-replies/new', component: DashboardCannedRepliesNew, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.CannedReplyController'}},
             {path: 'canned-replies/:id/edit', component: DashboardCannedRepliesEdit, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.CannedReplyController'}},
+
+            {path: 'reports', component: DashboardReports, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.ReportController'}},
 
             {path: 'admin/departments', component: AdminDashboardDepartmentsList, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.DepartmentController'}},
             {path: 'admin/departments/new', component: AdminDashboardDepartmentsNew, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.DepartmentController'}},
