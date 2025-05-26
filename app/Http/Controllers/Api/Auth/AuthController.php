@@ -75,10 +75,13 @@ class AuthController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        // Check if the current token is a TransientToken before trying to delete it
+        // Check if the current token exists and is not a TransientToken before trying to delete it
         $currentToken = $user->currentAccessToken();
-        if ($currentToken && method_exists($currentToken, 'delete')) {
-            $currentToken->delete();
+        if ($currentToken && !($currentToken instanceof \Laravel\Sanctum\TransientToken)) {
+            // Only delete if it's a real token, not a transient one
+            if (method_exists($currentToken, 'delete')) {
+                $currentToken->delete();
+            }
         }
 
         return response()->json(['message' => __('Session closed successfully')]);

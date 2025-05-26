@@ -20,6 +20,19 @@ use Illuminate\Http\JsonResponse;
 
 class SettingController extends Controller
 {
+    /**
+     * Helper method to safely update or create a setting
+     */
+    private function updateSetting($key, $value)
+    {
+        $setting = Setting::find($key);
+        if (!$setting) {
+            $setting = new Setting();
+            $setting->key = $key;
+        }
+        $setting->value = $value;
+        return $setting->save();
+    }
     public function __construct()
     {
         $this->middleware('auth:sanctum');
@@ -68,21 +81,40 @@ class SettingController extends Controller
     public function setSeo(SeoUpdateRequest $request): JsonResponse
     {
         $request->validated();
+
+        // Handle meta_home_title
         $settings = Setting::find('meta_home_title');
+        if (!$settings) {
+            $settings = new Setting();
+            $settings->key = 'meta_home_title';
+        }
         $settings->value = $request->get('meta_home_title');
         if (!$settings->save()) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
+        // Handle meta_keywords
         $settings = Setting::find('meta_keywords');
+        if (!$settings) {
+            $settings = new Setting();
+            $settings->key = 'meta_keywords';
+        }
         $settings->value = $request->get('meta_keywords');
         if (!$settings->save()) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
+        // Handle meta_description
         $settings = Setting::find('meta_description');
+        if (!$settings) {
+            $settings = new Setting();
+            $settings->key = 'meta_description';
+        }
         $settings->value = $request->get('meta_description');
         if (!$settings->save()) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
         return response()->json(['message' => __('Settings updated successfully')]);
     }
 
@@ -99,6 +131,10 @@ class SettingController extends Controller
         $request->validated();
         if ($request->file('icon')) {
             $settings = Setting::find('app_icon');
+            if (!$settings) {
+                $settings = new Setting();
+                $settings->key = 'app_icon';
+            }
             $settings->value = $request->file('icon')->store('appearance/icon', 'public');
             if (!$settings->save()) {
                 return response()->json(['message' => __('An error occurred while saving data')], 500);
@@ -106,6 +142,10 @@ class SettingController extends Controller
         }
         if ($request->file('background')) {
             $settings = Setting::find('app_background');
+            if (!$settings) {
+                $settings = new Setting();
+                $settings->key = 'app_background';
+            }
             $settings->value = $request->file('background')->store('appearance/background', 'public');
             if (!$settings->save()) {
                 return response()->json(['message' => __('An error occurred while saving data')], 500);
@@ -127,26 +167,51 @@ class SettingController extends Controller
     public function setLocalization(LocalizationUpdateRequest $request): JsonResponse
     {
         $request->validated();
+
+        // Handle app_timezone
         $settings = Setting::find('app_timezone');
+        if (!$settings) {
+            $settings = new Setting();
+            $settings->key = 'app_timezone';
+        }
         $settings->value = $request->get('app_timezone');
         if (!$settings->save()) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
+        // Handle app_locale
         $settings = Setting::find('app_locale');
+        if (!$settings) {
+            $settings = new Setting();
+            $settings->key = 'app_locale';
+        }
         $settings->value = $request->get('app_locale');
         if (!$settings->save()) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
+        // Handle app_date_locale
         $settings = Setting::find('app_date_locale');
+        if (!$settings) {
+            $settings = new Setting();
+            $settings->key = 'app_date_locale';
+        }
         $settings->value = $request->get('app_date_locale');
         if (!$settings->save()) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
+        // Handle app_date_format
         $settings = Setting::find('app_date_format');
+        if (!$settings) {
+            $settings = new Setting();
+            $settings->key = 'app_date_format';
+        }
         $settings->value = $request->get('app_date_format');
         if (!$settings->save()) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
         return response()->json(['message' => __('Settings updated successfully')]);
     }
 
@@ -161,16 +226,15 @@ class SettingController extends Controller
     public function setAuthentication(AuthenticationUpdateRequest $request): JsonResponse
     {
         $request->validated();
-        $settings = Setting::find('app_user_registration');
-        $settings->value = (bool) $request->get('app_user_registration');
-        if (!$settings->save()) {
+
+        if (!$this->updateSetting('app_user_registration', (bool) $request->get('app_user_registration'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
-        $settings = Setting::find('app_default_role');
-        $settings->value = $request->get('app_default_role');
-        if (!$settings->save()) {
+
+        if (!$this->updateSetting('app_default_role', $request->get('app_default_role'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
         return response()->json(['message' => __('Settings updated successfully')]);
     }
 
@@ -262,11 +326,11 @@ class SettingController extends Controller
     public function setLogging(LoggingUpdateRequest $request): JsonResponse
     {
         $request->validated();
-        $settings = Setting::find('sentry_dsn');
-        $settings->value = $request->get('sentry_dsn');
-        if (!$settings->save()) {
+
+        if (!$this->updateSetting('sentry_dsn', $request->get('sentry_dsn'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
         return response()->json(['message' => __('Settings updated successfully')]);
     }
 
@@ -282,21 +346,19 @@ class SettingController extends Controller
     public function setCaptcha(CaptchaUpdateRequest $request): JsonResponse
     {
         $request->validated();
-        $settings = Setting::find('recaptcha_enabled');
-        $settings->value = $request->get('recaptcha_enabled');
-        if (!$settings->save()) {
+
+        if (!$this->updateSetting('recaptcha_enabled', $request->get('recaptcha_enabled'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
-        $settings = Setting::find('recaptcha_public');
-        $settings->value = $request->get('recaptcha_public');
-        if (!$settings->save()) {
+
+        if (!$this->updateSetting('recaptcha_public', $request->get('recaptcha_public'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
-        $settings = Setting::find('recaptcha_private');
-        $settings->value = $request->get('recaptcha_private');
-        if (!$settings->save()) {
+
+        if (!$this->updateSetting('recaptcha_private', $request->get('recaptcha_private'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
+
         return response()->json(['message' => __('Settings updated successfully')]);
     }
 

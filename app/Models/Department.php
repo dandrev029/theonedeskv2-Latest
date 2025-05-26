@@ -40,6 +40,17 @@ class Department extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'all_agents',
+        'public',
+    ];
+
     public function agent(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_departments', 'department_id', 'user_id');

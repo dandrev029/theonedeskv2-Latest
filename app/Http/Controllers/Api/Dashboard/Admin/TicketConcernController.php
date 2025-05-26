@@ -14,6 +14,7 @@ use App\Models\TicketConcern;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class TicketConcernController extends Controller
@@ -143,7 +144,53 @@ class TicketConcernController extends Controller
      */
     public function show(TicketConcern $ticketConcern): TicketConcernResource
     {
-        return new TicketConcernResource($ticketConcern->load('assignedUser'));
+        return new TicketConcernResource($ticketConcern->load('assignedUser', 'department'));
+    }
+
+    /**
+     * Get tickets associated with a specific concern.
+     *
+     * @param  TicketConcern  $ticketConcern
+     * @param  Request  $request
+     * @return JsonResponse
+     */
+    public function tickets(TicketConcern $ticketConcern, Request $request): JsonResponse
+    {
+        try {
+            $sort = json_decode($request->get('sort', json_encode(['order' => 'desc', 'column' => 'created_at'], JSON_THROW_ON_ERROR)), true, 512, JSON_THROW_ON_ERROR);
+
+            $query = $ticketConcern->tickets()
+                ->with(['user', 'agent', 'status', 'priority', 'department', 'concern', 'condoLocation'])
+                ->orderBy($sort['column'], $sort['order']);
+
+            $tickets = $query->paginate((int) $request->get('perPage', 15));
+
+            return response()->json([
+                'data' => \App\Http\Resources\Ticket\TicketListResource::collection($tickets->items()),
+                'pagination' => [
+                    'current_page' => $tickets->currentPage(),
+                    'per_page' => $tickets->perPage(),
+                    'total' => $tickets->total(),
+                    'last_page' => $tickets->lastPage(),
+                    'from' => $tickets->firstItem(),
+                    'to' => $tickets->lastItem()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("Error fetching tickets for concern {$ticketConcern->id}: " . $e->getMessage());
+            return response()->json([
+                'message' => __('Error fetching tickets'),
+                'data' => [],
+                'pagination' => [
+                    'current_page' => 1,
+                    'per_page' => 15,
+                    'total' => 0,
+                    'last_page' => 1,
+                    'from' => null,
+                    'to' => null
+                ]
+            ], 500);
+        }
     }
 
     /**

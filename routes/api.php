@@ -47,7 +47,7 @@ Route::group(['prefix' => 'auth'], static function () {
 Route::get('condo-locations/select', [DashboardAdminCondoLocationController::class, 'select'])->name('condo-locations.select');
 
 // Public departments endpoint for dropdowns
-Route::get('departments', [\App\Http\Controllers\Api\DepartmentController::class, 'index'])->name('departments.index');
+Route::get('departments', [\App\Http\Controllers\Api\DepartmentController::class, 'index'])->name('public.departments.index');
 
 // Public endpoint for ticket concern departments
 Route::get('ticket-concerns/departments', [\App\Http\Controllers\Api\Dashboard\Admin\TicketConcernController::class, 'publicDepartments'])->name('ticket-concerns.public-departments');
@@ -78,7 +78,11 @@ Route::get('tickets/departments/{department}/concerns', [UserTicketController::c
 Route::get('tickets/priorities', [UserTicketController::class, 'priorities'])->name('tickets.priorities');
 Route::post('tickets/attachments', [FileFileController::class, 'uploadAttachment'])->name('tickets.upload-attachment');
 Route::post('tickets/{ticket}/reply', [UserTicketController::class, 'reply'])->name('tickets.reply');
-Route::apiResource('tickets', UserTicketController::class)->except(['update', 'destroy']);
+Route::apiResource('tickets', UserTicketController::class)->except(['update', 'destroy'])->names([
+    'index' => 'user.tickets.index',
+    'store' => 'user.tickets.store',
+    'show' => 'user.tickets.show'
+]);
 
 Route::group(['prefix' => 'notifications'], static function () {
     Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
@@ -116,7 +120,12 @@ Route::group(['prefix' => 'dashboard'], static function () {
     Route::post('tickets/{ticket}/remove-label', [DashboardTicketController::class, 'removeLabel'])->name('dashboard.tickets.remove-label');
     Route::post('tickets/{ticket}/quick-actions', [DashboardTicketController::class, 'ticketQuickActions'])->name('dashboard.tickets.ticket-quick-actions');
     Route::post('tickets/{ticket}/reply', [DashboardTicketController::class, 'reply'])->name('dashboard.tickets.reply');
-    Route::apiResource('tickets', DashboardTicketController::class)->except(['update']);
+    Route::apiResource('tickets', DashboardTicketController::class)->except(['update'])->names([
+        'index' => 'dashboard.tickets.index',
+        'store' => 'dashboard.tickets.store',
+        'show' => 'dashboard.tickets.show',
+        'destroy' => 'dashboard.tickets.destroy'
+    ]);
 
     Route::apiResource('canned-replies', DashboardCannedReplyController::class);
 
@@ -129,7 +138,13 @@ Route::group(['prefix' => 'dashboard'], static function () {
     Route::group(['prefix' => 'admin'], static function () {
 
         Route::get('departments/users', [DashboardAdminDepartmentController::class, 'users'])->name('dashboard.departments.users');
-        Route::apiResource('departments', DashboardAdminDepartmentController::class);
+        Route::apiResource('departments', DashboardAdminDepartmentController::class)->names([
+            'index' => 'dashboard.departments.index',
+            'store' => 'dashboard.departments.store',
+            'show' => 'dashboard.departments.show',
+            'update' => 'dashboard.departments.update',
+            'destroy' => 'dashboard.departments.destroy'
+        ]);
 
         Route::apiResource('labels', DashboardAdminLabelController::class);
 
@@ -146,6 +161,7 @@ Route::group(['prefix' => 'dashboard'], static function () {
         Route::apiResource('condo-locations', DashboardAdminCondoLocationController::class);
         Route::get('ticket-concerns/user-accessible-departments', [DashboardAdminTicketConcernController::class, 'userAccessibleDepartments'])->name('ticket-concerns.user-accessible-departments');
         Route::apiResource('ticket-concerns', DashboardAdminTicketConcernController::class);
+        Route::get('ticket-concerns/{ticketConcern}/tickets', [DashboardAdminTicketConcernController::class, 'tickets'])->name('ticket-concerns.tickets');
         Route::get('ticket-concerns/users/dashboard', [DashboardAdminTicketConcernController::class, 'dashboardUsers'])->name('ticket-concerns.dashboard-users');
         Route::get('ticket-concerns/departments', [DashboardAdminTicketConcernController::class, 'departments'])->name('ticket-concerns.departments');
         Route::get('ticket-concerns/departments/{department}/concerns', [DashboardAdminTicketConcernController::class, 'concernsByDepartment'])->name('ticket-concerns.departments.concerns')->where('department', '[0-9]+');

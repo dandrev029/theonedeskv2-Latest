@@ -48,6 +48,18 @@ class UserRole extends Model
     use HasFactory, Filterable;
 
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'type',
+        'permissions',
+        'dashboard_access',
+    ];
+
+    /**
      * The attributes that should be cast to native types.
      *
      * @var array
