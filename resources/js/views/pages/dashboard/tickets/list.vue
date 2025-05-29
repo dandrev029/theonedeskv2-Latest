@@ -837,7 +837,7 @@ export default {
                 agents: [],
                 departments: [],
                 labels: [],
-                statuses: [1, 2],
+                statuses: [1, 2, 3, 4],
                 priorities: [],
             },
             quickActions: {
@@ -921,12 +921,14 @@ export default {
         this.getTickets();
         this.getFilters();
         this.setupIntersectionObserver();
-        this.setupRealTimeUpdates();
+        // this.setupRealTimeUpdates(); // Commenting out polling
+        this.setupPusherListeners(); // Add Pusher listeners
     },
     beforeDestroy() {
         if (this.observer) {
             this.observer.disconnect();
         }
+        this.leavePusherChannel(); // Clean up Pusher listeners
     },
     methods: {
         openFiltersSidebar() {
@@ -1084,7 +1086,7 @@ export default {
                 agents: [],
                 departments: [],
                 labels: [],
-                statuses: [1, 2],
+                statuses: [1, 2, 3, 4],
                 priorities: [],
             };
             this.getTickets();
@@ -1177,6 +1179,128 @@ export default {
                 }
             });
         },
+
+        setupPusherListeners() {
+            if (window.Echo && this.$store.state.user) {
+                const userId = this.$store.state.user.id;
+                console.log(`Listening for Pusher events on private-notifications.${userId}`);
+
+                window.Echo.private(`notifications.${userId}`)
+                    .listen('.ticket.updated', (eventData) => {
+                        console.log('Pusher event received: ticket.updated', eventData);
+                        this.handleTicketUpdated(eventData);
+                         this.$notify({
+                            title: this.$i18n.t('Ticket Updated').toString(),
+                            text: `${this.$i18n.t('Ticket')} #${eventData.id} ${this.$i18n.t('has been updated')}`,
+                            type: 'info'
+                        });
+                    })
+                    .notification((notification) => { // Handles notifications sent via toBroadcast() that are instances of Illuminate\Notifications\Notification
+                        console.log('Pusher notification received:', notification);
+                        if (notification.type === 'ticket_created') {
+                            this.handleTicketCreated(notification);
+                            this.$notify({
+                                title: this.$i18n.t('New Ticket Created').toString(),
+                                text: notification.message || `${this.$i18n.t('Ticket')} #${notification.id} ${this.$i18n.t('has been created')}`,
+                                type: 'success'
+                            });
+                        } else if (notification.type === 'ticket_reply') {
+                            this.handleTicketReplied(notification);
+                             this.$notify({
+                                title: this.$i18n.t('New Ticket Reply').toString(),
+                                text: notification.message || `${this.$i18n.t('Ticket')} #${notification.id} ${this.$i18n.t('has a new reply')}`,
+                                type: 'info'
+                            });
+                        }
+                    });
+            } else {
+                console.warn('Pusher (Echo) or user not available for setting up listeners.');
+            }
+        },
+
+        leavePusherChannel() {
+            if (window.Echo && this.$store.state.user) {
+                const userId = this.$store.state.user.id;
+                try {
+                    window.Echo.leave(`notifications.${userId}`);
+                    console.log(`Left Pusher channel: notifications.${userId}`);
+                } catch (e) {
+                    console.error('Error leaving Pusher channel:', e);
+                }
+            }
+        },
+
+        handleTicketCreated(ticketData) {
+            // Add to the top of the list if on page 1 and sorted by creation/update desc.
+            // Or simply refresh the list for now.
+            // A more sophisticated approach would be to merge it into the existing list.
+            console.log('Handling ticket_created:', ticketData);
+            // Check if ticket already exists to prevent duplicates if also polling
+            const exists = this.ticketList.some(ticket => ticket.id === ticketData.id);
+            if (!exists) {
+                 // For simplicity, we can prepend if on the first page and sorted by new.
+                 // Otherwise, a full refresh might be easier to maintain sort order and pagination.
+                if (this.pagination.currentPage === 1 && (this.sort.column === 'created_at' || this.sort.column === 'updated_at') && this.sort.order === 'desc') {
+                    // To properly add to list, we need the full ticket object as expected by TicketListResource
+                    // The notification payload might be simpler. Fetching all tickets is safer.
+                    this.getTickets();
+                } else {
+                    // If not on page 1 or different sort, just notify and user can refresh
+                    // Or, if a background refresh is desired:
+                    // this.getTickets();
+                }
+                 this.newTickets = [...new Set([...this.newTickets, ticketData.id])];
+            }
+        },
+
+        handleTicketReplied(ticketData) {
+            console.log('Handling ticket_reply:', ticketData);
+            const index = this.ticketList.findIndex(ticket => ticket.id === ticketData.id);
+            if (index !== -1) {
+                // Update ticket in list - the broadcastWith data for TicketUpdatedBroadcastingEvent is more complete.
+                // For replies, we might just want to highlight it or update `updated_at`.
+                // The notification payload for replies is simpler.
+                // A full refresh or fetching the specific ticket might be better.
+                // For now, let's mark as new and refresh if on page 1.
+                 this.newTickets = [...new Set([...this.newTickets, ticketData.id])];
+                if (this.pagination.currentPage === 1) {
+                    // To reflect changes like last reply or updated_at, a refresh is good.
+                    this.getTickets();
+                }
+            } else {
+                 // If ticket is not in the current list (e.g. due to filters/pagination)
+                 // still mark as new if it's relevant.
+                 this.newTickets = [...new Set([...this.newTickets, ticketData.id])];
+            }
+        },
+
+        handleTicketUpdated(ticketData) {
+            console.log('Handling ticket_updated:', ticketData);
+            const index = this.ticketList.findIndex(ticket => ticket.id === ticketData.id);
+            if (index !== -1) {
+                // Replace the ticket in the list with the updated data
+                // Vue.set(this.ticketList, index, ticketData); // ticketData should match TicketListResource structure
+                // The ticketData from TicketUpdatedBroadcastingEvent is designed to be rich.
+                // We need to ensure it matches what TicketCard and the list view expect.
+                // The `broadcastWith` in TicketUpdatedBroadcastingEvent provides a rich object.
+                // Let's try to directly update.
+                const updatedTicket = { ...this.ticketList[index], ...ticketData }; // Shallow merge, careful with nested objects
+                
+                // The event payload in `broadcastWith` for `TicketUpdatedBroadcastingEvent`
+                // is structured with nested objects for status, priority, agent, user, labels.
+                // This structure should be compatible with how `TicketListResource` might format it.
+                this.$set(this.ticketList, index, updatedTicket);
+
+            } else {
+                // Ticket not in the current list, could be due to pagination or filters.
+                // If it matches current filters, it might appear on refresh.
+                // For now, we only update if present.
+                // Optionally, if it's a critical update, one might choose to refresh the list:
+                // this.getTickets();
+            }
+            this.newTickets = [...new Set([...this.newTickets, ticketData.id])];
+        },
+
     }
 }
 </script>

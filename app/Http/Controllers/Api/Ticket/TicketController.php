@@ -80,7 +80,20 @@ class TicketController extends Controller
         $ticket->subject = $request->get('subject');
         $ticket->concern_id = $request->get('concern_id');
         $ticket->voucher_code = $request->get('voucher_code');
-        $ticket->status_id = 1;
+
+        // Fetch the default status (e.g., "Open")
+        $defaultStatus = Status::where('name', 'Open')->first();
+        if (!$defaultStatus) {
+            // Fallback to the first status if "Open" doesn't exist
+            $defaultStatus = Status::first();
+        }
+
+        if (!$defaultStatus) {
+            // If no statuses exist at all, this is a critical setup issue.
+            return response()->json(['message' => __('No default status found. Please configure statuses.')], 500);
+        }
+        $ticket->status_id = $defaultStatus->id;
+
         if ($request->has('scheduled_visit_at')) {
             $ticket->scheduled_visit_at = $request->get('scheduled_visit_at');
         }

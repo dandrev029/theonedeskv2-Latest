@@ -36,7 +36,35 @@ class NewTicketFromAgent extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'broadcast'];
+    }
+
+    /**
+     * Get the broadcastable representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\BroadcastMessage
+     */
+    public function toBroadcast($notifiable)
+    {
+        return new \Illuminate\Notifications\Messages\BroadcastMessage([
+            'id' => $this->ticket->id,
+            'uuid' => $this->ticket->uuid,
+            'subject' => $this->ticket->subject,
+            'user_id' => $this->ticket->user_id,
+            'agent_id' => $this->ticket->agent_id,
+            'status_id' => $this->ticket->status_id,
+            'priority_id' => $this->ticket->priority_id,
+            'department_id' => $this->ticket->department_id,
+            'created_at' => $this->ticket->created_at->toIso8601String(),
+            'updated_at' => $this->ticket->updated_at->toIso8601String(),
+            'type' => 'ticket_created', // To help frontend distinguish
+            'message' => __('An agent has created a ticket for you') . ': ' . $this->ticket->subject,
+            // Include any other relevant ticket data the frontend might need
+            // For example, if the list view shows user name, status name, etc., consider including them
+            // or make the frontend fetch details if a generic notification is received.
+            // For simplicity here, we send core data.
+        ]);
     }
 
     /**

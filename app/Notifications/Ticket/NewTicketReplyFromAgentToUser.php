@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Str;
+use Carbon\Carbon;
 
 class NewTicketReplyFromAgentToUser extends Notification
 {
@@ -33,7 +34,33 @@ class NewTicketReplyFromAgentToUser extends Notification
      */
     public function via($notifiable)
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', 'broadcast'];
+    }
+
+    /**
+     * Get the broadcastable representation of the notification.
+     *
+     * @param  mixed  $notifiable
+     * @return \Illuminate\Notifications\Messages\BroadcastMessage
+     */
+    public function toBroadcast($notifiable)
+    {
+        return new \Illuminate\Notifications\Messages\BroadcastMessage([
+            'id' => $this->ticket->id,
+            'uuid' => $this->ticket->uuid,
+            'subject' => $this->ticket->subject,
+            'user_id' => $this->ticket->user_id,
+            'agent_id' => $this->ticket->agent_id, // The agent who replied
+            'status_id' => $this->ticket->status_id,
+            'priority_id' => $this->ticket->priority_id,
+            'department_id' => $this->ticket->department_id,
+            'created_at' => $this->ticket->created_at->toIso8601String(), // Ticket creation time
+            'updated_at' => $this->ticket->updated_at->toIso8601String(), // Ticket last update time (includes this reply)
+            'last_reply_at' => Carbon::now()->toIso8601String(), // Approximate time of this reply
+            'type' => 'ticket_reply', // To help frontend distinguish
+            'message' => __('An agent has replied to your ticket') . ': ' . $this->ticket->subject,
+            // Consider adding snippet of reply if needed, or if lastReply is part of Ticket model, it might be included
+        ]);
     }
 
     /**

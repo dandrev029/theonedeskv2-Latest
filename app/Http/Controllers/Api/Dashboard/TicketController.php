@@ -30,6 +30,7 @@ use App\Models\User;
 use App\Models\UserRole;
 use App\Notifications\Ticket\NewTicketFromAgent;
 use App\Notifications\Ticket\NewTicketReplyFromAgentToUser;
+use App\Events\TicketUpdatedBroadcastingEvent;
 use Auth;
 use Carbon\Carbon;
 use Exception;
@@ -58,23 +59,79 @@ class TicketController extends Controller
         /** @var User $user */
         $user = Auth::user();
         $sort = json_decode($request->get('sort', json_encode(['order' => 'asc', 'column' => 'created_at'], JSON_THROW_ON_ERROR)), true, 512, JSON_THROW_ON_ERROR);
-        if ($user->role_id !== 1) {
-            $items = Ticket::filter($request->all())
-                ->where(function (Builder $query) use ($user) {
-                    $query->where('agent_id', $user->id);
-                    $query->orWhere('closed_by', $user->id);
-                    $query->orWhereIn('department_id', $user->departments()->pluck('id')->toArray());
-                    $query->orWhere(function (Builder $query) use ($user) {
-                        $departments = array_unique(array_merge($user->departments()->pluck('id')->toArray(), Department::where('all_agents', 1)->pluck('id')->toArray()));
-                        $query->whereNull('agent_id');
-                        $query->whereIn('department_id', $departments);
+
+        $itemsQuery = Ticket::filter($request->all());
+
+        if ($user->role_id !== 1) { // Not an admin
+            /** @var UserRole $userRole */
+            $userRole = $user->userRole;
+
+            if ($userRole && $userRole->checkDashboardAccess()) {
+                // User has dashboard access
+                $userDepartmentIds = $user->departments()->pluck('id')->toArray();
+                $allAgentDepartmentIds = Department::where('all_agents', 1)->pluck('id')->toArray();
+
+                if (!empty($userDepartmentIds)) {
+                    // Scenario 1: User has specific departments
+                    $allowedDepartmentIds = array_unique(array_merge($userDepartmentIds, $allAgentDepartmentIds));
+                    $itemsQuery->where(function (Builder $query) use ($user, $userDepartmentIds, $allAgentDepartmentIds) {
+                        $query->where(function(Builder $q) use ($user, $userDepartmentIds, $allAgentDepartmentIds){
+                            $q->whereIn('department_id', $userDepartmentIds) // Tickets in user's specific departments
+                                ->orWhere(function(Builder $subQ) use ($allAgentDepartmentIds) { // Or unassigned in all_agents departments
+                                    $subQ->whereNull('agent_id')->whereIn('department_id', $allAgentDepartmentIds);
+                                });
+                        })
+                        ->orWhere('agent_id', $user->id) // Or assigned to user
+                        ->orWhere('closed_by', $user->id); // Or closed by user
                     });
-                })
-                ->orderBy($sort['column'], $sort['order'])
-                ->paginate((int) $request->get('perPage', 10));
+                    if ($user->condo_location_id) {
+                        $itemsQuery->where('condo_location_id', $user->condo_location_id);
+                    }
+                } elseif ($user->condo_location_id) {
+                    // Scenario 2: No specific departments, but has condo_location_id
+                    $itemsQuery->where('condo_location_id', $user->condo_location_id);
+                    // Optionally, still allow seeing tickets assigned/closed by them within this condo, or all_agents tickets
+                    $itemsQuery->orWhere(function(Builder $q) use ($user, $allAgentDepartmentIds) {
+                        $q->where('agent_id', $user->id)
+                          ->orWhere('closed_by', $user->id)
+                          ->orWhere(function(Builder $subQ) use ($allAgentDepartmentIds) {
+                              $subQ->whereNull('agent_id')->whereIn('department_id', $allAgentDepartmentIds);
+                          });
+                    });
+
+                } else {
+                    // Scenario 3: Dashboard access, no departments, no condo_location_id
+                    $itemsQuery->where(function (Builder $query) use ($user, $allAgentDepartmentIds) {
+                        $query->where('agent_id', $user->id)
+                            ->orWhere('closed_by', $user->id)
+                            ->orWhere(function (Builder $q) use ($allAgentDepartmentIds) {
+                                $q->whereNull('agent_id')->whereIn('department_id', $allAgentDepartmentIds);
+                            });
+                    });
+                }
+            } else {
+                // User does NOT have dashboard access (standard agent/user view)
+                $itemsQuery->where(function (Builder $query) use ($user) {
+                    $query->where('agent_id', $user->id); // Tickets assigned to me
+                    $query->orWhere('closed_by', $user->id); // Tickets closed by me
+                    $userDepartmentIds = $user->departments()->pluck('id')->toArray();
+                    if (!empty($userDepartmentIds)) {
+                        $query->orWhereIn('department_id', $userDepartmentIds); // Tickets in my departments
+                    }
+                    $allAgentDepartmentIds = Department::where('all_agents', 1)->pluck('id')->toArray();
+                    if (!empty($allAgentDepartmentIds)) {
+                         $query->orWhere(function (Builder $q) use ($allAgentDepartmentIds) {
+                            $q->whereNull('agent_id');
+                            $q->whereIn('department_id', $allAgentDepartmentIds);
+                        });
+                    }
+                });
+            }
+            $items = $itemsQuery->orderBy($sort['column'], $sort['order'])
+                                ->paginate((int) $request->get('perPage', 10));
         } else {
-            $items = Ticket::filter($request->all())
-                ->orderBy($sort['column'], $sort['order'])
+            // Admin user
+            $items = $itemsQuery->orderBy($sort['column'], $sort['order'])
                 ->paginate((int) $request->get('perPage', 10));
         }
         return response()->json([
@@ -406,11 +463,19 @@ class TicketController extends Controller
             return response()->json(['message' => __('You have not selected a ticket or do not have permissions to perform this action')], 403);
         }
         if ($action === 'agent') {
+            $updatedTickets = $tickets->get();
             $tickets->update(['agent_id' => $request->get('value')]);
+            foreach ($updatedTickets as $ticket) {
+                event(new TicketUpdatedBroadcastingEvent($ticket->fresh()));
+            }
             return response()->json(['message' => __('Tickets assigned to the selected agent')]);
         }
         if ($action === 'department') {
+            $updatedTickets = $tickets->get();
             $tickets->update(['department_id' => $request->get('value')]);
+            foreach ($updatedTickets as $ticket) {
+                event(new TicketUpdatedBroadcastingEvent($ticket->fresh()));
+            }
             return response()->json(['message' => __('Tickets assigned to the selected department')]);
         }
         if ($action === 'label') {
@@ -419,11 +484,16 @@ class TicketController extends Controller
                 $ticket->labels()->syncWithoutDetaching($request->get('value'));
                 $ticket->updated_at = Carbon::now();
                 $ticket->save();
+                event(new TicketUpdatedBroadcastingEvent($ticket->fresh()));
             }
             return response()->json(['message' => __('The label has been added to selected tickets')]);
         }
         if ($action === 'priority') {
+            $updatedTickets = $tickets->get();
             $tickets->update(['priority_id' => $request->get('value')]);
+            foreach ($updatedTickets as $ticket) {
+                event(new TicketUpdatedBroadcastingEvent($ticket->fresh()));
+            }
             return response()->json(['message' => __('The priority of the selected tickets has been changed')]);
         }
         if ($action === 'delete') {
@@ -459,22 +529,26 @@ class TicketController extends Controller
         if ($action === 'agent') {
             $ticket->agent_id = $value;
             $ticket->saveOrFail();
+            event(new TicketUpdatedBroadcastingEvent($ticket->fresh()));
             return response()->json(['message' => __('Ticket assigned to the selected agent'), 'ticket' => new TicketManageResource($ticket), 'access' => $ticket->verifyUser($user)]);
         }
         if ($action === 'department') {
             $ticket->department_id = $value;
             $ticket->saveOrFail();
+            event(new TicketUpdatedBroadcastingEvent($ticket->fresh()));
             return response()->json(['message' => __('Ticket assigned to the selected department'), 'ticket' => new TicketManageResource($ticket), 'access' => $ticket->verifyUser($user)]);
         }
         if ($action === 'label') {
             $ticket->labels()->syncWithoutDetaching($request->get('value'));
             $ticket->updated_at = Carbon::now();
             $ticket->save();
+            event(new TicketUpdatedBroadcastingEvent($ticket->fresh()));
             return response()->json(['message' => __('Label has been assigned to ticket'), 'ticket' => new TicketManageResource($ticket), 'access' => true]);
         }
         if ($action === 'priority') {
             $ticket->priority_id = $value;
             $ticket->saveOrFail();
+            event(new TicketUpdatedBroadcastingEvent($ticket->fresh()));
             return response()->json(['message' => __('Ticket priority has been changed'), 'ticket' => new TicketManageResource($ticket), 'access' => true]);
         }
         return response()->json(['message' => __('Quick action not found')], 404);
