@@ -23,7 +23,7 @@ class FileController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:sanctum')->except(['download']);
+        $this->middleware('auth:sanctum');
     }
 
     /**
@@ -96,33 +96,20 @@ class FileController extends Controller
         try {
             $file = File::where('uuid', $uuid)->firstOrFail();
 
-            // For private files, check authentication
+            // For private files, ensure the user is authenticated.
+            // auth:sanctum middleware handles authentication.
+            // If the request reaches here, the user is authenticated.
+            // Further authorization (e.g., can this specific user access this file?) can be added here if needed.
             if ($file->disk === 'private') {
-                $user = null;
-
-                // First check if user is authenticated via session
-                if (auth()->check()) {
-                    $user = auth()->user();
+                if (!Auth::check()) {
+                    // This case should ideally not be reached if auth:sanctum is properly applied and working.
+                    // However, as a safeguard:
+                    \Log::warning('Unauthenticated attempt to access private file: ' . $uuid);
+                    abort(403, 'Unauthorized access to private file.');
                 }
-                // Then check for token authentication
-                else if ($request->has('token')) {
-                    try {
-                        /** @var PersonalAccessToken $model */
-                        $model = Sanctum::$personalAccessTokenModel;
-                        $accessToken = $model::findToken($request->get('token'));
-                        if ($accessToken) {
-                            $user = User::findOrFail($accessToken->tokenable_id);
-                        }
-                    } catch (\Exception $e) {
-                        \Log::warning('Error authenticating with token: ' . $e->getMessage());
-                    }
-                }
-
-                // If no authentication found, allow access for now (we'll improve security later)
-                // This is to ensure files can be viewed in the chat
-                if (!$user) {
-                    \Log::info('Unauthenticated access to file: ' . $uuid);
-                }
+                // Optional: Add logic here to check if Auth::user() is authorized to access $file
+                // For example, if the file belongs to the user or a ticket they have access to.
+                // For now, requiring authentication for private files is the primary goal.
             }
 
             // Check if file exists in storage

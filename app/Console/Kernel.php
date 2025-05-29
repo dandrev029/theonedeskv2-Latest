@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         Commands\FixNotificationsCondoLocation::class,
         Commands\CleanupOldNotifications::class,
         Commands\CleanupDuplicateNotifications::class,
+        Commands\RegisterAdminDashboardPermissions::class,
     ];
 
     /**

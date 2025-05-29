@@ -42,7 +42,7 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            \App\Http\Middleware\RegisterCondoLocationPermission::class,
+            // \App\Http\Middleware\RegisterCondoLocationPermission::class, // Removed as per performance audit
             \App\Http\Middleware\CheckPermission::class,
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
@@ -70,6 +70,6 @@ class Kernel extends HttpKernel
         'register' => \App\Http\Middleware\PreventRegister::class,
         'demo' => \App\Http\Middleware\DemoMode::class,
         'captcha' => \App\Http\Middleware\CheckCaptcha::class,
-        'register-condo-permissions' => \App\Http\Middleware\RegisterCondoLocationPermission::class,
+        // 'register-condo-permissions' => \App\Http\Middleware\RegisterCondoLocationPermission::class, // Removed as per performance audit
     ];
 }

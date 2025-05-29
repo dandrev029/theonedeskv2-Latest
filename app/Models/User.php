@@ -173,4 +173,17 @@ class User extends Authenticatable
     {
         return $this->condo_location_id;
     }
+
+    /**
+     * Check if the user is an administrator.
+     * Assumes role_id 1 is admin based on UserRole model logic.
+     *
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        // Consider also checking $this->userRole->name === 'Admin' if role IDs might change
+        // or if there are multiple types of admins. For now, ID 1 is the super admin.
+        return $this->role_id === 1;
+    }
 }

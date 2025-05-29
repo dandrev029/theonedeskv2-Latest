@@ -15,20 +15,20 @@ return [
     |
     */
 
-    'paths' => ['api/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'], // Added sanctum/csrf-cookie path
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Specified methods
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:8000')], // Use env variable, restrict origins
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-XSRF-TOKEN'], // Specified headers
 
-    'exposed_headers' => [],
+    'exposed_headers' => [], // Consider adding 'XSRF-TOKEN' if frontend needs to read it directly
 
-    'max_age' => 0,
+    'max_age' => 3600, // Cache preflight requests for 1 hour
 
-    'supports_credentials' => false,
+    'supports_credentials' => true, // Crucial for SPA authentication
 
 ];

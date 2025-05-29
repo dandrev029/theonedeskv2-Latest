@@ -131,6 +131,10 @@ class UserController extends Controller
         if ($user->id === $authUser->id) {
             return response()->json(['message' => __('You can not delete your own user')], 406);
         }
+
+        // Detach departments before deleting the user
+        $user->departments()->detach();
+
         if ($user->delete()) {
             return response()->json(['message' => 'Data deleted successfully']);
         }

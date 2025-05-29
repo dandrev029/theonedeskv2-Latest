@@ -22,6 +22,7 @@ class NotificationController extends Controller
      */
     public function __construct(NotificationService $notificationService)
     {
+        $this->middleware('auth:sanctum');
         $this->notificationService = $notificationService;
     }
 
@@ -32,16 +33,8 @@ class NotificationController extends Controller
      */
     public function index()
     {
-        // Check if user is authenticated
-        if (!Auth::check()) {
-            return response()->json([
-                'notifications' => ['data' => []],
-                'laravel_notifications' => ['data' => []],
-                'unread_count' => 0,
-                'app_unread_count' => 0,
-                'laravel_unread_count' => 0
-            ]);
-        }
+        // auth:sanctum middleware handles authentication.
+        // If we reach here, Auth::user() is available.
 
         // Get app notifications - limit to 25 for better performance
         $appNotifications = AppNotification::where('user_id', Auth::id())
@@ -111,6 +104,11 @@ class NotificationController extends Controller
      */
     public function store(Request $request)
     {
+        // Admin-level authorization
+        if (!Auth::user()->isAdmin()) { // Assuming isAdmin() method exists on User model
+            return response()->json(['message' => 'Unauthorized. Admin access required.'], 403);
+        }
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
@@ -279,6 +277,11 @@ class NotificationController extends Controller
      */
     public function createForMultipleUsers(Request $request)
     {
+        // Admin-level authorization
+        if (!Auth::user()->isAdmin()) { // Assuming isAdmin() method exists on User model
+            return response()->json(['message' => 'Unauthorized. Admin access required.'], 403);
+        }
+
         $request->validate([
             'user_ids' => 'required|array',
             'user_ids.*' => 'exists:users,id',
@@ -314,6 +317,11 @@ class NotificationController extends Controller
      */
     public function createForRole(Request $request)
     {
+        // Admin-level authorization
+        if (!Auth::user()->isAdmin()) { // Assuming isAdmin() method exists on User model
+            return response()->json(['message' => 'Unauthorized. Admin access required.'], 403);
+        }
+
         $request->validate([
             'role_id' => 'required|exists:user_roles,id',
             'title' => 'required|string|max:255',
@@ -348,6 +356,11 @@ class NotificationController extends Controller
      */
     public function createForAllUsers(Request $request)
     {
+        // Admin-level authorization
+        if (!Auth::user()->isAdmin()) { // Assuming isAdmin() method exists on User model
+            return response()->json(['message' => 'Unauthorized. Admin access required.'], 403);
+        }
+
         $request->validate([
             'title' => 'required|string|max:255',
             'message' => 'required|string',
