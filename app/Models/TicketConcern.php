@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use App\Models\User;
 use App\Models\Department;
+// CondoLocation import might not be needed if relationship is removed
+// use App\Models\CondoLocation; 
 
 /**
  * App\Models\TicketConcern
@@ -50,6 +52,7 @@ class TicketConcern extends Model
         'status',
         'assigned_to',
         'department_id',
+        // 'condo_location_id', // Removed if column doesn't exist
     ];
 
     /**
@@ -61,6 +64,7 @@ class TicketConcern extends Model
         'status' => 'boolean',
         'assigned_to' => 'integer',
         'department_id' => 'integer',
+        // 'condo_location_id' => 'integer', // Removed if column doesn't exist
     ];
 
     /**
@@ -86,4 +90,13 @@ class TicketConcern extends Model
     {
         return $this->belongsTo(Department::class);
     }
+
+    // Removed condoLocation relationship if condo_location_id column does not exist on this model's table
+    // /**
+    //  * Get the condominium location that this concern belongs to.
+    //  */
+    // public function condoLocation(): BelongsTo
+    // {
+    //     return $this->belongsTo(CondoLocation::class, 'condo_location_id');
+    // }
 }

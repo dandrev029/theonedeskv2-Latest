@@ -52,8 +52,8 @@ export default {
     data() {
         return {
             loading: true,
-            app_icon: null,
-            app_background: null,
+            app_icon: { file: null, preview: null },
+            app_background: { file: null, preview: null },
         }
     },
     mounted() {
@@ -62,12 +62,26 @@ export default {
     methods: {
         get() {
             const self = this;
+            self.loading = true;
             axios.get('api/dashboard/admin/settings/appearance').then(function (response) {
-                self.app_icon = response.data.app_icon;
-                self.app_background = response.data.app_background;
+                self.app_icon.preview = response.data.app_icon || null;
+                self.app_icon.file = null;
+                self.app_background.preview = response.data.app_background || null;
+                self.app_background.file = null;
                 self.loading = false;
-            }).catch(function () {
-                this.$router.push('/dashboard/admin/settings');
+            }).catch(function (error) {
+                console.error("Error fetching appearance settings:", error);
+                self.app_icon = { file: null, preview: null };
+                self.app_background = { file: null, preview: null };
+                self.loading = false;
+                // Optionally, notify the user about the error
+                // self.$notify({
+                //     title: self.$i18n.t('Error').toString(),
+                //     text: self.$i18n.t('Could not load appearance settings.').toString(),
+                //     type: 'error'
+                // });
+                // Consider if redirecting is the best user experience
+                // this.$router.push('/dashboard/admin/settings');
             });
         },
         save() {

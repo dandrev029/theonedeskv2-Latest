@@ -51,19 +51,13 @@ class SettingController extends Controller
     public function setGeneral(GeneralUpdateRequest $request): JsonResponse
     {
         $request->validated();
-        $settings = Setting::find('app_url');
-        $settings->value = $request->get('app_url');
-        if (!$settings->save()) {
+        if (!$this->updateSetting('app_url', $request->get('app_url'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
-        $settings = Setting::find('app_name');
-        $settings->value = $request->get('app_name');
-        if (!$settings->save()) {
+        if (!$this->updateSetting('app_name', $request->get('app_name'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
-        $settings = Setting::find('app_https');
-        $settings->value = $request->get('app_https');
-        if (!$settings->save()) {
+        if (!$this->updateSetting('app_https', $request->get('app_https'))) {
             return response()->json(['message' => __('An error occurred while saving data')], 500);
         }
         return response()->json(['message' => __('Settings updated successfully')]);

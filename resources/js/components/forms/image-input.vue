@@ -62,14 +62,19 @@ export default {
         },
         removeFile() {
             const self = this;
-            self.input.file = null;
-            self.input.preview = null;
+            if (self.input && typeof self.input === 'object') {
+                self.input.file = null;
+                self.input.preview = null;
+            }
         },
         changeFile(event) {
             event.preventDefault();
             const self = this;
             if (event.target.files.length) {
                 if (self.allowed.includes(event.target.files[0].type)) {
+                    if (!self.input || typeof self.input !== 'object') {
+                        self.input = {};
+                    }
                     self.input.file = event.target.files[0];
                     self.input.preview = URL.createObjectURL(event.target.files[0]);
                 } else {
@@ -95,6 +100,9 @@ export default {
             const self = this;
             if (event.dataTransfer.files.length) {
                 if (self.allowed.includes(event.dataTransfer.files[0].type)) {
+                    if (!self.input || typeof self.input !== 'object') {
+                        self.input = {};
+                    }
                     self.input.file = event.dataTransfer.files[0];
                     self.input.preview = URL.createObjectURL(event.dataTransfer.files[0]);
                 } else {

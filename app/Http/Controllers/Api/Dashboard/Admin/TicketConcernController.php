@@ -122,15 +122,42 @@ class TicketConcernController extends Controller
      */
     public function store(StoreRequest $request): JsonResponse
     {
-        $request->validated();
+        $validatedData = $request->validated();
+
         $ticketConcern = new TicketConcern();
-        $ticketConcern->name = $request->get('name');
-        $ticketConcern->status = $request->get('status', true);
-        $ticketConcern->assigned_to = $request->get('assigned_to');
-        $ticketConcern->department_id = $request->get('department_id');
+        $ticketConcern->name = $validatedData['name'];
+        $ticketConcern->status = $validatedData['status'] ?? true; // Default to true if not provided
+        // $ticketConcern->condo_location_id = $validatedData['condo_location_id'] ?? null; // Removed as column likely doesn't exist on ticket_concerns table
+
+        $actualDepartmentId = null;
+        $actualAssignedToUserId = $validatedData['assigned_to'] ?? null;
+
+        if ($actualAssignedToUserId) {
+            $user = User::find($actualAssignedToUserId);
+            // The StoreRequest validation ensures user exists and has at least one department
+            if ($user && $user->departments()->exists()) {
+                // If user is in multiple departments, we'll use the first one.
+                // This logic might need adjustment if a specific department selection is required.
+                $actualDepartmentId = $user->departments()->first()->id;
+            } else {
+                // This case should ideally be prevented by StoreRequest validation.
+                return response()->json(['message' => __('Invalid user or user is not assigned to any department.')], 422);
+            }
+        } elseif (isset($validatedData['department_id'])) {
+            // This department_id comes from selecting a department queue
+            $actualDepartmentId = $validatedData['department_id'];
+        }
+
+        if (is_null($actualDepartmentId)) {
+            // This should also be prevented by StoreRequest validation (one of them must be chosen)
+            return response()->json(['message' => __('A department must be determined for the concern.')], 422);
+        }
+
+        $ticketConcern->department_id = $actualDepartmentId;
+        $ticketConcern->assigned_to = $actualAssignedToUserId; // Assuming 'assigned_to' on model is for user_id
 
         if ($ticketConcern->save()) {
-            return response()->json(['message' => __('Data saved correctly'), 'ticket_concern' => new TicketConcernResource($ticketConcern)]);
+            return response()->json(['message' => __('Data saved correctly'), 'ticket_concern' => new TicketConcernResource($ticketConcern->load(['assignedUser', 'department']))]);
         }
 
         return response()->json(['message' => __('An error occurred while saving data')], 500);
@@ -202,14 +229,42 @@ class TicketConcernController extends Controller
      */
     public function update(UpdateRequest $request, TicketConcern $ticketConcern): JsonResponse
     {
-        $request->validated();
-        $ticketConcern->name = $request->get('name');
-        $ticketConcern->status = $request->get('status');
-        $ticketConcern->assigned_to = $request->get('assigned_to');
-        $ticketConcern->department_id = $request->get('department_id');
+        $validatedData = $request->validated();
+
+        $ticketConcern->name = $validatedData['name'];
+        $ticketConcern->status = $validatedData['status']; // 'required' in UpdateRequest, so it will be present
+        // $ticketConcern->condo_location_id = $validatedData['condo_location_id'] ?? null; // Removed as column likely doesn't exist on ticket_concerns table
+
+        $actualDepartmentId = null;
+        $actualAssignedToUserId = $validatedData['assigned_to_user_id'] ?? null;
+
+        if ($actualAssignedToUserId) {
+            $user = User::find($actualAssignedToUserId);
+            // UpdateRequest validation ensures user exists and has a department_id
+            if ($user && $user->department_id) {
+                $actualDepartmentId = $user->department_id;
+            } else {
+                return response()->json(['message' => __('Invalid user or user department setup for update.')], 422);
+            }
+        } elseif (isset($validatedData['department_id'])) {
+            // This department_id comes from selecting a department queue
+            $actualDepartmentId = $validatedData['department_id'];
+        } else {
+             // If neither is provided, but validation requires one, this path shouldn't be hit.
+             // However, if condo_location_id is the only thing changing and assignment is cleared,
+             // assigned_to_user_id and department_id might both be null in payload if allowed by rules (e.g. if not required_without)
+             // The current rules (required_without) ensure one is present.
+            return response()->json(['message' => __('A department must be determined for the concern for update.')], 422);
+        }
+        
+        $ticketConcern->department_id = $actualDepartmentId;
+        // If actualAssignedToUserId is null (meaning a department queue was chosen or assignment cleared),
+        // set assigned_to to null.
+        $ticketConcern->assigned_to = $actualAssignedToUserId;
+
 
         if ($ticketConcern->save()) {
-            return response()->json(['message' => __('Data updated correctly'), 'ticket_concern' => new TicketConcernResource($ticketConcern->load('assignedUser'))]);
+            return response()->json(['message' => __('Data updated correctly'), 'ticket_concern' => new TicketConcernResource($ticketConcern->load(['assignedUser', 'department']))]);
         }
 
         return response()->json(['message' => __('An error occurred while updating data')], 500);

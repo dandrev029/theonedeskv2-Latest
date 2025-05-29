@@ -113,11 +113,25 @@ class UserRole extends Model
     public function getPermissions(): array
     {
         $controllers = [];
-        $permissions = json_decode((string) $this->permissions, true, 512, JSON_THROW_ON_ERROR);
+        $rolePermissionsArray = json_decode((string) $this->permissions, true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($rolePermissionsArray)) {
+            $rolePermissionsArray = []; // Ensure it's an array
+        }
+
         foreach (Route::getRoutes()->getIterator() as $route) {
-            if (strpos($route->uri, 'api/dashboard') !== false) {
-                $path = str_replace('\\', '.', explode('@', str_replace($route->action['controller'].'\\', '', $route->action['controller']))[0]);
-                $controllers[$path] = $this->id === 1 ? true : in_array($path, $permissions, true);
+            // Check if 'controller' key exists and if the URI matches 'api/dashboard'
+            if (strpos($route->uri(), 'api/dashboard') !== false && isset($route->getAction()['controller'])) {
+                $controllerAction = $route->getAction()['controller'];
+
+                // Process only if the controller action is a string (classname@method)
+                if (is_string($controllerAction)) {
+                    $controllerClass = explode('@', $controllerAction)[0];
+                    // Convert full class namespace to dot notation for permission key
+                    $path = str_replace('\\', '.', $controllerClass); 
+                    
+                    // Grant permission if role is ID 1 (admin) or if the path is in their permissions list
+                    $controllers[$path] = ($this->id === 1) || in_array($path, $rolePermissionsArray, true);
+                }
             }
         }
         return $controllers;
