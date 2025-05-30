@@ -1183,11 +1183,11 @@ export default {
         setupPusherListeners() {
             if (window.Echo && this.$store.state.user) {
                 const userId = this.$store.state.user.id;
-                console.log(`Listening for Pusher events on private-notifications.${userId}`);
+                console.log(`Listening for Pusher events on notifications.${userId}`);
 
                 window.Echo.private(`notifications.${userId}`)
                     .listen('.ticket.updated', (eventData) => {
-                        console.log('Pusher event received: ticket.updated', eventData);
+                        console.log('Pusher event received for .ticket.updated:', eventData);
                         this.handleTicketUpdated(eventData);
                          this.$notify({
                             title: this.$i18n.t('Ticket Updated').toString(),
@@ -1195,21 +1195,30 @@ export default {
                             type: 'info'
                         });
                     })
-                    .notification((notification) => { // Handles notifications sent via toBroadcast() that are instances of Illuminate\Notifications\Notification
-                        console.log('Pusher notification received:', notification);
-                        if (notification.type === 'ticket_created') {
-                            this.handleTicketCreated(notification);
+                    // Primary listener for notifications from NewNotification event
+                    .listen('.notification.new', (eventData) => {
+                        console.log('Pusher event received for .notification.new:', eventData);
+                        if (eventData.type === 'ticket_created') {
+                            this.handleTicketCreated(eventData);
                             this.$notify({
                                 title: this.$i18n.t('New Ticket Created').toString(),
-                                text: notification.message || `${this.$i18n.t('Ticket')} #${notification.id} ${this.$i18n.t('has been created')}`,
+                                text: eventData.message || `${this.$i18n.t('Ticket')} #${eventData.id} ${this.$i18n.t('has been created')}`,
                                 type: 'success'
                             });
-                        } else if (notification.type === 'ticket_reply') {
-                            this.handleTicketReplied(notification);
+                        } else if (eventData.type === 'ticket_reply') {
+                            this.handleTicketReplied(eventData);
                              this.$notify({
                                 title: this.$i18n.t('New Ticket Reply').toString(),
-                                text: notification.message || `${this.$i18n.t('Ticket')} #${notification.id} ${this.$i18n.t('has a new reply')}`,
+                                text: eventData.message || `${this.$i18n.t('Ticket')} #${eventData.id} ${this.$i18n.t('has a new reply')}`,
                                 type: 'info'
+                            });
+                        } else {
+                            // Handle other generic notification types from NewNotification event
+                            console.log('Received generic notification via .notification.new:', eventData);
+                            this.$notify({
+                                title: eventData.title || this.$i18n.t('Notification').toString(),
+                                text: eventData.message || '',
+                                type: 'info' // Or map eventData.type to a specific $notify type
                             });
                         }
                     });
@@ -1222,6 +1231,7 @@ export default {
             if (window.Echo && this.$store.state.user) {
                 const userId = this.$store.state.user.id;
                 try {
+                    // Ensure we attempt to leave the correct channel name that was subscribed to
                     window.Echo.leave(`notifications.${userId}`);
                     console.log(`Left Pusher channel: notifications.${userId}`);
                 } catch (e) {

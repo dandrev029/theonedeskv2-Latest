@@ -24,7 +24,7 @@
                 <div class="mt-10 my-6 bg-white shadow overflow-hidden sm:rounded-md">
                     <loading :status="loading.form"/>
                     <form @submit.prevent="saveTicket">
-                        <div class="bg-white md:grid md:grid-cols-3 px-4 py-5">
+                        <div class="md:grid md:grid-cols-3 gap-6 px-4 py-5">
                             <div class="md:col-span-2">
                                 <div class="grid grid-cols-3 gap-6">
                                     <div class="col-span-3">
@@ -64,6 +64,7 @@
                                             />
                                         </div>
                                     </div>
+
                                     <div v-if="isWifiDepartment" class="col-span-3">
                                         <label class="block text-sm font-medium leading-5 text-gray-700" for="voucher_code">{{ $t('Voucher Code') }}</label>
                                         <div class="mt-1 relative rounded-md shadow-sm">
@@ -134,6 +135,25 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="md:col-span-1">
+                                <!-- FAQ Section -->
+                                <div v-if="loadingFaqs" class="mt-4 md:mt-0">
+                                    <p class="text-center text-gray-500">{{ $t('Loading FAQs...') }}</p>
+                                </div>
+                                <div v-if="!loadingFaqs && faqs.length > 0" class="mt-6 md:mt-0 p-4 border rounded-md bg-gray-50">
+                                    <h3 class="text-md font-semibold leading-6 text-gray-800 mb-3">{{ $t('Frequently Asked Questions') }}</h3>
+                                    <div class="space-y-3 max-h-96 overflow-y-auto">
+                                        <div v-for="faq in faqs" :key="faq.id" class="p-3 bg-white rounded shadow-sm">
+                                            <p class="font-medium text-gray-700">{{ faq.question }}</p>
+                                            <div class="text-sm text-gray-600 mt-1 prose max-w-none" v-html="faq.answer"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-if="!loadingFaqs && ticket.department_id && faqs.length === 0" class="mt-4 md:mt-0">
+                                    <p class="text-center text-gray-500">{{ $t('No FAQs available for this department.') }}</p>
+                                </div>
+                                <!-- End FAQ Section -->
+                            </div>
                         </div>
                         <div class="bg-gray-100 px-4 py-3 sm:px-6">
                             <div class="inline-flex">
@@ -182,6 +202,8 @@ export default {
             concernList: [],
             departmentConcerns: {},
             priorityList: [],
+            faqs: [],
+            loadingFaqs: false,
         }
     },
     mounted() {
@@ -196,25 +218,57 @@ export default {
             return this.departmentConcerns[this.ticket.department_id] || [];
         },
         isWifiDepartment() {
-            const wifiKeywords = ['wifi', 'wireless', 'internet', 'network', 'connection'];
             const selectedDepartment = this.departmentList.find(dept => dept.id === this.ticket.department_id);
             if (!selectedDepartment) return false;
-
             const departmentName = selectedDepartment.name.toLowerCase();
+            const wifiKeywords = ['wifi', 'wireless', 'internet', 'network', 'connection'];
             return wifiKeywords.some(keyword => departmentName.includes(keyword));
+        },
+        isGeneralHelpdeskDepartment() {
+            const selectedDepartment = this.departmentList.find(dept => dept.id === this.ticket.department_id);
+            if (!selectedDepartment) return false;
+            const departmentName = selectedDepartment.name.toLowerCase();
+            const generalKeywords = ['general', 'general helpdesk']; // Adjust as needed
+            return generalKeywords.some(keyword => departmentName.includes(keyword)) && !this.isWifiDepartment;
         }
     },
     watch: {
-        'ticket.department_id': function(newVal, oldVal) {
-            if (newVal !== oldVal) {
-                this.ticket.concern_id = null;
-                if (newVal) {
-                    this.getConcernsByDepartment(newVal);
+        'ticket.department_id': function(newVal) {
+            this.ticket.concern_id = null; 
+            this.faqs = []; 
+            if (newVal) {
+                this.getConcernsByDepartment(newVal); 
+                if (this.isWifiDepartment) { 
+                    this.fetchFaqs('wifi');
+                } else if (this.isGeneralHelpdeskDepartment) { 
+                    this.fetchFaqs('general');
                 }
             }
         }
     },
     methods: {
+        fetchFaqs(category) {
+            if (!category) {
+                this.faqs = [];
+                return;
+            }
+            this.loadingFaqs = true;
+            axios.get(`/api/public/faqs/${category}`)
+                .then(response => {
+                    this.faqs = response.data.data; 
+                    this.loadingFaqs = false;
+                })
+                .catch(error => {
+                    console.error(`Error fetching ${category} FAQs:`, error);
+                    this.faqs = [];
+                    this.loadingFaqs = false;
+                    this.$notify({
+                        title: this.$i18n.t('Error').toString(),
+                        text: this.$i18n.t('Could not load FAQs for this category.').toString(),
+                        type: 'error'
+                    });
+                });
+        },
         setVisitTimeToNow() {
             // Get current date and time in local timezone
             const now = moment();
