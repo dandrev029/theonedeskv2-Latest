@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Models\Language;
 use App\Models\Setting;
+use App\Models\Status;
 use App\Models\Ticket;
 use App\Models\TicketReply;
 use App\Models\User;
@@ -22,10 +23,38 @@ class StatsController extends Controller
 
     public function count(): JsonResponse
     {
+        // Fetch status IDs dynamically to be resilient to ID changes
+        $openStatus = Status::where('name', 'Open')->first();
+        $pendingStatus = Status::where('name', 'Pending')->first();
+        $resolvedStatus = Status::where('name', 'Resolved')->first();
+        $closedStatus = Status::where('name', 'Closed')->first();
+
+        $openTicketsCount = 0;
+        if ($openStatus) {
+            $openTicketsCount = Ticket::where('status_id', $openStatus->id)->count();
+        }
+
+        $pendingTicketsCount = 0;
+        if ($pendingStatus) {
+            $pendingTicketsCount = Ticket::where('status_id', $pendingStatus->id)->count();
+        }
+
+        $solvedTicketsCount = 0;
+        $solvedStatusIds = [];
+        if ($resolvedStatus) {
+            $solvedStatusIds[] = $resolvedStatus->id;
+        }
+        if ($closedStatus) {
+            $solvedStatusIds[] = $closedStatus->id;
+        }
+        if (!empty($solvedStatusIds)) {
+            $solvedTicketsCount = Ticket::whereIn('status_id', $solvedStatusIds)->count();
+        }
+
         return response()->json([
-            'open_tickets' => Ticket::where('status_id', 1)->count(),
-            'pending_tickets' => Ticket::where('status_id', 2)->count(),
-            'solved_tickets' => Ticket::whereIn('status_id', [3, 4])->count(),
+            'open_tickets' => $openTicketsCount,
+            'pending_tickets' => $pendingTicketsCount,
+            'solved_tickets' => $solvedTicketsCount,
             'without_agent' => Ticket::whereNull('agent_id')->count(),
         ]);
     }
@@ -50,6 +79,20 @@ class StatsController extends Controller
         // Get the number of days in the current month
         $daysInMonth = date('t');
 
+        // Fetch status IDs dynamically
+        $pendingStatus = Status::where('name', 'Pending')->first();
+        $resolvedStatus = Status::where('name', 'Resolved')->first();
+        $closedStatus = Status::where('name', 'Closed')->first();
+
+        $pendingStatusId = $pendingStatus ? $pendingStatus->id : null;
+        $solvedStatusIds = [];
+        if ($resolvedStatus) {
+            $solvedStatusIds[] = $resolvedStatus->id;
+        }
+        if ($closedStatus) {
+            $solvedStatusIds[] = $closedStatus->id;
+        }
+
         // Initialize the data arrays with zeros for each day of the month
         $openedData = [];
         $pendingData = [];
@@ -65,17 +108,23 @@ class StatsController extends Controller
             $openedCount = Ticket::whereDate('created_at', $date)->count();
             $openedData[] = $openedCount;
 
-            // Count pending tickets on this specific day (status_id = 2)
-            $pendingCount = Ticket::whereDate('created_at', $date)
-                ->where('status_id', 2)
-                ->count();
-            $pendingData[] = $pendingCount;
+            // Count pending tickets on this specific day
+            $currentPendingCount = 0;
+            if ($pendingStatusId) {
+                $currentPendingCount = Ticket::whereDate('created_at', $date) // Tickets created on this day
+                    ->where('status_id', $pendingStatusId)
+                    ->count();
+            }
+            $pendingData[] = $currentPendingCount;
 
-            // Count solved tickets on this specific day (status_id = 3 or 4)
-            $solvedCount = Ticket::whereDate('created_at', $date)
-                ->whereIn('status_id', [3, 4])
-                ->count();
-            $solvedData[] = $solvedCount;
+            // Count solved tickets on this specific day
+            $currentSolvedCount = 0;
+            if (!empty($solvedStatusIds)) {
+                $currentSolvedCount = Ticket::whereDate('created_at', $date) // Tickets created on this day
+                    ->whereIn('status_id', $solvedStatusIds)
+                    ->count();
+            }
+            $solvedData[] = $currentSolvedCount;
         }
 
         return response()->json([
