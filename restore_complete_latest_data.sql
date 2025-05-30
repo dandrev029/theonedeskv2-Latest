@@ -20,8 +20,8 @@ ALTER TABLE departments AUTO_INCREMENT = 1;
 ALTER TABLE condo_locations AUTO_INCREMENT = 1;
 
 -- Restore User Roles (including custom ones)
-INSERT IGNORE INTO user_roles (id, name, type, permissions, dashboard_access, created_at, updated_at)
-SELECT id, name, type, permissions, dashboard_access, created_at, updated_at
+INSERT IGNORE INTO user_roles (id, name, `type`, permissions, dashboard_access, created_at, updated_at)
+SELECT id, name, `type`, permissions, dashboard_access, created_at, updated_at
 FROM helpdesk.user_roles;
 
 -- Restore Users from helpdesk database
@@ -55,15 +55,15 @@ SELECT user_id, location_id
 FROM helpdesk.location_user;
 
 -- Restore notifications
-INSERT IGNORE INTO notifications (id, type, notifiable_type, notifiable_id, data, read_at, created_at, updated_at)
-SELECT id, type, notifiable_type, notifiable_id, data, read_at, created_at, updated_at
+INSERT IGNORE INTO notifications (id, `type`, notifiable_type, notifiable_id, data, read_at, created_at, updated_at)
+SELECT id, `type`, notifiable_type, notifiable_id, data, read_at, created_at, updated_at
 FROM helpdesk.notifications;
 
 -- Restore settings (only if they don't exist)
-INSERT IGNORE INTO settings (key, value, is_env, created_at, updated_at)
-SELECT key, value, is_env, created_at, updated_at
+INSERT IGNORE INTO settings (`key`, `value`, is_env, created_at, updated_at)
+SELECT `key`, `value`, is_env, created_at, updated_at
 FROM helpdesk.settings
-WHERE key NOT IN (SELECT key FROM settings);
+WHERE `key` NOT IN (SELECT `key` FROM settings);
 
 -- Restore priorities if they don't exist
 INSERT IGNORE INTO priorities (id, name, color, created_at, updated_at)

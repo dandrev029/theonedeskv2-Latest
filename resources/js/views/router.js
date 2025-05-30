@@ -74,6 +74,11 @@ import AdminDashboardTicketConcernsListEnhanced from "@/views/pages/dashboard/ad
 import AdminDashboardTicketConcernsNew from "@/views/pages/dashboard/admin/ticket-concerns/new";
 import AdminDashboardTicketConcernsEdit from "@/views/pages/dashboard/admin/ticket-concerns/edit";
 
+// FAQ Admin Components
+import AdminDashboardFaqsList from "@/views/pages/dashboard/admin/faqs/list";
+import AdminDashboardFaqsNew from "@/views/pages/dashboard/admin/faqs/new";
+import AdminDashboardFaqsEdit from "@/views/pages/dashboard/admin/faqs/edit";
+
 import AccountPage from "@/views/pages/account/account";
 
 import DashboardNotFoundPage from "@/views/pages/dashboard/error/not-found";
@@ -163,6 +168,11 @@ let routes = [
             {path: 'admin/ticket-concerns/classic', component: AdminDashboardTicketConcernsList, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController'}},
             {path: 'admin/ticket-concerns/new', component: AdminDashboardTicketConcernsNew, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController'}},
             {path: 'admin/ticket-concerns/:id/edit', component: AdminDashboardTicketConcernsEdit, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.TicketConcernController'}},
+
+            // FAQ Admin Routes
+            {path: 'admin/faqs', component: AdminDashboardFaqsList, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.FaqController'}},
+            {path: 'admin/faqs/new', component: AdminDashboardFaqsNew, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.FaqController'}},
+            {path: 'admin/faqs/:id/edit', component: AdminDashboardFaqsEdit, meta: {middleware: 'auth', dashboard_access: true, controller: 'App.Http.Controllers.Api.Dashboard.Admin.FaqController'}},
 
             {path: '*', component: DashboardNotFoundPage, meta: {middleware: 'auth', dashboard_access: true}},
         ]

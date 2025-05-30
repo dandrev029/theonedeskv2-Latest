@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Dashboard\Admin\SettingController as DashboardAdmin
 use App\Http\Controllers\Api\Dashboard\Admin\StatusController as DashboardAdminStatusController;
 use App\Http\Controllers\Api\Dashboard\Admin\UserController as DashboardAdminUserController;
 use App\Http\Controllers\Api\Dashboard\Admin\UserRoleController as DashboardAdminUserRoleController;
+use App\Http\Controllers\Api\Dashboard\Admin\FaqController as DashboardAdminFaqController; // Added FaqController
 use App\Http\Controllers\Api\Dashboard\CannedReplyController as DashboardCannedReplyController;
 use App\Http\Controllers\Api\Dashboard\StatsController as DashboardStatsController;
 use App\Http\Controllers\Api\Dashboard\TicketController as DashboardTicketController;
@@ -47,6 +48,11 @@ Route::get('departments', [\App\Http\Controllers\Api\DepartmentController::class
 Route::get('ticket-concerns/departments', [\App\Http\Controllers\Api\Dashboard\Admin\TicketConcernController::class, 'publicDepartments'])->name('ticket-concerns.public-departments');
 // Public access to dashboard admin ticket concerns departments
 Route::get('dashboard/admin/ticket-concerns/departments/public', [\App\Http\Controllers\Api\Dashboard\Admin\TicketConcernController::class, 'departments'])->name('dashboard.admin.ticket-concerns.departments.public');
+
+// Public FAQ routes
+Route::get('public/faqs/{category}', [DashboardAdminFaqController::class, 'publicIndexByCategory'])
+    ->where('category', 'wifi|general')
+    ->name('public.faqs.category');
 
 
 // --- Utility/Debug Routes (Review for production: Should be admin-protected or removed) ---
@@ -172,6 +178,15 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('ticket-concerns/users/dashboard', [DashboardAdminTicketConcernController::class, 'dashboardUsers'])->name('ticket-concerns.dashboard-users');
             Route::get('ticket-concerns/departments', [DashboardAdminTicketConcernController::class, 'departments'])->name('ticket-concerns.departments');
             Route::get('ticket-concerns/departments/{department}/concerns', [DashboardAdminTicketConcernController::class, 'concernsByDepartment'])->name('ticket-concerns.departments.concerns')->where('department', '[0-9]+');
+
+            // FAQ Routes
+            Route::apiResource('faqs', DashboardAdminFaqController::class)->names([
+                'index' => 'dashboard.admin.faqs.index',
+                'store' => 'dashboard.admin.faqs.store',
+                'show' => 'dashboard.admin.faqs.show',
+                'update' => 'dashboard.admin.faqs.update',
+                'destroy' => 'dashboard.admin.faqs.destroy'
+            ]);
 
             Route::get('settings/user-roles', [DashboardAdminSettingController::class, 'userRoles'])->name('settings.user-roles');
             Route::get('settings/languages', [DashboardAdminSettingController::class, 'languages'])->name('settings.languages');

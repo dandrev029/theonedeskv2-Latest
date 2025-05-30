@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi Helpdesk FAQ - TheOneDesk</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        details {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+        }
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+        }
+        details[open] summary {
+            margin-bottom: 10px;
+        }
+        p, ul {
+            margin-top: 0;
+            padding-left: 0; /* Reset for direct p or ul inside details */
+        }
+        details div ul { /* Style for ul specifically inside the answer div */
+             padding-left: 20px;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WiFi Helpdesk - Frequently Asked Questions</h1>
+
+        <div id="wifi-faq-list">
+            <!-- FAQs will be loaded here -->
+            <div class="loading">Loading WiFi FAQs...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchWifiFaqs();
+        });
+
+        async function fetchWifiFaqs() {
+            const faqListContainer = document.getElementById('wifi-faq-list');
+            try {
+                // Adjust the API URL to the correct one, assuming the HTML files are in /public
+                // and the API is at /api/public/faqs/wifi
+                const response = await fetch('/api/public/faqs/wifi'); 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                const faqs = result.data; // Assuming data is wrapped in a 'data' object
+
+                faqListContainer.innerHTML = ''; // Clear loading message
+
+                if (faqs && faqs.length > 0) {
+                    faqs.forEach(faq => {
+                        const detailsElement = document.createElement('details');
+                        
+                        const summaryElement = document.createElement('summary');
+                        summaryElement.textContent = faq.question;
+                        
+                        const answerElement = document.createElement('div');
+                        // Use innerHTML to render HTML content if answers might contain it
+                        // Ensure backend sanitizes HTML if this is the case.
+                        // For plain text, textContent is safer.
+                        answerElement.innerHTML = faq.answer; 
+                        
+                        detailsElement.appendChild(summaryElement);
+                        detailsElement.appendChild(answerElement);
+                        faqListContainer.appendChild(detailsElement);
+                    });
+                } else {
+                    faqListContainer.innerHTML = '<p>No WiFi FAQs found at the moment.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching WiFi FAQs:', error);
+                faqListContainer.innerHTML = '<div class="error">Could not load WiFi FAQs. Please try again later.</div>';
+            }
+        }
+    </script>
+</body>
+</html>
