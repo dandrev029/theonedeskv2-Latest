@@ -72,12 +72,12 @@ class StatsController extends Controller
 
     public function openedTickets(): JsonResponse
     {
-        // Get the current month and year
-        $currentMonth = date('n');
-        $currentYear = date('Y');
-
-        // Get the number of days in the current month
-        $daysInMonth = date('t');
+        // Get the current month and year using Carbon, respecting app timezone
+        $appTimezone = config('app.timezone');
+        $now = Carbon::now($appTimezone);
+        $currentMonth = $now->month;
+        $currentYear = $now->year;
+        $daysInMonth = $now->daysInMonth;
 
         // Fetch status IDs dynamically
         $pendingStatus = Status::where('name', 'Pending')->first();
@@ -101,28 +101,45 @@ class StatsController extends Controller
 
         // Generate data for each day of the current month
         for ($day = 1; $day <= $daysInMonth; $day++) {
-            $date = sprintf('%04d-%02d-%02d', $currentYear, $currentMonth, $day);
+            $loopDate = Carbon::create($currentYear, $currentMonth, $day, 0, 0, 0, $appTimezone);
+            $startOfDay = $loopDate->copy()->startOfDay();
+            $endOfDay = $loopDate->copy()->endOfDay();
+
             $labels[] = $day; // Just the day number as label
 
             // Count tickets created on this specific day (opened)
-            $openedCount = Ticket::whereDate('created_at', $date)->count();
+            $openedCount = Ticket::whereBetween('created_at', [$startOfDay, $endOfDay])->count();
             $openedData[] = $openedCount;
 
-            // Count pending tickets on this specific day
+            // Count pending tickets (tickets that transitioned to 'Pending' on this day)
             $currentPendingCount = 0;
-            if ($pendingStatusId) {
-                $currentPendingCount = Ticket::whereDate('created_at', $date) // Tickets created on this day
-                    ->where('status_id', $pendingStatusId)
-                    ->count();
+            if ($pendingStatus) { // Use the $pendingStatus object
+                $currentPendingCount = Ticket::where('status_id', $pendingStatus->id)
+                                             ->whereBetween('updated_at', [$startOfDay, $endOfDay]) // Assumes updated_at reflects status change
+                                             ->count();
             }
             $pendingData[] = $currentPendingCount;
 
-            // Count solved tickets on this specific day
+            // Count solved tickets (tickets that transitioned to 'Resolved' or 'Closed' on this day)
             $currentSolvedCount = 0;
-            if (!empty($solvedStatusIds)) {
-                $currentSolvedCount = Ticket::whereDate('created_at', $date) // Tickets created on this day
-                    ->whereIn('status_id', $solvedStatusIds)
-                    ->count();
+            if ($resolvedStatus || $closedStatus) {
+                $querySolved = Ticket::query();
+                $querySolved->where(function ($q) use ($startOfDay, $endOfDay, $resolvedStatus, $closedStatus) {
+                    if ($closedStatus) {
+                        $q->orWhere(function ($subQ) use ($startOfDay, $endOfDay, $closedStatus) {
+                            $subQ->where('status_id', $closedStatus->id)
+                                 ->whereBetween('closed_at', [$startOfDay, $endOfDay]); // Use closed_at for 'Closed' status
+                        });
+                    }
+                    if ($resolvedStatus) {
+                        $q->orWhere(function ($subQ) use ($startOfDay, $endOfDay, $resolvedStatus) {
+                            $subQ->where('status_id', $resolvedStatus->id)
+                                 ->whereBetween('updated_at', [$startOfDay, $endOfDay]); // Assumes updated_at for 'Resolved' status change
+                        });
+                    }
+                });
+                // Ensure that we only count if at least one of the statuses is defined
+                $currentSolvedCount = $querySolved->count();
             }
             $solvedData[] = $currentSolvedCount;
         }
@@ -132,13 +149,16 @@ class StatsController extends Controller
             'opened_data' => $openedData,
             'pending_data' => $pendingData,
             'solved_data' => $solvedData,
-            'month_name' => date('F'), // Full month name
+            'month_name' => $now->format('F'), // Full month name from Carbon instance
             'year' => $currentYear
         ]);
     }
 
     public function ticketAnalytics(): JsonResponse
     {
+        $appTimezone = config('app.timezone');
+        $carbonNow = Carbon::now($appTimezone);
+
         // Get average response time (time between ticket creation and first reply)
         $responseTimeData = [];
         $resolutionTimeData = [];
@@ -147,7 +167,7 @@ class StatsController extends Controller
         while ($month <= 12) {
             // Get tickets created in this month
             $tickets = Ticket::whereMonth('created_at', '=', $month)
-                ->whereYear('created_at', '=', date('Y'))
+                ->whereYear('created_at', '=', $carbonNow->year) // Use current year from Carbon
                 ->get();
 
             $totalResponseTime = 0;
@@ -187,12 +207,12 @@ class StatsController extends Controller
         }
 
         // Get current month statistics
-        $currentMonth = date('n');
-        $currentYear = date('Y');
+        // $currentMonth = date('n'); // Replaced by $carbonNow->month
+        // $currentYear = date('Y'); // Replaced by $carbonNow->year
 
         // Calculate overall metrics for the current month
-        $currentMonthTickets = Ticket::whereMonth('created_at', '=', $currentMonth)
-            ->whereYear('created_at', '=', $currentYear)
+        $currentMonthTickets = Ticket::whereMonth('created_at', '=', $carbonNow->month)
+            ->whereYear('created_at', '=', $carbonNow->year)
             ->get();
 
         $totalResponseTime = 0;
