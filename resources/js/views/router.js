@@ -79,6 +79,9 @@ import AdminDashboardFaqsList from "@/views/pages/dashboard/admin/faqs/list";
 import AdminDashboardFaqsNew from "@/views/pages/dashboard/admin/faqs/new";
 import AdminDashboardFaqsEdit from "@/views/pages/dashboard/admin/faqs/edit";
 
+// Tenant FAQ Page
+import FaqPage from "@/views/pages/faq/FaqPage.vue";
+
 import AccountPage from "@/views/pages/account/account";
 
 import DashboardNotFoundPage from "@/views/pages/dashboard/error/not-found";
@@ -179,6 +182,18 @@ let routes = [
     },
     {
         path: '/account', component: AccountPage, meta: {middleware: 'auth'},
+    },
+    {
+        path: '/faqs',
+        component: HelpdeskLayout, // Using HelpdeskLayout for tenant view
+        children: [
+            {
+                path: '',
+                name: 'faqs',
+                component: FaqPage,
+                meta: { middleware: 'auth' }
+            }
+        ]
     },
     {path: '*', component: PageNotFoundPage},
 ];

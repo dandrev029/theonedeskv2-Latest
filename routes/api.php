@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\File\FileController as FileFileController;
 use App\Http\Controllers\Api\Language\LanguageController as LanguageLanguageController;
 use App\Http\Controllers\Api\Ticket\TicketController as UserTicketController;
 use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\FaqController; // Added for tenant FAQs
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -96,6 +97,9 @@ Route::middleware('auth:sanctum')->group(function () {
         'store' => 'user.tickets.store',
         'show' => 'user.tickets.show'
     ]);
+
+    // Tenant FAQ route
+    Route::get('faqs', [FaqController::class, 'index'])->name('faqs.index');
 
     Route::group(['prefix' => 'notifications'], static function () {
         Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');

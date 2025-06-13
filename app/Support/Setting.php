@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use dacoto\SetEnv\SetEnv;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -36,9 +37,9 @@ class Setting
     {
         try {
             // Try to use the SetEnv class if it exists
-            if (class_exists('SetEnv')) {
-                $setEnv = new \SetEnv();
-                $setEnv->setKey($key, $value);
+            if (class_exists(SetEnv::class)) {
+                $setEnv = new SetEnv();
+                $setEnv->set($key, $value);
                 $setEnv->save();
             } else {
                 // Fallback: directly modify the .env file

@@ -78,6 +78,14 @@
                                             >
                                                 {{ $t('Account settings') }}
                                             </router-link>
+                                            <router-link
+                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                                                role="menuitem"
+                                                to="/faqs"
+                                                @click.native="dropdownOpen = false"
+                                            >
+                                                {{ $t('FAQs') }}
+                                            </router-link>
                                             <a
                                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
                                                 href="/auth/logout"
@@ -178,6 +186,15 @@
                             @click.native="menuOpen = false"
                         >
                             {{ $t('Account settings') }}
+                        </router-link>
+                        <router-link
+                            class="block px-4 py-2 text-sm transition ease-in-out duration-150"
+                            :class="getDarkModeClasses({lightText: 'text-gray-700', darkText: 'text-gray-300', lightHover: 'hover:bg-gray-100', darkHover: 'hover:bg-gray-700'})"
+                            role="menuitem"
+                            to="/faqs"
+                            @click.native="menuOpen = false"
+                        >
+                            {{ $t('FAQs') }}
                         </router-link>
                         <a
                             class="block px-4 py-2 text-sm transition ease-in-out duration-150"

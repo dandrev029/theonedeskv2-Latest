@@ -281,7 +281,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="ticket-card-footer">
+                                    <div class="ticket-card-footer flex justify-between items-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
                                               :style="{
                                                   backgroundColor: ticket.status.color + '20',
@@ -291,6 +291,10 @@
                                             <span class="w-2 h-2 mr-1.5 rounded-full" :style="{ backgroundColor: ticket.status.color }"></span>
                                             {{ ticket.status.name }}
                                         </span>
+                                        <div v-if="ticket.scheduled_visit_at" class="text-xs" :class="textSecondary">
+                                            <svg-vue class="h-3.5 w-3.5 mr-1 inline-block" :class="$store.state.darkMode ? 'text-gray-200' : 'text-gray-600'" icon="font-awesome/calendar-check-regular"></svg-vue>
+                                            <span>{{ $t('Visit:') }} {{ ticket.scheduled_visit_at | momentFormatDateTime }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -557,6 +561,11 @@ export default {
         },
         momentFormatDateTimeAgo: function (value) {
             return moment(value).locale(window.app.app_date_locale).fromNow();
+        },
+        momentFormatDateTime: function (value) {
+            // Assuming window.app.app_datetime_format exists, otherwise fallback to a default
+            const formatString = window.app.app_datetime_format || 'MM/DD/YYYY h:mm A';
+            return moment(value).locale(window.app.app_date_locale).format(formatString);
         },
     },
     methods: {

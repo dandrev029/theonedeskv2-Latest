@@ -1,0 +1,12 @@
+tunnel: theonedesk-tunnel
+credentials-file: C:\Users\Sta Rosa\.cloudflared\ab281155-2c00-4ce2-b3de-b53106e3ff77.json
+ingress:
+  - hostname: theonedesk.site
+    service: http://localhost:8000
+    originRequest:
+      noTLSVerify: true
+  - hostname: www.theonedesk.site
+    service: http://localhost:8000
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404
